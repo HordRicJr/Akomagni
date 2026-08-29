@@ -33,7 +33,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run regression suite
-        run: pytest tests/ -v --tb=short
+        run: pytest -m regression -v --tb=short
 
   coverage:
     name: Coverage (≥90%)

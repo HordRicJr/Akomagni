@@ -161,6 +161,7 @@ pip-audit
 
 ```bash
 pytest                    # all tests
+pytest -m regression      # regression suite only (CI gate)
 pytest tests/test_doctor.py -v
 akomagni flow route "new app idea"  # manual smoke test
 ```
