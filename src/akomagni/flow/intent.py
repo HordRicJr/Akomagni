@@ -23,7 +23,9 @@ GAME_PATTERNS = re.compile(
 TEST_PATTERNS = re.compile(r"\b(test|qa|e2e|ci|couverture|flaky|pytest)\b", re.IGNORECASE)
 PITCH_PATTERNS = re.compile(r"\b(pitch|deck|slides|présentation|youtube|keynote)\b", re.IGNORECASE)
 STORY_PATTERNS = re.compile(r"\b(post|article|linkedin|histoire|narration|rédige)\b", re.IGNORECASE)
-DESIGN_PATTERNS = re.compile(r"\b(design|ux|ui|maquette|figma|wireframe|css|tailwind)\b", re.IGNORECASE)
+DESIGN_PATTERNS = re.compile(
+    r"\b(design|ux|ui|maquette|figma|wireframe|css|tailwind)\b", re.IGNORECASE
+)
 ARCH_PATTERNS = re.compile(r"\b(architect|architecture|infra|scalabilité)\b", re.IGNORECASE)
 PRD_PATTERNS = re.compile(r"\b(prd|spec|epic|story|backlog|requirements)\b", re.IGNORECASE)
 DEV_PATTERNS = re.compile(r"\b(implémente|code|bug|fix|refactor|api|commit)\b", re.IGNORECASE)
@@ -31,9 +33,13 @@ BRAINSTORM_PATTERNS = re.compile(
     r"\b(idée|brainstorm|créer un|nouveau projet|pivot|comment faire)\b",
     re.IGNORECASE,
 )
-INNOVATION_PATTERNS = re.compile(r"\b(innovation|disruption|business model|blue ocean)\b", re.IGNORECASE)
+INNOVATION_PATTERNS = re.compile(
+    r"\b(innovation|disruption|business model|blue ocean)\b", re.IGNORECASE
+)
 PROBLEM_PATTERNS = re.compile(r"\b(problème complexe|root cause|triz|bloqué)\b", re.IGNORECASE)
-IMAGE_PATTERNS = re.compile(r"\b(logo|image|illustration|génère.*visuel|sdxl|flux)\b", re.IGNORECASE)
+IMAGE_PATTERNS = re.compile(
+    r"\b(logo|image|illustration|génère.*visuel|sdxl|flux)\b", re.IGNORECASE
+)
 
 
 def _badge(agent_id: str, skill_label: str) -> str:
