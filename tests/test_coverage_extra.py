@@ -20,14 +20,17 @@ def test_recommend_profile_vram():
 
 def test_detect_gpu_with_nvidia_smi():
     mock_result = MagicMock(returncode=0, stdout="NVIDIA RTX, 8192\n")
-    with patch("subprocess.run", return_value=mock_result):
+    with (
+        patch("akomagni.core.doctor.scan.shutil.which", return_value="/usr/bin/nvidia-smi"),
+        patch("subprocess.run", return_value=mock_result),
+    ):
         gpu = _detect_gpu()
     assert gpu["name"] == "NVIDIA RTX"
     assert gpu["backend"] == "cuda"
 
 
 def test_detect_gpu_not_found():
-    with patch("subprocess.run", side_effect=FileNotFoundError):
+    with patch("akomagni.core.doctor.scan.shutil.which", return_value=None):
         assert _detect_gpu()["name"] is None
 
 
