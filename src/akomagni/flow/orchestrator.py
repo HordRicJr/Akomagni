@@ -47,7 +47,11 @@ def route_message(message: str) -> RouteDecision:
     """Classify user message and return agent + skill decision."""
     greenfield = _is_greenfield(message)
     decision = classify_message(message, greenfield=greenfield)
-    if greenfield and decision.skill != "bmad-brainstorming" and decision.skill != "gds-brainstorm-game":
+    if (
+        greenfield
+        and decision.skill != "bmad-brainstorming"
+        and decision.skill != "gds-brainstorm-game"
+    ):
         # Force brainstorm gate for greenfield unless already on game brainstorm path
         from akomagni.flow.intent import classify_message as _cls
 

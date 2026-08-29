@@ -119,7 +119,9 @@ def run_cli(
             if result.skill:
                 console.print(f"[dim]Skill path:[/] {result.skill.path}")
             else:
-                console.print("[yellow]Skill not found on disk — run from a BMAD project or link skills.[/]")
+                console.print(
+                    "[yellow]Skill not found on disk — run from a BMAD project or link skills.[/]"
+                )
         else:
             decision = route_message(message)
             console.print(
@@ -205,7 +207,9 @@ def skill_list(
     """List discovered BMAD skills."""
     skills = discover_skills()
     if not skills:
-        console.print("[yellow]No skills found.[/] Install BMAD or link skills to ~/.akomagni/skills/")
+        console.print(
+            "[yellow]No skills found.[/] Install BMAD or link skills to ~/.akomagni/skills/"
+        )
         raise typer.Exit(code=1)
     for skill_id in sorted(skills):
         if filter_text and filter_text.lower() not in skill_id.lower():
