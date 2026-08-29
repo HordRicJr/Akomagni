@@ -1,1 +1,5 @@
-"""Hugging Face model registry (stub v0.1)."""
+"""Model registry and recommendations."""
+
+from akomagni.core.registry.models import recommend_models
+
+__all__ = ["recommend_models"]

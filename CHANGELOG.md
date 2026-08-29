@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `akomagni flow invoke` — writes BMAD activation session files
+- `akomagni flow status` — workflow state for current project
+- `akomagni skill list` / `skill path` — discover BMAD skills on disk
+- `akomagni model recommend` / `model list` — hardware-based model suggestions
+- Interactive CLI creates session files by default (`--no-invoke` to disable only routing)
+- Skill discovery from `~/.akomagni/skills`, `.claude/skills`, and `_bmad` manifest
+
+### Added (v0.1.0 scaffold)
+
 - Initial open-source release scaffold
 - CLI: `doctor`, `config`, `memory status`, `flow route`, `run cli`, `serve` (stub)
 - Akomagni Flow heuristic router (17 BMAD agents catalog)

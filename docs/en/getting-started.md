@@ -28,7 +28,10 @@ akomagni memory status  # memory directories
 
 ```bash
 akomagni flow route "I have an idea for a budget app"
-# → 📊 Mary · Brainstorming → bmad-brainstorming
+akomagni flow invoke "I have an idea for a budget app"   # writes session file
+akomagni flow status
+akomagni skill list
+akomagni model recommend
 ```
 
 ## Interactive CLI

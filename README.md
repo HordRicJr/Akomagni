@@ -67,7 +67,10 @@ akomagni doctor                    # Scan hardware + recommend profile
 akomagni config init               # Create ~/.akomagni/config.yaml
 akomagni memory status             # Central + project memory
 akomagni flow route "your message" # Test agent/skill routing
-akomagni run cli                   # Interactive CLI (stub)
+akomagni flow invoke "your message"# Write BMAD activation session
+akomagni skill list                # Discover installed BMAD skills
+akomagni model recommend           # Models for your hardware profile
+akomagni run cli                   # Interactive CLI (creates sessions)
 akomagni serve                     # Local inference API (stub → llama.cpp)
 ```
 
