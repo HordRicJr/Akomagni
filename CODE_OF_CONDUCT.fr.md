@@ -29,7 +29,7 @@ Comportements inacceptables :
 ## Application
 
 Les mainteneurs clarifient et font respecter ces standards. Les comportements
-inappropriés peuvent être signalés à **security@akomagni.dev** ou via une
+inappropriés peuvent être signalés à **assounrodrigue5@gmail.com** ou via une
 advisory privée GitHub.
 
 ## Attribution
