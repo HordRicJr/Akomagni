@@ -119,4 +119,4 @@ Apache-2.0 — see [LICENSE](LICENSE).
 
 ## Author
 
-Created by [Assou](https://github.com/HordRicJr) — Akomagni is an independent open-source project.
+Created by [ASSOUN Akomagni Kodjovi Rodrigue](https://github.com/HordRicJr) — Akomagni is an independent open-source project.
