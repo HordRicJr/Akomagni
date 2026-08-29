@@ -1,0 +1,21 @@
+name: Documentation
+description: Documentation improvement (EN or FR)
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: change
+    attributes:
+      label: What should be updated?
+      description: Include EN and FR if user-facing. See docs/I18N.md.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language(s)
+      options:
+        - English
+        - French
+        - Both (required for user-facing changes)
