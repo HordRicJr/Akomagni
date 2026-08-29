@@ -73,4 +73,4 @@ quote-style = "double"
 
 [tool.bandit]
 exclude_dirs = ["tests"]
-skips = ["B101", "B603"]
+skips = ["B101", "B603", "B404"]

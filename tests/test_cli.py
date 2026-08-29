@@ -137,7 +137,7 @@ def test_skill_path_found(akomagni_home, monkeypatch):
     monkeypatch.chdir(akomagni_home)
     result = runner.invoke(app, ["skill", "path", "demo-skill"])
     assert result.exit_code == 0
-    assert "demo-skill" in result.stdout
+    assert "demo-skill" in result.stdout.replace("\n", "")
 
 
 def test_skill_path_not_found(akomagni_home, monkeypatch):

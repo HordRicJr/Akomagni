@@ -15,11 +15,14 @@ PROFILE_POWER = "power"
 
 def _detect_gpu() -> dict[str, Any]:
     gpu: dict[str, Any] = {"name": None, "vram_gb": None, "backend": None}
+    nvidia_smi = shutil.which("nvidia-smi")
+    if not nvidia_smi:
+        return gpu
     try:
         import subprocess
 
-        result = subprocess.run(
-            ["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader,nounits"],
+        result = subprocess.run(  # nosec B603
+            [nvidia_smi, "--query-gpu=name,memory.total", "--format=csv,noheader,nounits"],
             capture_output=True,
             text=True,
             timeout=5,
