@@ -8,6 +8,7 @@ Thank you for your interest in contributing! Akomagni follows practices used by 
 
 - [Code of Conduct](#code-of-conduct)
 - [How to contribute](#how-to-contribute)
+- [Branching strategy](#branching-strategy)
 - [Development setup](#development-setup)
 - [Project structure](#project-structure)
 - [Pull request process](#pull-request-process)
@@ -24,8 +25,8 @@ This project adheres to the [Contributor Covenant](CODE_OF_CONDUCT.md). By parti
 
 1. **Check existing issues** — someone may already be working on it.
 2. **Open an issue** for bugs or features before large changes.
-3. **Fork** the repo and create a branch from `main`.
-4. **Make focused changes** — one concern per PR.
+3. **Fork** the repo and create a branch from **`develop`** (not `main`).
+4. **Make focused changes** — one concern per PR, linked to an issue.
 5. **Update docs** (EN + FR when user-facing).
 6. **Run tests** locally.
 7. **Open a PR** using our template.
@@ -36,6 +37,27 @@ Good first contributions:
 - Tests for `doctor`, `flow`, `memory`
 - Bug fixes with reproduction steps
 - Improving error messages
+
+## Branching strategy
+
+**Default PR target: `develop`.** Only maintainers merge `develop` → `main` for stable releases.
+
+```
+main ← stable releases
+  ↑
+develop ← integration (open PRs here)
+  ↑
+feature/#123-description
+```
+
+Full guide: [docs/en/branching.md](docs/en/branching.md)
+
+### Commits must reference issues
+
+```
+feat(#42): integrate llama-server subprocess
+fix(#15): correct VRAM detection on Windows
+```
 
 ## Development setup
 
@@ -103,16 +125,37 @@ See [docs/I18N.md](docs/I18N.md) for the full policy.
 
 ## Commit messages
 
-We prefer [Conventional Commits](https://www.conventionalcommits.org/):
+We use [Conventional Commits](https://www.conventionalcommits.org/) **with issue numbers**:
 
 ```
-feat(flow): add brainstorm gate for greenfield projects
-fix(doctor): correct VRAM detection on Windows
-docs(fr): update getting-started guide
-test(memory): add profile scaffold tests
+feat(#42): integrate llama-server subprocess
+fix(#15): correct VRAM detection on Windows
+docs(#8): update getting-started FR
+test(#21): add flow orchestrator coverage
+ci(#30): add gitleaks workflow
 ```
 
-Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`.
+Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `security`.
+
+## CI requirements
+
+All PRs to `develop` must pass:
+
+| Workflow | Checks |
+|----------|--------|
+| **Quality** | Ruff lint + format, i18n doc parity |
+| **Test** | Unit/regression tests (Ubuntu + Windows, Python 3.11–3.12) |
+| **Coverage** | ≥ **90%** line coverage (`pytest-cov`) |
+| **Security** | `pip-audit`, Bandit SAST, Gitleaks secrets scan |
+
+Run locally before pushing:
+
+```bash
+ruff check src tests && ruff format --check src tests
+pytest tests/ --cov=akomagni --cov-fail-under=90
+bandit -r src -c pyproject.toml
+pip-audit
+```
 
 ## Testing
 

@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Git Flow: `develop` integration branch, `main` for stable releases only
+- CI workflows: **Quality** (ruff lint/format, i18n), **Test** (regression + 90% coverage), **Security** (pip-audit, bandit, gitleaks)
+- Branching docs (EN/FR), ROADMAP.md, GitHub issues for full v0.2–v1.0 roadmap
+- Commit convention: `type(#issue): summary`
+- PR template targets `develop`
+
+### Added (v0.1.1)
+
 - `akomagni flow invoke` — writes BMAD activation session files
 - `akomagni flow status` — workflow state for current project
 - `akomagni skill list` / `skill path` — discover BMAD skills on disk
