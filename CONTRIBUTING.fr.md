@@ -37,6 +37,7 @@ test(#21): couverture orchestrator
 
 ```bash
 ruff check src tests && ruff format --check src tests
+pytest -m regression              # suite régression (gate CI)
 pytest tests/ --cov=akomagni --cov-fail-under=90
 bandit -r src -c pyproject.toml
 pip-audit
