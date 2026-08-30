@@ -109,6 +109,13 @@ def test_flow_invoke(tmp_path, monkeypatch):
     assert "Session written" in result.stdout
 
 
+def test_flow_invoke_exec_reports_failure(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["flow", "invoke", "fix bug in auth", "--exec"])
+    assert result.exit_code == 0
+    assert "Skill exec failed" in result.stdout or "Session written" in result.stdout
+
+
 def test_flow_invoke_open(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     result = runner.invoke(app, ["flow", "invoke", "design landing page", "--open"])

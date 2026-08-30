@@ -114,6 +114,11 @@ def run_cli(
         "--invoke/--no-invoke",
         help="Write Akomagni Flow session files for each message.",
     ),
+    execute: bool = typer.Option(
+        False,
+        "--exec/--no-exec",
+        help="Run BMAD skill via `uv run render_skill.py` after routing.",
+    ),
     inference: bool = typer.Option(
         True,
         "--inference/--no-inference",
@@ -147,7 +152,7 @@ def run_cli(
         if not message.strip():
             continue
         if invoke:
-            result = invoke_skill(message)
+            result = invoke_skill(message, execute=execute)
             decision = result.decision
             console.print(
                 f"[dim]{decision.badge}[/] → `{decision.skill}` ({decision.confidence:.0%})"
@@ -159,6 +164,11 @@ def run_cli(
                 console.print(
                     "[yellow]Skill not found on disk — run from a BMAD project or link skills.[/]"
                 )
+            if execute and result.run_result is not None:
+                if result.run_result.success:
+                    console.print(f"[green]Workflow rendered:[/] {result.run_result.workflow_path}")
+                else:
+                    console.print(f"[yellow]Skill exec failed:[/] {result.run_result.error}")
         else:
             decision = route_message(message)
             console.print(
@@ -216,6 +226,11 @@ def flow_route(
 def flow_invoke(
     message: str = typer.Argument(..., help="User message to route and invoke."),
     skill: str | None = typer.Option(None, "--skill", "-s", help="Override skill id."),
+    execute: bool = typer.Option(
+        False,
+        "--exec/--no-exec",
+        help="Run BMAD skill via `uv run render_skill.py`.",
+    ),
     open_session: bool = typer.Option(
         False,
         "--open",
@@ -223,7 +238,7 @@ def flow_invoke(
     ),
 ) -> None:
     """Route a message and write a BMAD activation session file."""
-    result = invoke_skill(message, skill_override=skill)
+    result = invoke_skill(message, skill_override=skill, execute=execute)
     decision = result.decision
     console.print(f"{decision.badge}  skill={decision.skill}")
     console.print(f"[bold green]Session written:[/] {result.session_path}")
@@ -234,6 +249,11 @@ def flow_invoke(
             "[yellow]Warning:[/] skill files not found. Run inside a BMAD project "
             "or install skills to ~/.akomagni/skills/"
         )
+    if execute and result.run_result is not None:
+        if result.run_result.success:
+            console.print(f"[bold green]Workflow rendered:[/] {result.run_result.workflow_path}")
+        else:
+            console.print(f"[yellow]Skill exec failed:[/] {result.run_result.error}")
     state = load_state(result.project_root)
     if state.get("active_agent"):
         console.print(f"Workflow state updated — active agent: {state['active_agent']}")
