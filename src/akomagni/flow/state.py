@@ -44,6 +44,8 @@ def record_invocation(
     state["active_agent"] = agent_id
     state["active_skill"] = skill_id
     state.setdefault("completed", [])
+    if skill_id not in state["completed"]:
+        state["completed"].append(skill_id)
     state["last_session"] = str(session_path)
     state["updated_at"] = datetime.now(UTC).isoformat()
     if skill_id in ("bmad-brainstorming", "gds-brainstorm-game"):

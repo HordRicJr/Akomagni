@@ -63,7 +63,8 @@ def test_regression_flow_routes_brainstorm_greenfield():
     assert decision.greenfield is True
 
 
-def test_regression_flow_routes_dev():
+def test_regression_flow_routes_dev(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     decision = route_message("Implémente le endpoint login avec JWT")
     assert decision.agent_id == "bmad-agent-dev"
     assert decision.skill == "bmad-build"

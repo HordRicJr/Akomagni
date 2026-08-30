@@ -22,6 +22,7 @@ def test_flow_routes_brainstorm():
     assert d.greenfield is True
 
 
-def test_flow_routes_dev():
+def test_flow_routes_dev(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     d = route_message("Implémente le endpoint login avec JWT")
     assert d.agent_id == "bmad-agent-dev"

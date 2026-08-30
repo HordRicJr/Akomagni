@@ -95,7 +95,8 @@ def test_memory_status(akomagni_home):
     assert "Akomagni Memory" in result.stdout
 
 
-def test_flow_route():
+def test_flow_route(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     result = runner.invoke(app, ["flow", "route", "implement login API"])
     assert result.exit_code == 0
     assert "bmad-agent-dev" in result.stdout
