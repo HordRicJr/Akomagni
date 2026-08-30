@@ -59,22 +59,23 @@ def test_try_chat_with_inference_auto_swap(tmp_path, monkeypatch):
     model.write_text("gguf", encoding="utf-8")
     monkeypatch.setattr("akomagni.inference.chat.MODELS_DIR", tmp_path)
     decision = classify_message("implement login API")
-    statuses = [
-        InferenceStatus(
-            online=True,
-            base_url="http://127.0.0.1:8787/v1",
-            models=["phi-3.5-mini-instruct-q4.gguf"],
-        ),
-        InferenceStatus(
-            online=True,
-            base_url="http://127.0.0.1:8787/v1",
-            models=[model.name],
-        ),
-    ]
+    phi_status = InferenceStatus(
+        online=True,
+        base_url="http://127.0.0.1:8787/v1",
+        models=["phi-3.5-mini-instruct-q4.gguf"],
+    )
+    ready_status = InferenceStatus(
+        online=True,
+        base_url="http://127.0.0.1:8787/v1",
+        models=[model.name],
+    )
     from akomagni.inference.worker import HotSwapResult
 
     with (
-        patch("akomagni.inference.chat.check_health", side_effect=statuses),
+        patch(
+            "akomagni.inference.chat.check_health",
+            side_effect=[phi_status, phi_status, ready_status],
+        ),
         patch(
             "akomagni.inference.worker.hot_swap_model",
             return_value=HotSwapResult(swapped=True, model_path=model, message="ok"),
