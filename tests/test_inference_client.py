@@ -66,9 +66,7 @@ def test_check_health_offline():
 
 
 def test_chat_completion_success():
-    payload = json.dumps(
-        {"choices": [{"message": {"content": "Hello from Akomagni"}}]}
-    ).encode()
+    payload = json.dumps({"choices": [{"message": {"content": "Hello from Akomagni"}}]}).encode()
     mock_response = MagicMock()
     mock_response.read.return_value = payload
     mock_response.__enter__ = MagicMock(return_value=mock_response)
@@ -79,9 +77,7 @@ def test_chat_completion_success():
 
 
 def test_chat_completion_with_system_prompt():
-    payload = json.dumps(
-        {"choices": [{"message": {"content": "OK"}}]}
-    ).encode()
+    payload = json.dumps({"choices": [{"message": {"content": "OK"}}]}).encode()
     mock_response = MagicMock()
     mock_response.read.return_value = payload
     mock_response.__enter__ = MagicMock(return_value=mock_response)
