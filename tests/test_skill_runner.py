@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from akomagni.skills.invoke import invoke_skill
 from akomagni.skills.runner import (
+    SkillRunResult,
     build_context_env,
     build_render_command,
     parse_workflow_path,
@@ -165,18 +166,20 @@ def test_invoke_skill_execute_appends_run_section(tmp_path, monkeypatch):
         "---\nname: bmad-build\ndescription: build\n---\n",
         encoding="utf-8",
     )
-    (skill_root / "workflow.md").write_text("# workflow", encoding="utf-8")
     workflow = tmp_path / "rendered" / "workflow.md"
     workflow.parent.mkdir(parents=True)
     workflow.write_text("# rendered", encoding="utf-8")
+    run_result = SkillRunResult(
+        command=("uv", "run", "render_skill.py"),
+        returncode=0,
+        stdout=f"read and follow {workflow}\n",
+        stderr="",
+        workflow_path=workflow,
+        success=True,
+    )
 
-    class Completed:
-        returncode = 0
-        stdout = f"read and follow {workflow}\n"
-        stderr = ""
-
-    with patch("akomagni.skills.runner.subprocess.run", return_value=Completed()):
-        result = invoke_skill("implement login API", execute=True)
+    with patch("akomagni.skills.invoke.run_skill_subprocess", return_value=run_result):
+        result = invoke_skill("implement login API", execute=True, project_root=tmp_path)
 
     text = result.session_path.read_text(encoding="utf-8")
     assert "## Skill execution (uv run)" in text
