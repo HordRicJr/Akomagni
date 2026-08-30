@@ -6,16 +6,18 @@ import typer
 from rich.console import Console
 
 from akomagni import __version__
-from akomagni.core.config import ensure_default_config, load_config
+from akomagni.core.config import MODELS_DIR, ensure_default_config, load_config
 from akomagni.core.doctor import run_doctor
 from akomagni.core.registry import list_catalog, recommend_models
+from akomagni.core.router import classify_domain
 from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import load_state
-from akomagni.inference.chat import try_chat_with_inference
+from akomagni.inference.chat import plan_inference_chat, try_chat_with_inference
 from akomagni.inference.client import InferenceClientError, chat_completion, check_health
 from akomagni.inference.llama import list_local_models
 from akomagni.inference.pull import ModelPullError, pull_model
 from akomagni.inference.server import serve as start_inference_server
+from akomagni.inference.worker import hot_swap_model, read_worker_state, stop_worker
 from akomagni.memory.store import memory_status
 from akomagni.skills.discovery import discover_skills, find_skill
 from akomagni.skills.invoke import invoke_skill
@@ -32,6 +34,7 @@ flow_app = typer.Typer(help="Akomagni Flow — BMAD agent orchestration.")
 config_app = typer.Typer(help="Configuration ~/.akomagni/config.yaml")
 skill_app = typer.Typer(help="BMAD skills discovery and invocation.")
 model_app = typer.Typer(help="Local model catalog and recommendations.")
+router_app = typer.Typer(help="Domain model router (code, design, image, text).")
 inference_app = typer.Typer(help="OpenAI-compatible local inference API.")
 
 app.add_typer(run_app, name="run")
@@ -40,6 +43,7 @@ app.add_typer(flow_app, name="flow")
 app.add_typer(config_app, name="config")
 app.add_typer(skill_app, name="skill")
 app.add_typer(model_app, name="model")
+app.add_typer(router_app, name="router")
 app.add_typer(inference_app, name="inference")
 
 
@@ -124,6 +128,11 @@ def run_cli(
         "--inference/--no-inference",
         help="Call local inference API after routing (fallback when offline).",
     ),
+    auto_swap: bool = typer.Option(
+        False,
+        "--auto-swap/--no-auto-swap",
+        help="Hot-swap GGUF worker when domain model differs from loaded model.",
+    ),
 ) -> None:
     """Interactive CLI — routes messages and optionally creates skill sessions."""
     ensure_default_config()
@@ -131,7 +140,7 @@ def run_cli(
     inf_cfg = cfg.get("inference", {})
     host = inf_cfg.get("host", "127.0.0.1")
     port = int(inf_cfg.get("port", 8787))
-    model = inf_cfg.get("default_model")
+    model_override = inf_cfg.get("default_model")
 
     console.print("[bold]Akomagni CLI[/] — type a message (Ctrl+C to quit).")
     inference_online = False
@@ -177,12 +186,19 @@ def run_cli(
             console.print(decision.hint)
 
         if inference and inference_online:
+            chat_plan = plan_inference_chat(message, host=host, port=port)
+            domain = chat_plan.domain_plan.classification.domain
+            catalog = chat_plan.domain_plan.catalog_name or "n/a"
+            console.print(f"[dim]Domain router:[/] {domain} → {catalog}")
+            if chat_plan.swap_plan.needs_swap and not auto_swap:
+                console.print(f"[yellow]{chat_plan.swap_plan.hint}[/]")
             reply = try_chat_with_inference(
                 message,
                 decision,
                 host=host,
                 port=port,
-                model=model,
+                model=model_override,
+                auto_swap=auto_swap,
             )
             if reply:
                 console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
@@ -304,6 +320,33 @@ def skill_path(
     console.print(info.path)
 
 
+@router_app.command("classify")
+def router_classify(
+    message: str = typer.Argument(..., help="Message to classify."),
+) -> None:
+    """Classify a message into code/design/image/text."""
+    result = classify_domain(message)
+    console.print(f"domain={result.domain}  confidence={result.confidence:.0%}")
+    console.print(result.reason)
+
+
+@router_app.command("plan")
+def router_plan(
+    message: str = typer.Argument(..., help="Message to route to a GGUF model."),
+) -> None:
+    """Show domain model mapping and hot-swap advice."""
+    cfg = load_config()
+    inf = cfg.get("inference", {})
+    host = inf.get("host", "127.0.0.1")
+    port = int(inf.get("port", 8787))
+    plan = plan_inference_chat(message, host=host, port=port, config=cfg, models_dir=MODELS_DIR)
+    domain = plan.domain_plan.classification
+    console.print(f"Domain     : {domain.domain} ({domain.confidence:.0%})")
+    console.print(f"Catalog    : {plan.domain_plan.catalog_name or 'n/a'}")
+    console.print(f"Model path : {plan.domain_plan.model_path or 'not downloaded'}")
+    console.print(f"Swap       : {plan.swap_plan.hint}")
+
+
 @model_app.command("recommend")
 def model_recommend() -> None:
     """Recommend models for this machine (uses akomagni doctor)."""
@@ -357,6 +400,54 @@ def model_list() -> None:
         return
     for path in local:
         console.print(f"  {path.relative_to(MODELS_DIR)}")
+
+
+@inference_app.command("swap")
+def inference_swap(
+    name: str = typer.Argument(..., help="Catalog model name or GGUF path."),
+) -> None:
+    """Hot-swap the background llama-server worker to another GGUF model."""
+    cfg = load_config()
+    inference = cfg.get("inference", {})
+    host = inference.get("host", "127.0.0.1")
+    port = int(inference.get("port", 8787))
+    result = hot_swap_model(
+        name,
+        models_dir=MODELS_DIR,
+        host=host,
+        port=port,
+        binary=inference.get("binary"),
+        ctx_size=int(inference.get("ctx_size", 4096)),
+        n_gpu_layers=int(inference.get("n_gpu_layers", -1)),
+    )
+    if result.swapped:
+        console.print(f"[green]{result.message}[/]")
+    elif "already loaded" in result.message.lower():
+        console.print(f"[dim]{result.message}[/]")
+    else:
+        console.print(f"[red]{result.message}[/]")
+        raise typer.Exit(code=1)
+
+
+@inference_app.command("stop")
+def inference_stop() -> None:
+    """Stop the background inference worker."""
+    if stop_worker():
+        console.print("[green]Inference worker stopped.[/]")
+    else:
+        console.print("[dim]No background worker running.[/]")
+
+
+@inference_app.command("worker")
+def inference_worker() -> None:
+    """Show background worker state."""
+    state = read_worker_state()
+    if state is None:
+        console.print("[dim]No background worker state.[/]")
+        return
+    console.print(f"PID   : {state.pid}")
+    console.print(f"Model : {state.model_path}")
+    console.print(f"API   : http://{state.host}:{state.port}/v1")
 
 
 @inference_app.command("status")

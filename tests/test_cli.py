@@ -96,6 +96,50 @@ def test_memory_status(akomagni_home):
     assert "Akomagni Memory" in result.stdout
 
 
+def test_router_classify():
+    result = runner.invoke(app, ["router", "classify", "implement login API"])
+    assert result.exit_code == 0
+    assert "domain=code" in result.stdout
+
+
+def test_router_plan(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["router", "plan", "design landing page"])
+    assert result.exit_code == 0
+    assert "Domain" in result.stdout
+
+
+def test_inference_swap_cli(tmp_path, monkeypatch):
+    model = tmp_path / "phi-3.5-mini-instruct-q4.gguf"
+    model.write_text("gguf", encoding="utf-8")
+    monkeypatch.setattr("akomagni.cli.main.MODELS_DIR", tmp_path)
+    worker = type(
+        "Worker", (), {"pid": 1, "model_path": str(model), "host": "127.0.0.1", "port": 8787}
+    )()
+    swap = type("Swap", (), {"swapped": True, "message": "Loaded", "worker": worker})()
+    with patch("akomagni.cli.main.hot_swap_model", return_value=swap):
+        result = runner.invoke(app, ["inference", "swap", "phi-3.5-mini"])
+    assert result.exit_code == 0
+    assert "Loaded" in result.stdout
+
+
+def test_inference_stop_cli(monkeypatch):
+    with patch("akomagni.cli.main.stop_worker", return_value=True):
+        result = runner.invoke(app, ["inference", "stop"])
+    assert result.exit_code == 0
+    assert "stopped" in result.stdout.lower()
+
+
+def test_inference_worker_cli(monkeypatch):
+    state = type(
+        "State", (), {"pid": 9, "model_path": "/m.gguf", "host": "127.0.0.1", "port": 8787}
+    )()
+    with patch("akomagni.cli.main.read_worker_state", return_value=state):
+        result = runner.invoke(app, ["inference", "worker"])
+    assert result.exit_code == 0
+    assert "PID" in result.stdout
+
+
 def test_flow_route(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     result = runner.invoke(app, ["flow", "route", "implement login API"])
