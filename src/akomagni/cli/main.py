@@ -18,6 +18,7 @@ from akomagni.inference.llama import list_local_models
 from akomagni.inference.pull import ModelPullError, pull_model
 from akomagni.inference.server import serve as start_inference_server
 from akomagni.inference.worker import hot_swap_model, read_worker_state, stop_worker
+from akomagni.memory.ops import MemoryError, add_memory, promote_project_memory
 from akomagni.memory.store import memory_status
 from akomagni.skills.discovery import discover_skills, find_skill
 from akomagni.skills.invoke import invoke_skill
@@ -226,6 +227,42 @@ def run_ide() -> None:
 def memory_cmd_status() -> None:
     """Afficher l'état de la mémoire centrale et projet."""
     console.print(memory_status())
+
+
+@memory_app.command("add")
+def memory_cmd_add(
+    text: str = typer.Argument(..., help="Learning or note to store."),
+    global_: bool = typer.Option(
+        False,
+        "--global",
+        "-g",
+        help="Store in central memory (~/.akomagni/memory/).",
+    ),
+    title: str | None = typer.Option(None, "--title", "-t", help="Optional note title."),
+) -> None:
+    """Add a learning to project or central memory."""
+    try:
+        path = add_memory(text, global_=global_, title=title)
+    except MemoryError as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    scope = "central" if global_ else "project"
+    console.print(f"[green]Saved ({scope}):[/] {path}")
+
+
+@memory_app.command("promote")
+def memory_cmd_promote() -> None:
+    """Promote project memory into central learnings."""
+    try:
+        result = promote_project_memory()
+    except MemoryError as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"[green]Promoted[/] {result.files_copied} file(s)\n"
+        f"  from: {result.source}\n"
+        f"  to:   {result.destination}"
+    )
 
 
 @flow_app.command("route")

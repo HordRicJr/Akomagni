@@ -96,6 +96,30 @@ def test_memory_status(akomagni_home):
     assert "Akomagni Memory" in result.stdout
 
 
+def test_memory_add_project(tmp_path, monkeypatch, akomagni_home):
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["memory", "add", "Use JWT for API auth", "-t", "Auth"])
+    assert result.exit_code == 0
+    assert "Saved (project)" in result.stdout
+    assert (tmp_path / ".akomagni" / "memory" / "learnings").is_dir()
+
+
+def test_memory_add_global(akomagni_home):
+    result = runner.invoke(app, ["memory", "add", "Prefer Ruff", "--global"])
+    assert result.exit_code == 0
+    assert "Saved (central)" in result.stdout
+
+
+def test_memory_promote(tmp_path, monkeypatch, akomagni_home):
+    monkeypatch.chdir(tmp_path)
+    proj = tmp_path / ".akomagni" / "memory"
+    proj.mkdir(parents=True)
+    (proj / "notes.md").write_text("project note", encoding="utf-8")
+    result = runner.invoke(app, ["memory", "promote"])
+    assert result.exit_code == 0
+    assert "Promoted" in result.stdout
+
+
 def test_router_classify():
     result = runner.invoke(app, ["router", "classify", "implement login API"])
     assert result.exit_code == 0
