@@ -46,6 +46,12 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "auto_capture": False,
         "central_dir": str(MEMORY_DIR),
     },
+    "rag": {
+        "chunk_size": 800,
+        "chunk_overlap": 120,
+        "default_limit": 5,
+        "rrf_k": 60,
+    },
     "models": {
         "profiles": {
             "light": ["Phi-3.5-mini", "Llama-3.2-3B"],
