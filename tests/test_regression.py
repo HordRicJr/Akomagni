@@ -120,10 +120,21 @@ def test_regression_model_recommend(akomagni_home):
     assert "Profile:" in result.stdout
 
 
-def test_regression_serve_stub():
+def test_regression_serve_requires_llama_server():
     result = runner.invoke(app, ["serve"])
+    assert result.exit_code == 1
+    assert "llama-server" in result.stdout
+
+
+def test_regression_model_catalog(akomagni_home):
+    result = runner.invoke(app, ["model", "catalog"])
     assert result.exit_code == 0
-    assert "Akomagni inference" in result.stdout
+    assert "qwen2.5-coder-7b" in result.stdout
+
+
+def test_regression_model_pull_unknown(akomagni_home):
+    result = runner.invoke(app, ["model", "pull", "unknown-model"])
+    assert result.exit_code == 1
 
 
 def test_regression_run_cli_session(tmp_path, monkeypatch, akomagni_home):

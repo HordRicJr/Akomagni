@@ -28,6 +28,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+inference = [
+  "huggingface-hub>=0.23",
+]
 dev = [
   "pytest>=8.0",
   "pytest-cov>=5.0",

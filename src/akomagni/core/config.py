@@ -18,7 +18,14 @@ SKILLS_DIR = DATA_DIR / "skills"
 DEFAULT_CONFIG: dict[str, Any] = {
     "version": 1,
     "router": {"mode": "auto", "model": "router"},
-    "inference": {"host": "127.0.0.1", "port": 8787},
+    "inference": {
+        "host": "127.0.0.1",
+        "port": 8787,
+        "binary": None,
+        "default_model": None,
+        "ctx_size": 4096,
+        "n_gpu_layers": -1,
+    },
     "workflow": {
         "brainstorm": {
             "mode": "mandatory",
