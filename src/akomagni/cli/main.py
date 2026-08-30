@@ -11,6 +11,7 @@ from akomagni.core.doctor import run_doctor
 from akomagni.core.registry import list_catalog, recommend_models
 from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import load_state
+from akomagni.inference.client import InferenceClientError, chat_completion, check_health
 from akomagni.inference.llama import list_local_models
 from akomagni.inference.pull import ModelPullError, pull_model
 from akomagni.inference.server import serve as start_inference_server
@@ -30,6 +31,7 @@ flow_app = typer.Typer(help="Akomagni Flow — BMAD agent orchestration.")
 config_app = typer.Typer(help="Configuration ~/.akomagni/config.yaml")
 skill_app = typer.Typer(help="BMAD skills discovery and invocation.")
 model_app = typer.Typer(help="Local model catalog and recommendations.")
+inference_app = typer.Typer(help="OpenAI-compatible local inference API.")
 
 app.add_typer(run_app, name="run")
 app.add_typer(memory_app, name="memory")
@@ -37,6 +39,7 @@ app.add_typer(flow_app, name="flow")
 app.add_typer(config_app, name="config")
 app.add_typer(skill_app, name="skill")
 app.add_typer(model_app, name="model")
+app.add_typer(inference_app, name="inference")
 
 
 def _version_callback(value: bool) -> None:
@@ -300,6 +303,43 @@ def model_list() -> None:
         return
     for path in local:
         console.print(f"  {path.relative_to(MODELS_DIR)}")
+
+
+@inference_app.command("status")
+def inference_status() -> None:
+    """Check whether the local OpenAI-compatible API is online."""
+    cfg = load_config()
+    inference = cfg.get("inference", {})
+    host = inference.get("host", "127.0.0.1")
+    port = int(inference.get("port", 8787))
+    status = check_health(host=host, port=port)
+    if status.online:
+        console.print(f"[green]Online[/] — {status.base_url}")
+        if status.models:
+            console.print(f"Models: {', '.join(status.models)}")
+    else:
+        console.print(f"[red]Offline[/] — {status.base_url}")
+        if status.error:
+            console.print(status.error)
+        raise typer.Exit(code=1)
+
+
+@inference_app.command("chat")
+def inference_chat(
+    message: str = typer.Argument(..., help="User message to send to the model."),
+    model: str | None = typer.Option(None, "--model", "-m", help="Model id override."),
+) -> None:
+    """Send one message to /v1/chat/completions and print the reply."""
+    cfg = load_config()
+    inference = cfg.get("inference", {})
+    host = inference.get("host", "127.0.0.1")
+    port = int(inference.get("port", 8787))
+    try:
+        reply = chat_completion(message, host=host, port=port, model=model)
+    except InferenceClientError as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(reply)
 
 
 @config_app.command("init")
