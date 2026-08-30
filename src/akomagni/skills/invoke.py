@@ -12,6 +12,7 @@ from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import record_invocation
 from akomagni.memory.inject import load_central_context, load_project_context
 from akomagni.skills.discovery import SkillInfo, find_skill
+from akomagni.skills.runner import SkillRunResult, run_skill_subprocess
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,7 @@ class InvokeResult:
     session_path: Path
     skill: SkillInfo | None
     project_root: Path | None
+    run_result: SkillRunResult | None = None
 
 
 def _agent_skill_path(agent_id: str, project_root: Path | None) -> Path | None:
@@ -33,9 +35,10 @@ def _build_session_markdown(
     decision: RouteDecision,
     skill: SkillInfo | None,
     agent_path: Path | None,
+    central: str,
+    project: str,
+    run_result: SkillRunResult | None = None,
 ) -> str:
-    central = load_central_context()
-    project = load_project_context()
     lines = [
         "# Akomagni Flow session",
         "",
@@ -73,6 +76,25 @@ def _build_session_markdown(
         lines.extend(["## Akomagni Memory (central)", "", central.strip(), ""])
     if project.strip():
         lines.extend(["## Akomagni Memory (project)", "", project.strip(), ""])
+    if run_result is not None:
+        lines.extend(
+            [
+                "## Skill execution (uv run)",
+                "",
+                (
+                    f"- Command: `{' '.join(run_result.command)}`"
+                    if run_result.command
+                    else "- Command: _none_"
+                ),
+                f"- Exit code: {run_result.returncode}",
+            ]
+        )
+        if run_result.workflow_path:
+            lines.extend(["", f"- Workflow: `{run_result.workflow_path}`", ""])
+        if run_result.error:
+            lines.extend(["", f"- Error: {run_result.error}", ""])
+        if run_result.stdout.strip():
+            lines.extend(["", "### stdout", "", "```", run_result.stdout.strip(), "```", ""])
     lines.extend(
         [
             "## Activation instructions",
@@ -80,7 +102,11 @@ def _build_session_markdown(
             "1. Open this project in Cursor (or your BMAD-capable agent).",
             f"2. Activate agent `{decision.agent_id}` and skill `{decision.skill}`.",
             "3. Paste the user message above as the first turn.",
-            "4. Follow the skill's SKILL.md workflow to completion.",
+            (
+                "4. Read and follow the rendered workflow file above."
+                if run_result and run_result.workflow_path
+                else "4. Follow the skill's SKILL.md workflow to completion."
+            ),
             "",
             decision.hint,
             "",
@@ -94,13 +120,26 @@ def invoke_skill(
     *,
     project_root: Path | None = None,
     skill_override: str | None = None,
+    execute: bool = False,
 ) -> InvokeResult:
     """Route *message*, resolve skill paths, write session bundle."""
     root = project_root or find_project_root() or Path.cwd()
-    decision = route_message(message)
+    decision = route_message(message, project_root=root)
     skill_id = skill_override or decision.skill
     skill = find_skill(skill_id, root) if skill_id not in ("chat", "image-pipeline") else None
     agent_path = _agent_skill_path(decision.agent_id, root)
+    central = load_central_context()
+    project = load_project_context()
+
+    run_result: SkillRunResult | None = None
+    if execute and skill is not None:
+        run_result = run_skill_subprocess(
+            project_root=root,
+            skill_path=skill.path,
+            message=message,
+            central_context=central,
+            project_context=project,
+        )
 
     sessions = root / ".akomagni" / "workflow" / "sessions"
     sessions.mkdir(parents=True, exist_ok=True)
@@ -113,6 +152,9 @@ def invoke_skill(
             decision=decision,
             skill=skill,
             agent_path=agent_path,
+            central=central,
+            project=project,
+            run_result=run_result,
         ),
         encoding="utf-8",
     )
@@ -127,4 +169,5 @@ def invoke_skill(
         session_path=session_path,
         skill=skill,
         project_root=root,
+        run_result=run_result,
     )

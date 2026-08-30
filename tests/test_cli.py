@@ -8,6 +8,7 @@ import pytest
 from typer.testing import CliRunner
 
 from akomagni.cli.main import app
+from akomagni.skills.runner import SkillRunResult
 
 runner = CliRunner()
 
@@ -107,6 +108,39 @@ def test_flow_invoke(tmp_path, monkeypatch):
     result = runner.invoke(app, ["flow", "invoke", "fix bug in auth"])
     assert result.exit_code == 0
     assert "Session written" in result.stdout
+
+
+def test_flow_invoke_exec_reports_failure(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["flow", "invoke", "fix bug in auth", "--exec"])
+    assert result.exit_code == 0
+    assert "Skill exec failed" in result.stdout or "Session written" in result.stdout
+
+
+def test_flow_invoke_exec_success(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "_bmad").mkdir()
+    monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: tmp_path)
+    skill_root = tmp_path / ".claude" / "skills" / "bmad-build"
+    skill_root.mkdir(parents=True)
+    (skill_root / "SKILL.md").write_text(
+        "---\nname: bmad-build\ndescription: build\n---\n",
+        encoding="utf-8",
+    )
+    workflow = tmp_path / "workflow.md"
+    workflow.write_text("# workflow", encoding="utf-8")
+    run_result = SkillRunResult(
+        command=("uv", "run"),
+        returncode=0,
+        stdout="",
+        stderr="",
+        workflow_path=workflow,
+        success=True,
+    )
+    with patch("akomagni.skills.invoke.run_skill_subprocess", return_value=run_result):
+        result = runner.invoke(app, ["flow", "invoke", "fix bug in auth", "--exec"])
+    assert result.exit_code == 0
+    assert "Workflow rendered" in result.stdout
 
 
 def test_flow_invoke_open(tmp_path, monkeypatch):
