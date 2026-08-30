@@ -44,6 +44,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     },
     "memory": {
         "auto_capture": False,
+        "capture_global": False,
         "central_dir": str(MEMORY_DIR),
     },
     "rag": {
