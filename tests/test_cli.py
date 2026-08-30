@@ -48,6 +48,33 @@ def test_serve_missing_binary(akomagni_home):
     assert "llama-server" in result.stdout
 
 
+def test_inference_status_offline(akomagni_home):
+    result = runner.invoke(app, ["inference", "status"])
+    assert result.exit_code == 1
+    assert "Offline" in result.stdout
+
+
+def test_inference_status_online(akomagni_home, monkeypatch):
+    from akomagni.inference.client import InferenceStatus
+
+    monkeypatch.setattr(
+        "akomagni.cli.main.check_health",
+        lambda **_: InferenceStatus(
+            online=True,
+            base_url="http://127.0.0.1:8787/v1",
+            models=["local"],
+        ),
+    )
+    result = runner.invoke(app, ["inference", "status"])
+    assert result.exit_code == 0
+    assert "Online" in result.stdout
+
+
+def test_inference_chat_offline(akomagni_home):
+    result = runner.invoke(app, ["inference", "chat", "hello"])
+    assert result.exit_code == 1
+
+
 def test_config_init(akomagni_home):
     result = runner.invoke(app, ["config", "init"])
     assert result.exit_code == 0
