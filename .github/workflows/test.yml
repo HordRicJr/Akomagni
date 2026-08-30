@@ -64,3 +64,21 @@ jobs:
         with:
           files: coverage.xml
           fail_ci_if_error: false
+
+  install-smoke:
+    name: Install script smoke (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run install.sh from local source
+        run: |
+          export AKOMAGNI_INSTALL_DIR="${RUNNER_TEMP}/akomagni-install"
+          export AKOMAGNI_SOURCE_DIR="${GITHUB_WORKSPACE}"
+          export AKOMAGNI_BIN_DIR="${RUNNER_TEMP}/akomagni-bin"
+          bash install/install.sh
+          "${RUNNER_TEMP}/akomagni-bin/akomagni" --version
