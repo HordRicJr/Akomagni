@@ -20,6 +20,15 @@ from akomagni.inference.llama import list_local_models
 from akomagni.inference.pull import ModelPullError, pull_model
 from akomagni.inference.server import serve as start_inference_server
 from akomagni.inference.worker import hot_swap_model, read_worker_state, stop_worker
+from akomagni.memory.capture import (
+    CaptureError,
+    approve_capture,
+    build_capture_text,
+    list_pending,
+    maybe_prompt_capture,
+    propose_capture,
+    reject_capture,
+)
 from akomagni.memory.ops import MemoryError, add_memory, promote_project_memory
 from akomagni.memory.store import memory_status
 from akomagni.rag.ingest import RagIngestError, ingest_path
@@ -146,6 +155,9 @@ def run_cli(
     ensure_default_config()
     cfg = load_config()
     inf_cfg = cfg.get("inference", {})
+    mem_cfg = cfg.get("memory", {})
+    auto_capture = bool(mem_cfg.get("auto_capture", False))
+    capture_global = bool(mem_cfg.get("capture_global", False))
     host = inf_cfg.get("host", "127.0.0.1")
     port = int(inf_cfg.get("port", 8787))
     model_override = inf_cfg.get("default_model")
@@ -210,6 +222,33 @@ def run_cli(
             )
             if reply:
                 console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
+                if auto_capture:
+                    preview = build_capture_text(message, reply)
+                    console.print("[dim]Memory capture preview:[/]")
+                    console.print(preview[:240] + ("…" if len(preview) > 240 else ""))
+                    try:
+                        answer = console.input("Save to memory? [y/N/later] ").strip().lower()
+                    except (KeyboardInterrupt, EOFError):
+                        console.print()
+                        break
+                    if answer in {"y", "yes"}:
+                        saved = maybe_prompt_capture(
+                            message,
+                            reply,
+                            global_=capture_global,
+                            approved=True,
+                        )
+                        console.print(f"[green]Saved to memory:[/] {saved}")
+                    elif answer in {"l", "later", "pending"}:
+                        proposal = propose_capture(
+                            message,
+                            reply,
+                            global_=capture_global,
+                        )
+                        console.print(
+                            f"[yellow]Queued pending capture[/] `{proposal.capture_id}` "
+                            f"(akomagni memory approve {proposal.capture_id})"
+                        )
             else:
                 console.print("[yellow]Inference call failed — route/session kept.[/]")
 
@@ -270,6 +309,69 @@ def memory_cmd_promote() -> None:
         f"  from: {result.source}\n"
         f"  to:   {result.destination}"
     )
+
+
+@memory_app.command("pending")
+def memory_cmd_pending(
+    global_: bool = typer.Option(
+        False,
+        "--global",
+        "-g",
+        help="List central pending captures.",
+    ),
+) -> None:
+    """List memory captures awaiting approval."""
+    pending = list_pending(global_=global_)
+    if not pending:
+        console.print("[dim]No pending captures.[/]")
+        return
+    scope = "central" if global_ else "project"
+    console.print(f"[bold]Pending captures ({scope})[/]")
+    for item in pending:
+        preview = item.suggested_text.replace("\n", " ")
+        if len(preview) > 100:
+            preview = preview[:97] + "…"
+        console.print(f"  [cyan]{item.capture_id}[/]  {item.suggested_title}")
+        console.print(f"    {preview}")
+
+
+@memory_app.command("approve")
+def memory_cmd_approve(
+    capture_id: str = typer.Argument(..., help="Pending capture id."),
+    global_: bool = typer.Option(
+        False,
+        "--global",
+        "-g",
+        help="Approve a central pending capture.",
+    ),
+    title: str | None = typer.Option(None, "--title", "-t", help="Override note title."),
+) -> None:
+    """Approve a pending capture and save it to memory."""
+    try:
+        path = approve_capture(capture_id, global_=global_, title=title)
+    except CaptureError as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"[green]Approved and saved:[/] {path}")
+
+
+@memory_app.command("reject")
+def memory_cmd_reject(
+    capture_id: str = typer.Argument(..., help="Pending capture id."),
+    global_: bool = typer.Option(
+        False,
+        "--global",
+        "-g",
+        help="Reject a central pending capture.",
+    ),
+) -> None:
+    """Reject a pending capture without saving."""
+    try:
+        reject_capture(capture_id, global_=global_)
+    except CaptureError as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"[yellow]Rejected[/] capture `{capture_id}`")
 
 
 @flow_app.command("route")
