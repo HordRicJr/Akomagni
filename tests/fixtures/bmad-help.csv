@@ -1,0 +1,5 @@
+module,skill,display-name,menu-code,description,action,args,phase,preceded-by,followed-by,required,output-location,outputs
+BMad Method,bmad-product-brief,Create Brief,CB,Product brief,,,plan,,,false,planning_artifacts,product brief
+BMad Method,bmad-prd,Create PRD,PRD,PRD workflow,,,2-planning,bmad-product-brief,,true,planning_artifacts,prd
+BMad Method,bmad-architecture,Architecture,CA,Architecture,,,plan,bmad-prd,,true,planning_artifacts,architecture
+BMad Method,bmad-build,Build,BD,Build loop,,,ship,bmad-sprint-planning,,true,implementation_artifacts,implementation
