@@ -8,10 +8,12 @@ from rich.console import Console
 from akomagni import __version__
 from akomagni.core.config import ensure_default_config, load_config
 from akomagni.core.doctor import run_doctor
-from akomagni.core.registry import recommend_models
+from akomagni.core.registry import list_catalog, recommend_models
 from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import load_state
-from akomagni.inference.server import serve_stub
+from akomagni.inference.llama import list_local_models
+from akomagni.inference.pull import ModelPullError, pull_model
+from akomagni.inference.server import serve as start_inference_server
 from akomagni.memory.store import memory_status
 from akomagni.skills.discovery import discover_skills, find_skill
 from akomagni.skills.invoke import invoke_skill
@@ -83,11 +85,22 @@ def doctor(
 
 @app.command()
 def serve(
-    host: str = typer.Option("127.0.0.1", help="Hôte API OpenAI-compatible."),
-    port: int = typer.Option(8787, help="Port API."),
+    host: str = typer.Option(None, help="Hôte API OpenAI-compatible."),
+    port: int = typer.Option(None, help="Port API."),
+    model: str | None = typer.Option(None, "--model", "-m", help="GGUF model name or path."),
+    binary: str | None = typer.Option(
+        None, "--binary", help="Path to llama-server binary (auto-detect by default)."
+    ),
 ) -> None:
-    """Démarrer le serveur d'inférence local (stub v0.1)."""
-    serve_stub(host=host, port=port)
+    """Démarrer llama-server (API OpenAI-compatible sur :8787)."""
+    cfg = load_config()
+    inference = cfg.get("inference", {})
+    start_inference_server(
+        host=host or inference.get("host", "127.0.0.1"),
+        port=port or inference.get("port", 8787),
+        model=model,
+        binary=binary,
+    )
 
 
 @run_app.command("cli")
@@ -241,16 +254,52 @@ def model_recommend() -> None:
     console.print(f"Profile: [bold]{rec['profile']}[/bold]")
     console.print(f"Models : {', '.join(rec['models'])}")
     console.print(f"Cache  : {rec['models_dir']}")
-    console.print("\n[dim]akomagni model pull — coming in v0.2[/dim]")
+    console.print("\n[dim]akomagni model catalog — list downloadable GGUF models[/dim]")
+    console.print("[dim]akomagni model pull <name> — download a model[/dim]")
+
+
+@model_app.command("catalog")
+def model_catalog() -> None:
+    """List downloadable GGUF models from the Akomagni catalog."""
+    for entry in list_catalog():
+        console.print(f"[bold]{entry.name}[/] [{entry.profile}]")
+        console.print(f"  {entry.description}")
+        console.print(f"  [dim]{entry.repo_id} → {entry.filename}[/]")
+
+
+@model_app.command("pull")
+def model_pull(
+    name: str = typer.Argument(..., help="Catalog model name, e.g. qwen2.5-coder-7b"),
+    force: bool = typer.Option(False, "--force", help="Re-download even if cached."),
+) -> None:
+    """Download a GGUF model from Hugging Face."""
+    from akomagni.core.config import MODELS_DIR
+
+    try:
+        path = pull_model(name, models_dir=MODELS_DIR, force=force)
+    except ModelPullError as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"[green]Model ready:[/] {path}")
 
 
 @model_app.command("list")
 def model_list() -> None:
-    """List model profiles from config."""
+    """List model profiles from config and downloaded GGUF files."""
+    from akomagni.core.config import MODELS_DIR
+
     cfg = load_config()
     profiles = cfg.get("models", {}).get("profiles", {})
+    console.print("[bold]Profiles (config)[/]")
     for name, models in profiles.items():
-        console.print(f"[bold]{name}[/]: {', '.join(models)}")
+        console.print(f"  {name}: {', '.join(models)}")
+    local = list_local_models(MODELS_DIR)
+    console.print("\n[bold]Downloaded (.gguf)[/]")
+    if not local:
+        console.print("  [dim]none — run: akomagni model pull <name>[/dim]")
+        return
+    for path in local:
+        console.print(f"  {path.relative_to(MODELS_DIR)}")
 
 
 @config_app.command("init")

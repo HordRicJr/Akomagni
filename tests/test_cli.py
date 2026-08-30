@@ -42,10 +42,10 @@ def test_doctor_json(akomagni_home):
     assert "profile" in result.stdout
 
 
-def test_serve():
+def test_serve_missing_binary(akomagni_home):
     result = runner.invoke(app, ["serve"])
-    assert result.exit_code == 0
-    assert "Akomagni inference" in result.stdout
+    assert result.exit_code == 1
+    assert "llama-server" in result.stdout
 
 
 def test_config_init(akomagni_home):
@@ -108,6 +108,17 @@ def test_model_list(akomagni_home):
     result = runner.invoke(app, ["model", "list"])
     assert result.exit_code == 0
     assert "light" in result.stdout
+
+
+def test_model_catalog(akomagni_home):
+    result = runner.invoke(app, ["model", "catalog"])
+    assert result.exit_code == 0
+    assert "qwen2.5-coder-7b" in result.stdout
+
+
+def test_model_pull_unknown(akomagni_home):
+    result = runner.invoke(app, ["model", "pull", "unknown-model"])
+    assert result.exit_code == 1
 
 
 def test_skill_list_empty(akomagni_home, monkeypatch):
