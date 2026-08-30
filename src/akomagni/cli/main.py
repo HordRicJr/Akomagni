@@ -11,6 +11,7 @@ from akomagni.core.doctor import run_doctor
 from akomagni.core.registry import list_catalog, recommend_models
 from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import load_state
+from akomagni.inference.chat import try_chat_with_inference
 from akomagni.inference.client import InferenceClientError, chat_completion, check_health
 from akomagni.inference.llama import list_local_models
 from akomagni.inference.pull import ModelPullError, pull_model
@@ -113,10 +114,30 @@ def run_cli(
         "--invoke/--no-invoke",
         help="Write Akomagni Flow session files for each message.",
     ),
+    inference: bool = typer.Option(
+        True,
+        "--inference/--no-inference",
+        help="Call local inference API after routing (fallback when offline).",
+    ),
 ) -> None:
     """Interactive CLI — routes messages and optionally creates skill sessions."""
     ensure_default_config()
+    cfg = load_config()
+    inf_cfg = cfg.get("inference", {})
+    host = inf_cfg.get("host", "127.0.0.1")
+    port = int(inf_cfg.get("port", 8787))
+    model = inf_cfg.get("default_model")
+
     console.print("[bold]Akomagni CLI[/] — type a message (Ctrl+C to quit).")
+    inference_online = False
+    if inference:
+        status = check_health(host=host, port=port)
+        inference_online = status.online
+        if inference_online:
+            console.print(f"[dim]Inference online — {status.base_url}[/]")
+        else:
+            console.print("[dim]Inference offline — routing only (run: akomagni serve)[/]")
+
     while True:
         try:
             message = console.input("[cyan]›[/] ")
@@ -144,6 +165,19 @@ def run_cli(
                 f"[dim]{decision.badge}[/] → `{decision.skill}` ({decision.confidence:.0%})"
             )
             console.print(decision.hint)
+
+        if inference and inference_online:
+            reply = try_chat_with_inference(
+                message,
+                decision,
+                host=host,
+                port=port,
+                model=model,
+            )
+            if reply:
+                console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
+            else:
+                console.print("[yellow]Inference call failed — route/session kept.[/]")
 
 
 @run_app.command("agent")

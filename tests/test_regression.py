@@ -149,6 +149,6 @@ def test_regression_run_cli_session(tmp_path, monkeypatch, akomagni_home):
             raise EOFError
 
     with patch("akomagni.cli.main.console.input", side_effect=fake_input):
-        result = runner.invoke(app, ["run", "cli"])
+        result = runner.invoke(app, ["run", "cli", "--no-inference"])
     assert result.exit_code == 0
     assert "Session:" in result.stdout
