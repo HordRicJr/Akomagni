@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import typer
 from rich.console import Console
 
@@ -20,6 +22,9 @@ from akomagni.inference.server import serve as start_inference_server
 from akomagni.inference.worker import hot_swap_model, read_worker_state, stop_worker
 from akomagni.memory.ops import MemoryError, add_memory, promote_project_memory
 from akomagni.memory.store import memory_status
+from akomagni.rag.ingest import RagIngestError, ingest_path
+from akomagni.rag.query import hits_to_json, hybrid_query
+from akomagni.rag.store import default_index_path, store_status
 from akomagni.skills.discovery import discover_skills, find_skill
 from akomagni.skills.invoke import invoke_skill
 
@@ -37,6 +42,7 @@ skill_app = typer.Typer(help="BMAD skills discovery and invocation.")
 model_app = typer.Typer(help="Local model catalog and recommendations.")
 router_app = typer.Typer(help="Domain model router (code, design, image, text).")
 inference_app = typer.Typer(help="OpenAI-compatible local inference API.")
+rag_app = typer.Typer(help="RAG ingest and hybrid retrieval (BM25 + sqlite-vec).")
 
 app.add_typer(run_app, name="run")
 app.add_typer(memory_app, name="memory")
@@ -46,6 +52,7 @@ app.add_typer(skill_app, name="skill")
 app.add_typer(model_app, name="model")
 app.add_typer(router_app, name="router")
 app.add_typer(inference_app, name="inference")
+app.add_typer(rag_app, name="rag")
 
 
 def _version_callback(value: bool) -> None:
@@ -522,6 +529,114 @@ def inference_chat(
         console.print(f"[red]Error:[/] {exc}")
         raise typer.Exit(code=1) from exc
     console.print(reply)
+
+
+def _rag_settings(cfg: dict) -> dict:
+    return cfg.get("rag", {})
+
+
+def _rag_db_path(*, project: bool) -> Path:
+    return default_index_path(project=project)
+
+
+@rag_app.command("status")
+def rag_status(
+    project: bool = typer.Option(
+        False,
+        "--project",
+        help="Show project RAG index (.akomagni/rag/) instead of central.",
+    ),
+) -> None:
+    """Show RAG index location and document counts."""
+    db_path = _rag_db_path(project=project)
+    status = store_status(db_path)
+    scope = "project" if project else "central"
+    console.print(f"[bold]RAG ({scope})[/]")
+    console.print(f"  Index : {status['path']}")
+    console.print(f"  Sources: {status['sources']}")
+    console.print(f"  Chunks : {status['chunks']}")
+
+
+@rag_app.command("ingest")
+def rag_ingest(
+    path: str = typer.Argument(..., help="File or directory to ingest."),
+    project: bool = typer.Option(
+        False,
+        "--project",
+        help="Store in project index (.akomagni/rag/).",
+    ),
+    recursive: bool = typer.Option(
+        False,
+        "--recursive",
+        "-r",
+        help="Ingest text files recursively when path is a directory.",
+    ),
+) -> None:
+    """Ingest markdown/text files into the hybrid RAG index."""
+    cfg = load_config()
+    rag_cfg = _rag_settings(cfg)
+    db_path = _rag_db_path(project=project)
+    try:
+        results = ingest_path(
+            Path(path),
+            db_path=db_path,
+            chunk_size=int(rag_cfg.get("chunk_size", 800)),
+            overlap=int(rag_cfg.get("chunk_overlap", 120)),
+            recursive=recursive,
+        )
+    except RagIngestError as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+
+    for result in results:
+        replaced = f" (replaced {result.chunks_replaced})" if result.chunks_replaced else ""
+        console.print(
+            f"[green]Indexed[/] {result.chunks_added} chunk(s){replaced} — {result.source}"
+        )
+
+
+@rag_app.command("query")
+def rag_query(
+    text: str = typer.Argument(..., help="Search query."),
+    project: bool = typer.Option(
+        False,
+        "--project",
+        help="Search project RAG index.",
+    ),
+    limit: int = typer.Option(None, "--limit", "-n", help="Max results."),
+    json_output: bool = typer.Option(False, "--json", help="JSON output."),
+) -> None:
+    """Hybrid BM25 + vector search over the RAG index."""
+    cfg = load_config()
+    rag_cfg = _rag_settings(cfg)
+    db_path = _rag_db_path(project=project)
+    hits = hybrid_query(
+        text,
+        db_path=db_path,
+        limit=limit or int(rag_cfg.get("default_limit", 5)),
+        rrf_k=int(rag_cfg.get("rrf_k", 60)),
+    )
+    if json_output:
+        typer.echo(hits_to_json(hits))
+        return
+    if not hits:
+        console.print("[yellow]No matches.[/] Ingest documents with: akomagni rag ingest <path>")
+        raise typer.Exit(code=1)
+    for index, hit in enumerate(hits, start=1):
+        ranks = []
+        if hit.bm25_rank is not None:
+            ranks.append(f"bm25=#{hit.bm25_rank}")
+        if hit.vector_rank is not None:
+            ranks.append(f"vec=#{hit.vector_rank}")
+        rank_text = f" ({', '.join(ranks)})" if ranks else ""
+        preview = hit.content.replace("\n", " ")
+        if len(preview) > 160:
+            preview = preview[:157] + "…"
+        console.print(
+            f"[bold]{index}.[/] score={hit.score:.4f}{rank_text}\n"
+            f"  [dim]{hit.source}[/]\n"
+            f"  {preview}"
+        )
 
 
 @config_app.command("init")
