@@ -54,8 +54,10 @@ def init_store(db_path: Path, *, embed_dim: int = DEFAULT_EMBED_DIM) -> Path:
 
 
 def _create_schema(conn: sqlite3.Connection, *, embed_dim: int) -> None:
+    if embed_dim <= 0 or embed_dim > 4096:
+        raise ValueError("embed_dim must be between 1 and 4096")
     conn.executescript(
-        f"""
+        """
         CREATE TABLE IF NOT EXISTS sources (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             path TEXT NOT NULL UNIQUE,
@@ -76,12 +78,18 @@ def _create_schema(conn: sqlite3.Connection, *, embed_dim: int) -> None:
             content_rowid='id',
             tokenize='unicode61'
         );
-
+        """
+    )
+    conn.execute(
+        f"""
         CREATE VIRTUAL TABLE IF NOT EXISTS chunks_vec USING vec0(
             chunk_id INTEGER PRIMARY KEY,
             embedding float[{embed_dim}]
         );
-
+        """
+    )
+    conn.executescript(
+        """
         CREATE TRIGGER IF NOT EXISTS chunks_ai AFTER INSERT ON chunks BEGIN
             INSERT INTO chunks_fts(rowid, content) VALUES (new.id, new.content);
         END;

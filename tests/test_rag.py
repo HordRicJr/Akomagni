@@ -183,11 +183,13 @@ def test_hybrid_query_punctuation_only(rag_db):
 
 
 def test_bm25_search_sql_error():
+    import sqlite3
+
     from akomagni.rag.query import _bm25_search
 
     class BadConn:
         def execute(self, *_args, **_kwargs):
-            raise RuntimeError("fts failed")
+            raise sqlite3.OperationalError("fts failed")
 
     assert _bm25_search(BadConn(), "test", limit=5) == []
 
