@@ -17,7 +17,16 @@ SKILLS_DIR = DATA_DIR / "skills"
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "version": 1,
-    "router": {"mode": "auto", "model": "router"},
+    "router": {
+        "mode": "auto",
+        "model": "router",
+        "domains": {
+            "code": "qwen2.5-coder-7b",
+            "design": "llama-3.1-8b",
+            "image": None,
+            "text": "phi-3.5-mini",
+        },
+    },
     "inference": {
         "host": "127.0.0.1",
         "port": 8787,

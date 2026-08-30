@@ -26,4 +26,5 @@ def test_load_config_merges_defaults(tmp_path, monkeypatch):
     ensure_default_config()
     cfg = load_config()
     assert cfg["router"]["mode"] == "auto"
+    assert cfg["router"]["domains"]["code"] == "qwen2.5-coder-7b"
     assert "models" in cfg
