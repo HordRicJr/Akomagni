@@ -111,8 +111,7 @@ def wait_for_health(
                 last_error = exc
         time.sleep(poll_interval)
     raise LlamaServerError(
-        f"llama-server did not become healthy within {timeout:.0f}s "
-        f"(last error: {last_error})"
+        f"llama-server did not become healthy within {timeout:.0f}s (last error: {last_error})"
     )
 
 
@@ -169,9 +168,7 @@ def run_llama_server(
                 output = process.stdout.read(4000)
             process.terminate()
             raise LlamaServerError(
-                "llama-server failed health check.\n"
-                f"Command: {' '.join(cmd)}\n"
-                f"Output:\n{output}"
+                f"llama-server failed health check.\nCommand: {' '.join(cmd)}\nOutput:\n{output}"
             ) from None
 
         console.print(f"[green]Ready[/] — {health_url}")

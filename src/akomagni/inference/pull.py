@@ -60,9 +60,10 @@ def pull_model(
         console=console,
     ) as progress:
         progress.add_task("Downloading from Hugging Face…", total=None)
-        cached = hf_hub_download(
+        cached = hf_hub_download(  # nosec B615 — catalog pins repo+filename; revision=main
             repo_id=entry.repo_id,
             filename=entry.filename,
+            revision="main",
             local_dir=str(dest_dir),
             local_dir_use_symlinks=False,
             resume_download=True,
