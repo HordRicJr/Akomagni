@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from akomagni.core.config import load_config
 from akomagni.core.project import find_project_root
 from akomagni.flow.intent import RouteDecision
 from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import record_invocation
-from akomagni.core.config import load_config
 from akomagni.memory.inject import load_central_context, load_project_context
 from akomagni.rag.context import retrieve_rag_context
 from akomagni.skills.discovery import SkillInfo, find_skill
