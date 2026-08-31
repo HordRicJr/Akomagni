@@ -18,20 +18,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: Deploy akomagni.dev site
+  build:
+    name: Build site artifact
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
+
+      - name: Verify site routes
+        run: |
+          test -f site/index.html
+          for route in code design write models memory; do
+            test -f "site/${route}/index.html"
+          done
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: site
 
+  deploy:
+    name: Deploy akomagni.dev site
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

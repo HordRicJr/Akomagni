@@ -32,4 +32,5 @@ def test_pages_workflow_exists():
     assert workflow.is_file()
     text = workflow.read_text(encoding="utf-8")
     assert "upload-pages-artifact" in text
+    assert "deploy-pages" in text
     assert "path: site" in text
