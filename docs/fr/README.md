@@ -6,5 +6,6 @@
 | [architecture.md](architecture.md) | Architecture système |
 | [akomagni-flow.md](akomagni-flow.md) | Orchestration agents |
 | [akomagni-memory.md](akomagni-memory.md) | Mémoire centrale + projet |
+| [mcp-agent-tools.md](mcp-agent-tools.md) | Outils MCP agent + sandbox |
 
 [English](../en/README.md) · [README projet](../../README.fr.md)
