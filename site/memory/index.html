@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Memory — Akomagni</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <a class="brand" href="/">Akomagni</a>
+        <nav>
+          <a href="/code/">Code</a>
+          <a href="/design/">Design</a>
+          <a href="/write/">Write</a>
+          <a href="/models/">Models</a>
+          <a class="active" href="/memory/">Memory</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <h1>Memory</h1>
+      <p class="lead">Central and project memory with approval-based capture.</p>
+      <ul class="feature-list">
+        <li><strong>Project memory</strong> — <code>.akomagni/memory/</code> per repository</li>
+        <li><strong>Central memory</strong> — <code>~/.akomagni/memory/</code> across projects</li>
+        <li><strong>Promote</strong> — lift project learnings into central memory</li>
+        <li><strong>Auto-capture</strong> — queue exchanges for approval before saving</li>
+      </ul>
+      <pre>akomagni memory status
+akomagni memory add "Always use pytest fixtures" --title "Testing"
+akomagni memory promote
+akomagni memory pending
+akomagni memory approve &lt;capture-id&gt;</pre>
+    </main>
+    <footer class="wrap">
+      <a href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/akomagni-memory.md">Memory docs</a>
+    </footer>
+  </body>
+</html>

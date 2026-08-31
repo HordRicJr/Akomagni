@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_workflow_files_exist():
     workflows = ROOT / ".github" / "workflows"
     names = {path.name for path in workflows.glob("*.yml")}
-    assert names == {"quality.yml", "test.yml", "security.yml"}
+    assert names == {"quality.yml", "test.yml", "security.yml", "pages.yml"}
 
 
 def test_dependabot_config_exists():
