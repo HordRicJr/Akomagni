@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Models — Akomagni</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <a class="brand" href="/">Akomagni</a>
+        <nav>
+          <a href="/code/">Code</a>
+          <a href="/design/">Design</a>
+          <a href="/write/">Write</a>
+          <a class="active" href="/models/">Models</a>
+          <a href="/memory/">Memory</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <h1>Models</h1>
+      <p class="lead">Local GGUF inference with OpenAI-compatible API.</p>
+      <ul class="feature-list">
+        <li><code>akomagni serve</code> — llama-server on <code>127.0.0.1:8787</code></li>
+        <li><code>akomagni model pull</code> — download models from Hugging Face</li>
+        <li>Domain router swaps models for code, design, image, and text</li>
+        <li>Hardware-aware recommendations via <code>akomagni doctor</code></li>
+      </ul>
+      <pre>akomagni doctor
+akomagni model recommend
+akomagni model pull Qwen2.5-Coder-7B
+akomagni serve --model qwen2.5-coder-7b
+akomagni inference chat "Explain this function"</pre>
+    </main>
+    <footer class="wrap">
+      <a href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/inference-api.md">Inference API docs</a>
+    </footer>
+  </body>
+</html>
