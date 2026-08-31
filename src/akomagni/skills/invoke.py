@@ -10,7 +10,9 @@ from akomagni.core.project import find_project_root
 from akomagni.flow.intent import RouteDecision
 from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import record_invocation
+from akomagni.core.config import load_config
 from akomagni.memory.inject import load_central_context, load_project_context
+from akomagni.rag.context import retrieve_rag_context
 from akomagni.skills.discovery import SkillInfo, find_skill
 from akomagni.skills.runner import SkillRunResult, run_skill_subprocess
 
@@ -121,6 +123,7 @@ def invoke_skill(
     project_root: Path | None = None,
     skill_override: str | None = None,
     execute: bool = False,
+    rag_context: str | None = None,
 ) -> InvokeResult:
     """Route *message*, resolve skill paths, write session bundle."""
     root = project_root or find_project_root() or Path.cwd()
@@ -130,6 +133,22 @@ def invoke_skill(
     agent_path = _agent_skill_path(decision.agent_id, root)
     central = load_central_context()
     project = load_project_context()
+    rag = rag_context
+    if rag is None:
+        cfg = load_config()
+        rag_cfg = cfg.get("rag", {})
+        if rag_cfg.get("inject", True):
+            rag = retrieve_rag_context(
+                message,
+                project=bool(rag_cfg.get("inject_project", True)),
+                project_root=root,
+                limit=int(rag_cfg.get("inject_limit", 3)),
+                rrf_k=int(rag_cfg.get("rrf_k", 60)),
+            )
+        else:
+            rag = ""
+    else:
+        rag = rag or ""
 
     run_result: SkillRunResult | None = None
     if execute and skill is not None:
@@ -139,6 +158,7 @@ def invoke_skill(
             message=message,
             central_context=central,
             project_context=project,
+            rag_context=rag,
         )
 
     sessions = root / ".akomagni" / "workflow" / "sessions"

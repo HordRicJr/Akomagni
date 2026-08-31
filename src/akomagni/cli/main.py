@@ -31,6 +31,7 @@ from akomagni.memory.capture import (
 )
 from akomagni.memory.ops import MemoryError, add_memory, promote_project_memory
 from akomagni.memory.store import memory_status
+from akomagni.rag.context import retrieve_rag_context
 from akomagni.rag.ingest import RagIngestError, ingest_path
 from akomagni.rag.query import hits_to_json, hybrid_query
 from akomagni.rag.store import default_index_path, store_status
@@ -150,12 +151,19 @@ def run_cli(
         "--auto-swap/--no-auto-swap",
         help="Hot-swap GGUF worker when domain model differs from loaded model.",
     ),
+    rag: bool | None = typer.Option(
+        None,
+        "--rag/--no-rag",
+        help="Inject RAG retrieval into inference and skill subprocess.",
+    ),
 ) -> None:
     """Interactive CLI — routes messages and optionally creates skill sessions."""
     ensure_default_config()
     cfg = load_config()
     inf_cfg = cfg.get("inference", {})
     mem_cfg = cfg.get("memory", {})
+    rag_cfg = cfg.get("rag", {})
+    use_rag = bool(rag_cfg.get("inject", True)) if rag is None else rag
     auto_capture = bool(mem_cfg.get("auto_capture", False))
     capture_global = bool(mem_cfg.get("capture_global", False))
     host = inf_cfg.get("host", "127.0.0.1")
@@ -180,8 +188,22 @@ def run_cli(
             break
         if not message.strip():
             continue
+        rag_context = ""
+        if use_rag:
+            rag_context = retrieve_rag_context(
+                message,
+                project=bool(rag_cfg.get("inject_project", True)),
+                limit=int(rag_cfg.get("inject_limit", 3)),
+                rrf_k=int(rag_cfg.get("rrf_k", 60)),
+            )
+            if rag_context:
+                console.print("[dim]RAG context injected[/]")
         if invoke:
-            result = invoke_skill(message, execute=execute)
+            result = invoke_skill(
+                message,
+                execute=execute,
+                rag_context=rag_context,
+            )
             decision = result.decision
             console.print(
                 f"[dim]{decision.badge}[/] → `{decision.skill}` ({decision.confidence:.0%})"
@@ -219,6 +241,7 @@ def run_cli(
                 port=port,
                 model=model_override,
                 auto_swap=auto_swap,
+                rag_context=rag_context,
             )
             if reply:
                 console.print(f"\n[bold]Akomagni[/]\n{reply}\n")

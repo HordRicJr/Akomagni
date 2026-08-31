@@ -52,6 +52,9 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "chunk_overlap": 120,
         "default_limit": 5,
         "rrf_k": 60,
+        "inject": True,
+        "inject_limit": 3,
+        "inject_project": True,
     },
     "models": {
         "profiles": {
