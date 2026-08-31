@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code — Akomagni</title>
+    <link rel="stylesheet" href="/assets/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <a class="brand" href="/">Akomagni</a>
+        <nav>
+          <a class="active" href="/code/">Code</a>
+          <a href="/design/">Design</a>
+          <a href="/write/">Write</a>
+          <a href="/models/">Models</a>
+          <a href="/memory/">Memory</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <h1>Code</h1>
+      <p class="lead">BMAD agent orchestration and developer-focused local AI.</p>
+      <ul class="feature-list">
+        <li><strong>Akomagni Flow</strong> — heuristic router across 17 BMAD agents</li>
+        <li><strong>Skills</strong> — discover and invoke BMAD skills via <code>uv run</code></li>
+        <li><strong>MCP tools</strong> — sandboxed fs, shell, and git for agent mode</li>
+        <li><strong>RAG</strong> — hybrid BM25 + sqlite-vec retrieval injected into prompts</li>
+      </ul>
+      <pre>akomagni flow route "Add JWT auth to the API"
+akomagni flow invoke "Add JWT auth to the API" --exec
+akomagni skill list
+akomagni mcp serve</pre>
+    </main>
+    <footer class="wrap">
+      <a href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/akomagni-flow.md">Flow docs</a>
+    </footer>
+  </body>
+</html>

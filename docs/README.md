@@ -19,3 +19,4 @@ See [I18N.md](I18N.md) — both languages must stay in sync when user-facing doc
 | Architecture | [en/architecture.md](en/architecture.md) | [fr/architecture.md](fr/architecture.md) |
 | Akomagni Flow | [en/akomagni-flow.md](en/akomagni-flow.md) | [fr/akomagni-flow.md](fr/akomagni-flow.md) |
 | Akomagni Memory | [en/akomagni-memory.md](en/akomagni-memory.md) | [fr/akomagni-memory.md](fr/akomagni-memory.md) |
+| Branching | [en/branching.md](en/branching.md) | [fr/branching.md](fr/branching.md) |

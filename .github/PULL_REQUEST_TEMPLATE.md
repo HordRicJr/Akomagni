@@ -1,32 +1,43 @@
 ## Summary
 
-<!-- What does this PR do? / Que fait cette PR ? -->
+<!-- What does this PR do? Link the issue: Fixes #N -->
+
+Fixes #
 
 ## Type of change
 
-- [ ] Bug fix
-- [ ] New feature
+- [ ] Bug fix (`fix`)
+- [ ] New feature (`feat`)
 - [ ] Documentation (EN)
 - [ ] Documentation (FR)
+- [ ] Tests / coverage
+- [ ] CI / security
 - [ ] Refactor / chore
-- [ ] CI
+
+## Target branch
+
+- [ ] This PR targets **`develop`** (required for features/fixes)
+- [ ] This PR targets `main` (release/hotfix only — maintainer approval required)
 
 ## i18n checklist
 
 - [ ] User-facing docs updated in **English** (`docs/en/`, `README.md`)
 - [ ] User-facing docs updated in **French** (`docs/fr/`, `README.fr.md`)
-- [ ] Or linked issue labeled `i18n` (explain below)
+- [ ] Or linked issue labeled `i18n`
 
-## Testing
+## CI checklist
 
 ```bash
-pytest
-ruff check src tests
+ruff check src tests && ruff format --check src tests
+pytest tests/ --cov=akomagni --cov-fail-under=90
+bandit -r src -c pyproject.toml
 ```
 
-- [ ] Tests pass locally
-- [ ] `CHANGELOG.md` updated under `[Unreleased]` (if user-visible)
+- [ ] Quality workflow passes
+- [ ] Test + coverage (≥90%) passes
+- [ ] Security workflow passes
+- [ ] `CHANGELOG.md` updated under `[Unreleased]`
 
-## Related issues
+## Commits
 
-Fixes #
+<!-- Commits follow: type(#issue): summary -->

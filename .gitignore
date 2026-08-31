@@ -7,7 +7,9 @@ dist/
 build/
 .venv/
 venv/
-.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
 .ruff_cache/
 .mypy_cache/
 

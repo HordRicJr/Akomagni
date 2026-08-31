@@ -17,8 +17,24 @@ SKILLS_DIR = DATA_DIR / "skills"
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "version": 1,
-    "router": {"mode": "auto", "model": "router"},
-    "inference": {"host": "127.0.0.1", "port": 8787},
+    "router": {
+        "mode": "auto",
+        "model": "router",
+        "domains": {
+            "code": "qwen2.5-coder-7b",
+            "design": "llama-3.1-8b",
+            "image": None,
+            "text": "phi-3.5-mini",
+        },
+    },
+    "inference": {
+        "host": "127.0.0.1",
+        "port": 8787,
+        "binary": None,
+        "default_model": None,
+        "ctx_size": 4096,
+        "n_gpu_layers": -1,
+    },
     "workflow": {
         "brainstorm": {
             "mode": "mandatory",
@@ -28,7 +44,22 @@ DEFAULT_CONFIG: dict[str, Any] = {
     },
     "memory": {
         "auto_capture": False,
+        "capture_global": False,
         "central_dir": str(MEMORY_DIR),
+    },
+    "rag": {
+        "chunk_size": 800,
+        "chunk_overlap": 120,
+        "default_limit": 5,
+        "rrf_k": 60,
+        "inject": True,
+        "inject_limit": 3,
+        "inject_project": True,
+    },
+    "mcp": {
+        "workspace": None,
+        "auto_approve": False,
+        "shell_timeout": 30,
     },
     "models": {
         "profiles": {

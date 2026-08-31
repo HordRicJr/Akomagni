@@ -6,6 +6,7 @@ from pathlib import Path
 
 import yaml
 
+from akomagni.flow.gates import apply_workflow_gates
 from akomagni.flow.intent import RouteDecision, classify_message
 
 
@@ -43,15 +44,19 @@ def _is_greenfield(message: str) -> bool:
     return any(s in lowered for s in signals)
 
 
-def route_message(message: str) -> RouteDecision:
+def route_message(message: str, project_root: Path | None = None) -> RouteDecision:
     """Classify user message and return agent + skill decision."""
     greenfield = _is_greenfield(message)
     decision = classify_message(message, greenfield=greenfield)
-    if greenfield and decision.skill != "bmad-brainstorming" and decision.skill != "gds-brainstorm-game":
+    if (
+        greenfield
+        and decision.skill != "bmad-brainstorming"
+        and decision.skill != "gds-brainstorm-game"
+    ):
         # Force brainstorm gate for greenfield unless already on game brainstorm path
         from akomagni.flow.intent import classify_message as _cls
 
         forced = _cls(message, greenfield=True)
         if forced.greenfield:
-            return forced
-    return decision
+            decision = forced
+    return apply_workflow_gates(decision, project_root=project_root)

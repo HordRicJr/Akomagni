@@ -1,74 +1,65 @@
 # Contribuer à Akomagni
 
-Merci de ton intérêt ! Akomagni suit les pratiques des grands projets open source : docs claires, CI, templates, maintenance bilingue.
+Merci de ton intérêt ! Akomagni suit les pratiques des grands projets open source.
 
 **English:** [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## Code de conduite
+## Branches
 
-Ce projet adhère au [Contributor Covenant](CODE_OF_CONDUCT.fr.md).
+**Cible des PR : `develop`** (pas `main`). `main` = releases stables uniquement.
 
-## Comment contribuer
+```
+main ← releases
+  ↑
+develop ← intégration (ouvre tes PR ici)
+  ↑
+feature/#123-description
+```
 
-1. **Vérifie les issues** existantes.
-2. **Ouvre une issue** avant les gros changements.
-3. **Fork** le repo, branche depuis `main`.
-4. **Changements ciblés** — une préoccupation par PR.
-5. **Mets à jour la doc** (EN + FR si visible utilisateur).
-6. **Lance les tests** localement.
-7. **Ouvre une PR** avec le template.
+Guide : [docs/fr/branching.md](docs/fr/branching.md)
+
+## Commits liés aux issues
+
+```
+feat(#42): intégrer llama-server
+fix(#15): correction VRAM Windows
+test(#21): couverture orchestrator
+```
+
+## CI requise
+
+| Workflow | Vérifications |
+|----------|---------------|
+| **Quality** | Ruff lint + format, parité docs EN/FR |
+| **Test** | Tests unitaires/régression (Ubuntu + Windows) |
+| **Coverage** | Couverture ≥ **90 %** |
+| **Security** | pip-audit, Bandit, Gitleaks |
+
+```bash
+ruff check src tests && ruff format --check src tests
+pytest -m regression              # suite régression (gate CI)
+pytest tests/ --cov=akomagni --cov-fail-under=90
+bandit -r src -c pyproject.toml
+pip-audit
+```
 
 ## Installation dev
 
 ```bash
 git clone https://github.com/HordRicJr/Akomagni.git
 cd Akomagni
-python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # Linux / macOS
+git checkout develop
 pip install -e ".[dev]"
 akomagni config init
-pytest
-ruff check src tests
 ```
 
 ## Process PR
 
-1. Mettre à jour [CHANGELOG.md](CHANGELOG.md) section `## [Unreleased]`.
-2. Mettre à jour **EN et FR** pour tout changement visible.
-3. CI verte (pytest + ruff).
-4. Review par les mainteneurs.
-
-## Internationalisation (i18n)
-
-| Chemin | Langue |
-|--------|--------|
-| `README.md` | Anglais (canonique) |
-| `README.fr.md` | Français |
-| `docs/en/` | Documentation anglaise |
-| `docs/fr/` | Documentation française |
-
-**Règle :** toute PR modifiant la doc utilisateur **doit** mettre à jour les deux langues, ou ouvrir une issue `i18n` sous 48 h.
-
-Voir [docs/I18N.md](docs/I18N.md).
-
-## Messages de commit
-
-Format [Conventional Commits](https://www.conventionalcommits.org/) :
-
-```
-feat(flow): gate brainstorm obligatoire greenfield
-fix(doctor): détection VRAM Windows
-docs(fr): guide démarrage
-```
-
-## Tests
-
-```bash
-pytest
-akomagni flow route "une idée pour une app"
-```
+1. Branche depuis `develop`
+2. Référence l'issue dans chaque commit `type(#N): …`
+3. CHANGELOG + docs EN/FR
+4. CI verte → review → merge dans `develop`
 
 ## Questions ?
 
-[GitHub Discussions](https://github.com/HordRicJr/Akomagni/discussions) ou issue label `question`.
+[GitHub Discussions](https://github.com/HordRicJr/Akomagni/discussions)
