@@ -75,4 +75,18 @@ bash scripts/apply-branch-protection.sh
 | `develop` | 0 (solo maintainer OK) | Quality + Test + Security |
 | `main` | 1 approval | Same checks, no direct push |
 
+### GitHub Pages (maintainers)
+
+The static site lives in `site/` and deploys via `.github/workflows/pages.yml` on push to `main`.
+
+Pages must be enabled once (admin):
+
+```bash
+bash scripts/enable-github-pages.sh
+# Windows:
+.\scripts\enable-github-pages.ps1
+```
+
+Then merge `develop` → `main` (or re-run the Pages workflow). Optional custom domain: `akomagni.dev` in repo Settings → Pages.
+
 See [ROADMAP.md](ROADMAP.md) and [GitHub Issues](https://github.com/HordRicJr/Akomagni/issues) for planned work.

@@ -24,3 +24,8 @@ def test_dependabot_config_exists():
 def test_branch_protection_scripts_exist():
     assert (ROOT / "scripts" / "apply-branch-protection.sh").is_file()
     assert (ROOT / "scripts" / "apply-branch-protection.ps1").is_file()
+
+
+def test_enable_github_pages_scripts_exist():
+    assert (ROOT / "scripts" / "enable-github-pages.sh").is_file()
+    assert (ROOT / "scripts" / "enable-github-pages.ps1").is_file()
