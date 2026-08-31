@@ -28,13 +28,16 @@ class InferenceChatPlan:
     model_id: str | None
 
 
-def build_flow_system_prompt(decision: RouteDecision) -> str:
+def build_flow_system_prompt(decision: RouteDecision, *, rag_context: str = "") -> str:
     """Build a system prompt from the Flow routing decision."""
-    return (
-        f"You are the Akomagni agent `{decision.agent_id}` using skill `{decision.skill}`.\n"
-        f"Context: {decision.hint}\n"
-        "Answer concisely in the user's language."
-    )
+    lines = [
+        f"You are the Akomagni agent `{decision.agent_id}` using skill `{decision.skill}`.",
+        f"Context: {decision.hint}",
+    ]
+    if rag_context.strip():
+        lines.extend(["", rag_context.strip()])
+    lines.append("Answer concisely in the user's language.")
+    return "\n".join(lines)
 
 
 def plan_inference_chat(
@@ -70,6 +73,7 @@ def try_chat_with_inference(
     port: int = 8787,
     model: str | None = None,
     auto_swap: bool = False,
+    rag_context: str = "",
 ) -> str | None:
     """Call local /v1/chat/completions when the server is online."""
     plan = plan_inference_chat(message, host=host, port=port)
@@ -106,7 +110,7 @@ def try_chat_with_inference(
             host=host,
             port=port,
             model=model_id,
-            system_prompt=build_flow_system_prompt(decision),
+            system_prompt=build_flow_system_prompt(decision, rag_context=rag_context),
         )
     except InferenceClientError:
         return None

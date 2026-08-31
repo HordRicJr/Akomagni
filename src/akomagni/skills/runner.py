@@ -49,6 +49,7 @@ def build_context_env(
     message: str,
     central_context: str,
     project_context: str,
+    rag_context: str = "",
 ) -> dict[str, str]:
     """Environment variables passed to BMAD skill subprocesses."""
     parts: list[str] = []
@@ -62,6 +63,8 @@ def build_context_env(
     }
     if memory:
         env["AKOMAGNI_MEMORY_CONTEXT"] = memory
+    if rag_context.strip():
+        env["AKOMAGNI_RAG_CONTEXT"] = rag_context.strip()
     return env
 
 
@@ -94,6 +97,7 @@ def run_skill_subprocess(
     message: str,
     central_context: str = "",
     project_context: str = "",
+    rag_context: str = "",
     uv: str | None = None,
     timeout: float | None = 120.0,
 ) -> SkillRunResult:
@@ -133,6 +137,7 @@ def run_skill_subprocess(
             message=message,
             central_context=central_context,
             project_context=project_context,
+            rag_context=rag_context,
         )
     )
     try:
