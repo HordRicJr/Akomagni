@@ -46,4 +46,21 @@ Format : `<type>(#<issue>): <résumé>`
 3. `develop` stable → PR vers `main`
 4. Tag `v0.2.0` sur `main`
 
+### Protection des branches (mainteneurs)
+
+Workflows CI : **Quality**, **Test**, **Security** (voir `.github/workflows/`). Dependabot ouvre des PR hebdomadaires (`.github/dependabot.yml`).
+
+Pour appliquer les règles sur GitHub (droits admin requis) :
+
+```bash
+bash scripts/apply-branch-protection.sh
+# ou sous Windows :
+.\scripts\apply-branch-protection.ps1
+```
+
+| Branche | Reviews | Checks |
+|---------|---------|--------|
+| `develop` | 0 | Quality + Test + Security |
+| `main` | 1 | Idem, pas de push direct |
+
 Voir [ROADMAP.md](../../ROADMAP.md) et les [Issues GitHub](https://github.com/HordRicJr/Akomagni/issues).

@@ -56,4 +56,23 @@ Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `security`.
 3. When `develop` is stable → PR `develop` → `main`
 4. Tag release on `main` (`v0.2.0`)
 
+### Branch protection (maintainers)
+
+CI workflows: **Quality**, **Test**, **Security** (see `.github/workflows/`). Dependabot opens weekly update PRs (`.github/dependabot.yml`).
+
+To enforce rules on GitHub (requires admin):
+
+```bash
+# Linux / macOS
+bash scripts/apply-branch-protection.sh
+
+# Windows (PowerShell)
+.\scripts\apply-branch-protection.ps1
+```
+
+| Branch | Reviews required | Status checks |
+|--------|----------------|---------------|
+| `develop` | 0 (solo maintainer OK) | Quality + Test + Security |
+| `main` | 1 approval | Same checks, no direct push |
+
 See [ROADMAP.md](ROADMAP.md) and [GitHub Issues](https://github.com/HordRicJr/Akomagni/issues) for planned work.
