@@ -56,6 +56,11 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "inject_limit": 3,
         "inject_project": True,
     },
+    "mcp": {
+        "workspace": None,
+        "auto_approve": False,
+        "shell_timeout": 30,
+    },
     "models": {
         "profiles": {
             "light": ["Phi-3.5-mini", "Llama-3.2-3B"],

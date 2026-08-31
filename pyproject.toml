@@ -39,6 +39,9 @@ dev = [
   "bandit>=1.7",
   "pip-audit>=2.7",
 ]
+agent = [
+  "mcp>=1.6",
+]
 
 [project.scripts]
 akomagni = "akomagni.cli.main:app"

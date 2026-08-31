@@ -20,6 +20,11 @@ from akomagni.inference.llama import list_local_models
 from akomagni.inference.pull import ModelPullError, pull_model
 from akomagni.inference.server import serve as start_inference_server
 from akomagni.inference.worker import hot_swap_model, read_worker_state, stop_worker
+from akomagni.mcp.approval import ApprovalError, pop_request, reject_request
+from akomagni.mcp.approval import list_pending as list_mcp_pending
+from akomagni.mcp.sandbox import resolve_workspace
+from akomagni.mcp.server import run_stdio_server
+from akomagni.mcp.tools import AgentTools, ToolError
 from akomagni.memory.capture import (
     CaptureError,
     approve_capture,
@@ -53,6 +58,7 @@ model_app = typer.Typer(help="Local model catalog and recommendations.")
 router_app = typer.Typer(help="Domain model router (code, design, image, text).")
 inference_app = typer.Typer(help="OpenAI-compatible local inference API.")
 rag_app = typer.Typer(help="RAG ingest and hybrid retrieval (BM25 + sqlite-vec).")
+mcp_app = typer.Typer(help="MCP agent tools with workspace sandbox.")
 
 app.add_typer(run_app, name="run")
 app.add_typer(memory_app, name="memory")
@@ -63,6 +69,7 @@ app.add_typer(model_app, name="model")
 app.add_typer(router_app, name="router")
 app.add_typer(inference_app, name="inference")
 app.add_typer(rag_app, name="rag")
+app.add_typer(mcp_app, name="mcp")
 
 
 def _version_callback(value: bool) -> None:
@@ -778,3 +785,109 @@ def config_show() -> None:
     import yaml
 
     console.print(yaml.dump(cfg, allow_unicode=True, default_flow_style=False))
+
+
+def _resolve_mcp_workspace(workspace: str | None) -> Path:
+    return resolve_workspace(Path(workspace) if workspace else None)
+
+
+def _mcp_tools(workspace: str | None = None) -> AgentTools:
+    cfg = load_config().get("mcp", {})
+    root = _resolve_mcp_workspace(workspace)
+    return AgentTools(
+        root,
+        auto_approve=bool(cfg.get("auto_approve", False)),
+        shell_timeout=int(cfg.get("shell_timeout", 30)),
+    )
+
+
+@mcp_app.command("serve")
+def mcp_serve(
+    workspace: str | None = typer.Option(
+        None,
+        "--workspace",
+        "-w",
+        help="Workspace root for sandboxed tools.",
+    ),
+    auto_approve: bool = typer.Option(
+        False,
+        "--auto-approve/--no-auto-approve",
+        help="Run destructive tools without approval (not recommended).",
+    ),
+) -> None:
+    """Start the MCP stdio server for agent tools."""
+    cfg = load_config().get("mcp", {})
+    try:
+        run_stdio_server(
+            _resolve_mcp_workspace(workspace),
+            auto_approve=auto_approve or bool(cfg.get("auto_approve", False)),
+            shell_timeout=int(cfg.get("shell_timeout", 30)),
+        )
+    except RuntimeError as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+
+
+@mcp_app.command("pending")
+def mcp_pending(
+    workspace: str | None = typer.Option(
+        None,
+        "--workspace",
+        "-w",
+        help="Workspace root for pending requests.",
+    ),
+) -> None:
+    """List destructive MCP operations awaiting approval."""
+    root = _resolve_mcp_workspace(workspace)
+    pending = list_mcp_pending(workspace=root)
+    if not pending:
+        console.print("[dim]No pending MCP requests.[/]")
+        return
+    console.print(f"[bold]Pending MCP requests[/] ({root})")
+    for item in pending:
+        console.print(f"  [cyan]{item.request_id}[/]  {item.tool}  {item.summary}")
+
+
+@mcp_app.command("approve")
+def mcp_approve(
+    request_id: str = typer.Argument(..., help="Pending request id."),
+    workspace: str | None = typer.Option(
+        None,
+        "--workspace",
+        "-w",
+        help="Workspace root for pending requests.",
+    ),
+) -> None:
+    """Approve and execute a pending destructive MCP operation."""
+    root = _resolve_mcp_workspace(workspace)
+    tools = _mcp_tools(workspace)
+    try:
+        request = pop_request(request_id, workspace=root)
+        result = tools.execute_pending(request)
+    except (ApprovalError, ToolError) as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    if not result.ok:
+        console.print(f"[red]Failed:[/] {result.output}")
+        raise typer.Exit(code=1)
+    console.print(f"[green]Approved[/] {request.tool}: {result.output}")
+
+
+@mcp_app.command("reject")
+def mcp_reject(
+    request_id: str = typer.Argument(..., help="Pending request id."),
+    workspace: str | None = typer.Option(
+        None,
+        "--workspace",
+        "-w",
+        help="Workspace root for pending requests.",
+    ),
+) -> None:
+    """Reject a pending destructive MCP operation."""
+    root = _resolve_mcp_workspace(workspace)
+    try:
+        reject_request(request_id, workspace=root)
+    except ApprovalError as exc:
+        console.print(f"[red]Error:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"[yellow]Rejected[/] request `{request_id}`")
