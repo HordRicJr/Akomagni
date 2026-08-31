@@ -367,4 +367,3 @@ def test_build_server_registers_tools(workspace, monkeypatch):
     assert "Approval required" in captured["fs_delete"]("sample.txt")
     assert "Approval required" in captured["shell_run"]("rm -rf build")
     assert "Approval required" in captured["git_push"]()
-

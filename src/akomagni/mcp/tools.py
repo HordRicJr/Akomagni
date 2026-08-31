@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -149,7 +150,7 @@ class AgentTools:
 
         def _run() -> ToolResult:
             try:
-                completed = subprocess.run(
+                completed = subprocess.run(  # nosec B602 — sandboxed shell; destructive cmds need approval
                     command,
                     shell=True,
                     cwd=workdir,
@@ -182,9 +183,12 @@ class AgentTools:
         self, args: list[str], *, approved: bool = False, destructive: bool = False
     ) -> ToolResult:
         def _run() -> ToolResult:
+            git_bin = shutil.which("git")
+            if not git_bin:
+                return ToolResult(ok=False, output="git executable not found")
             try:
                 completed = subprocess.run(
-                    ["git", *args],
+                    [git_bin, *args],
                     cwd=self.workspace,
                     capture_output=True,
                     text=True,
