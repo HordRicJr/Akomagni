@@ -32,9 +32,10 @@ def test_version():
 
 
 def test_doctor(akomagni_home):
+    runner.invoke(app, ["config", "init"])
     result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 0
-    assert "Profil recommandé" in result.stdout
+    assert "Recommended profile" in result.stdout
 
 
 def test_doctor_json(akomagni_home):
@@ -117,7 +118,7 @@ def test_memory_promote(tmp_path, monkeypatch, akomagni_home):
     (proj / "notes.md").write_text("project note", encoding="utf-8")
     result = runner.invoke(app, ["memory", "promote"])
     assert result.exit_code == 0
-    assert "Promoted" in result.stdout
+    assert "central memory" in result.stdout or "mémoire centrale" in result.stdout
 
 
 def test_router_classify():

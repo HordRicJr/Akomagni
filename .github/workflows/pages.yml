@@ -24,12 +24,19 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Copy install scripts for one-liner URLs
+        run: |
+          cp install/install.sh site/install/linux
+          cp install/install.ps1 site/install/windows
+
       - name: Verify site routes
         run: |
           test -f site/index.html
-          for route in code design write models memory; do
+          for route in code design write models memory install tools; do
             test -f "site/${route}/index.html"
           done
+          test -f site/install/linux
+          test -f site/install/windows
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v4

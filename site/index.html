@@ -6,7 +6,7 @@
     <title>Akomagni — local AI workstation</title>
     <meta
       name="description"
-      content="Akomagni — offline local AI workstation for code, design, writing, models, and memory."
+      content="Akomagni — offline local AI workstation. Install in one command, add models, BMAD skills, and agent tools."
     />
     <meta name="theme-color" content="#0B3D2E" />
     <link rel="stylesheet" href="assets/style.css" />
@@ -20,6 +20,8 @@
         </a>
         <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
         <nav class="site-nav" data-site-nav>
+          <a href="install/">Install</a>
+          <a href="tools/">Tools</a>
           <a href="code/">Code</a>
           <a href="design/">Design</a>
           <a href="write/">Write</a>
@@ -27,7 +29,7 @@
           <a href="memory/">Memory</a>
         </nav>
         <div class="header-actions">
-          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a class="btn btn-primary" href="install/">Install</a>
         </div>
       </div>
     </header>
@@ -38,62 +40,69 @@
         <div>
           <div class="hero-badge">
             <span class="dot"></span>
-            100% offline · local inference
+            100% offline · install &amp; extend locally
           </div>
           <h1>Your <span>local AI</span> workstation</h1>
           <p class="hero-lead">
-            Akomagni orchestrates BMAD agents, local inference, RAG, and persistent memory —
-            fully offline on your machine. No cloud. No subscriptions.
+            Install Akomagni in one command, then add GGUF models, BMAD skills, and agent tools —
+            fully offline. No cloud. No subscriptions.
           </p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni">Get started</a>
-            <a class="btn btn-outline" href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+            <a class="btn btn-primary" href="install/">Install now</a>
+            <a class="btn btn-outline" href="tools/">Browse tools</a>
           </div>
         </div>
         <aside class="hero-card">
-          <h3>At a glance</h3>
-          <div class="stat-list">
-            <div class="stat-item"><span>BMAD agents</span><strong>17</strong></div>
-            <div class="stat-item"><span>Local models</span><strong>GGUF</strong></div>
-            <div class="stat-item"><span>Memory layers</span><strong>2</strong></div>
-            <div class="stat-item"><span>License</span><strong>Apache-2.0</strong></div>
+          <h3>Quick install</h3>
+          <div class="copy-block" style="margin: 0; box-shadow: none; border: none">
+            <pre style="font-size: 0.78rem; padding: 0.85rem">curl -fsSL \
+  https://hordricjr.github.io/Akomagni/install/linux | bash</pre>
           </div>
+          <p style="margin: 0.75rem 0 0; font-size: 0.85rem; opacity: 0.85">
+            Windows? <a href="install/" style="color: var(--secondary)">See install guide →</a>
+          </p>
         </aside>
       </div>
     </section>
 
     <section class="section">
       <div class="section-header">
-        <h2>Everything you need, on your machine</h2>
+        <h2>Install tools, not subscriptions</h2>
         <p>
-          Five integrated modules for development, design, writing, model management,
-          and long-term project memory.
+          A marketplace-style hub for local models, BMAD workflows, MCP agent tools,
+          and optional packs — everything runs on your machine.
         </p>
       </div>
       <div class="card-grid">
+        <a class="feature-card" href="tools/">
+          <div class="feature-icon">⬇</div>
+          <h3>Tools hub</h3>
+          <p>Pull GGUF models, link BMAD skills, enable MCP agent mode, and optional packs.</p>
+          <span class="arrow">Browse tools →</span>
+        </a>
+        <a class="feature-card" href="install/">
+          <div class="feature-icon">⚡</div>
+          <h3>One-liner install</h3>
+          <p>Linux, macOS, and Windows scripts with smoke test and PATH setup.</p>
+          <span class="arrow">Install guide →</span>
+        </a>
         <a class="feature-card" href="code/">
           <div class="feature-icon">⌨</div>
           <h3>Code</h3>
           <p>Flow routing, BMAD skills, and developer workflows with MCP tools.</p>
           <span class="arrow">Explore Code →</span>
         </a>
-        <a class="feature-card" href="design/">
-          <div class="feature-icon">◈</div>
-          <h3>Design</h3>
-          <p>UX, architecture, and creative problem-solving agents.</p>
-          <span class="arrow">Explore Design →</span>
-        </a>
-        <a class="feature-card" href="write/">
-          <div class="feature-icon">✎</div>
-          <h3>Write</h3>
-          <p>Docs, specs, and content with project context and RAG.</p>
-          <span class="arrow">Explore Write →</span>
-        </a>
         <a class="feature-card" href="models/">
           <div class="feature-icon">⬡</div>
           <h3>Models</h3>
           <p>Local GGUF inference, model pull, and domain router.</p>
           <span class="arrow">Explore Models →</span>
+        </a>
+        <a class="feature-card" href="design/">
+          <div class="feature-icon">◈</div>
+          <h3>Design</h3>
+          <p>UX, architecture, and creative problem-solving agents.</p>
+          <span class="arrow">Explore Design →</span>
         </a>
         <a class="feature-card" href="memory/">
           <div class="feature-icon">◉</div>
@@ -106,8 +115,8 @@
 
     <section class="cta-band">
       <h2>Ready to build offline?</h2>
-      <p>Clone the repo, run <code>uv sync</code>, and start your local AI workstation.</p>
-      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni">View on GitHub</a>
+      <p>Install Akomagni, pull a model, then run <code>akomagni flow route "your task"</code>.</p>
+      <a class="btn btn-primary" href="install/">Get started</a>
     </section>
 
     <footer class="site-footer">
@@ -117,15 +126,13 @@
             <span class="brand-mark">A</span>
             Akomagni
           </a>
-          <p>Local AI workstation — code, design, write, models, and memory. Fully offline.</p>
+          <p>Local AI workstation — install once, add tools as you need them.</p>
         </div>
         <div class="footer-col">
-          <h4>Modules</h4>
-          <a href="code/">Code</a>
-          <a href="design/">Design</a>
-          <a href="write/">Write</a>
-          <a href="models/">Models</a>
-          <a href="memory/">Memory</a>
+          <h4>Get started</h4>
+          <a href="install/">Install</a>
+          <a href="tools/">Tools</a>
+          <a href="code/">Modules</a>
         </div>
         <div class="footer-col">
           <h4>Resources</h4>

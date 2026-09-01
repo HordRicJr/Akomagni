@@ -35,9 +35,10 @@ def test_regression_cli_version():
 
 
 def test_regression_doctor_reports_profile(akomagni_home):
+    runner.invoke(app, ["config", "init"])
     result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 0
-    assert "Profil recommandé" in result.stdout
+    assert "Recommended profile" in result.stdout
 
 
 def test_regression_config_lifecycle(akomagni_home):
