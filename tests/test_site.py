@@ -70,6 +70,18 @@ def test_homepage_includes_windows_install():
     assert "install/windows" in root
 
 
+def test_ide_page_includes_setup_commands():
+    ide = (SITE / "ide" / "index.html").read_text(encoding="utf-8")
+    assert "akomagni ide setup" in ide
+    assert "cmd-ide-win" in ide
+
+
+def test_tools_page_includes_train_and_ide():
+    tools = (SITE / "tools" / "index.html").read_text(encoding="utf-8")
+    assert "akomagni train bundle" in tools
+    assert "akomagni ide setup" in tools
+
+
 def test_install_scripts_exist_in_repo():
     """Source install scripts must exist; Pages workflow copies them to site/install/."""
     assert (ROOT / "install" / "install.sh").is_file()
