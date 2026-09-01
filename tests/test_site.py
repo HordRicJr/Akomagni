@@ -27,6 +27,18 @@ def test_site_pages_reference_stylesheet():
         assert "style.css" in text, f"{html} missing stylesheet link"
 
 
+def test_site_uses_relative_asset_paths():
+    """GitHub project Pages serves under /Akomagni/ — absolute /assets/ paths break CSS."""
+    root_index = (SITE / "index.html").read_text(encoding="utf-8")
+    assert 'href="assets/style.css"' in root_index
+    assert 'href="/assets/style.css"' not in root_index
+
+    for route in REQUIRED_ROUTES:
+        page = (SITE / route / "index.html").read_text(encoding="utf-8")
+        assert 'href="../assets/style.css"' in page, f"{route} missing relative stylesheet"
+        assert 'href="/assets/style.css"' not in page, f"{route} uses broken absolute path"
+
+
 def test_pages_workflow_exists():
     workflow = ROOT / ".github" / "workflows" / "pages.yml"
     assert workflow.is_file()

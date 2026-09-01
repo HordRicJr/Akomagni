@@ -4,36 +4,88 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Design — Akomagni</title>
-    <link rel="stylesheet" href="/assets/style.css" />
+    <meta name="theme-color" content="#0B3D2E" />
+    <link rel="stylesheet" href="../assets/style.css" />
   </head>
   <body>
-    <header>
-      <div class="wrap">
-        <a class="brand" href="/">Akomagni</a>
-        <nav>
-          <a href="/code/">Code</a>
-          <a class="active" href="/design/">Design</a>
-          <a href="/write/">Write</a>
-          <a href="/models/">Models</a>
-          <a href="/memory/">Memory</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../">
+          <span class="brand-mark">A</span>
+          Akomagni
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
+        <nav class="site-nav" data-site-nav>
+          <a href="../code/">Code</a>
+          <a class="active" href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
         </nav>
+        <div class="header-actions">
+          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+        </div>
       </div>
     </header>
-    <main class="wrap">
-      <h1>Design</h1>
-      <p class="lead">UX, architecture, and creative workflows with domain-aware models.</p>
-      <ul class="feature-list">
-        <li>Route design questions to analyst, architect, and UX designer agents</li>
-        <li>Domain router selects <code>llama-3.1-8b</code> for design tasks by default</li>
-        <li>Project memory stores design decisions and stack preferences</li>
-        <li>RAG ingests design docs for grounded answers</li>
-      </ul>
-      <pre>akomagni router classify "wireframe the onboarding flow"
+
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="../">Home</a> / Design</p>
+        <h1>Design</h1>
+        <p class="lead">UX, architecture, and creative workflows with domain-aware models.</p>
+      </div>
+    </section>
+
+    <main class="page-content">
+      <div class="content-block">
+        <h2>Capabilities</h2>
+        <ul class="feature-list">
+          <li>Route design questions to analyst, architect, and UX designer agents</li>
+          <li>Domain router selects <code>llama-3.1-8b</code> for design tasks by default</li>
+          <li>Project memory stores design decisions and stack preferences</li>
+          <li>RAG ingests design docs for grounded answers</li>
+        </ul>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">Quick start</div>
+        <pre>akomagni router classify "wireframe the onboarding flow"
 akomagni flow route "brainstorm a mobile budget app UX"
 akomagni memory add "Prefer card-based layouts" --title "Design prefs"</pre>
+      </div>
     </main>
-    <footer class="wrap">
-      <a href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/architecture.md">Architecture docs</a>
+
+    <section class="cta-band">
+      <h2>Architecture &amp; UX workflows</h2>
+      <p>Explore how Akomagni routes design tasks to the right agents.</p>
+      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/architecture.md">Architecture docs</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="../" style="color: #fff">
+            <span class="brand-mark">A</span>
+            Akomagni
+          </a>
+          <p>Local AI workstation — code, design, write, models, and memory.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Modules</h4>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
     </footer>
+
+    <script src="../assets/main.js"></script>
   </body>
 </html>
