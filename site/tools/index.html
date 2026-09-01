@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tools — Akomagni</title>
+    <meta
+      name="description"
+      content="Install GGUF models, BMAD skills, MCP agent tools, and optional packs for your Akomagni workstation."
+    />
+    <meta name="theme-color" content="#0B3D2E" />
+    <link rel="stylesheet" href="../assets/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../">
+          <span class="brand-mark">A</span>
+          Akomagni
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
+        <nav class="site-nav" data-site-nav>
+          <a href="../install/">Install</a>
+          <a class="active" href="../tools/">Tools</a>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
+        </nav>
+        <div class="header-actions">
+          <a class="btn btn-primary" href="../install/">Install Akomagni</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="../">Home</a> / Tools</p>
+        <h1>Tools hub</h1>
+        <p class="lead">
+          Install models, skills, and extensions for your offline workstation — like a marketplace, fully local.
+        </p>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 2rem">
+      <div class="tools-filter">
+        <button class="filter-pill active" type="button" data-filter="all">All</button>
+        <button class="filter-pill" type="button" data-filter="models">Models</button>
+        <button class="filter-pill" type="button" data-filter="skills">Skills</button>
+        <button class="filter-pill" type="button" data-filter="agent">Agent</button>
+        <button class="filter-pill" type="button" data-filter="extras">Extras</button>
+      </div>
+
+      <div class="tools-category" data-tools-section>
+        <h2>GGUF models</h2>
+        <p class="cat-desc">Curated catalog — pull locally from Hugging Face. Requires <code>akomagni[inference]</code>.</p>
+        <div class="tool-grid">
+          <article class="tool-card" data-tool-category="models">
+            <div class="tool-card-top">
+              <h3>Phi-3.5 Mini</h3>
+              <span class="tool-badge">Light</span>
+            </div>
+            <p>Fast CPU/GPU model for quick tasks and routing.</p>
+            <div class="tool-cmd" id="tool-phi">akomagni model pull phi-3.5-mini</div>
+            <button class="copy-btn" type="button" data-copy="tool-phi">Copy command</button>
+            <a class="module-link" href="../models/">Models module →</a>
+          </article>
+          <article class="tool-card" data-tool-category="models">
+            <div class="tool-card-top">
+              <h3>Llama 3.2 3B</h3>
+              <span class="tool-badge">Light</span>
+            </div>
+            <p>Compact instruct model for general text on modest hardware.</p>
+            <div class="tool-cmd" id="tool-llama32">akomagni model pull llama-3.2-3b</div>
+            <button class="copy-btn" type="button" data-copy="tool-llama32">Copy command</button>
+            <a class="module-link" href="../models/">Models module →</a>
+          </article>
+          <article class="tool-card" data-tool-category="models">
+            <div class="tool-card-top">
+              <h3>Qwen 2.5 Coder 7B</h3>
+              <span class="tool-badge gold">Code</span>
+            </div>
+            <p>Best default for development — domain router picks this for code tasks.</p>
+            <div class="tool-cmd" id="tool-qwen">akomagni model pull qwen2.5-coder-7b</div>
+            <button class="copy-btn" type="button" data-copy="tool-qwen">Copy command</button>
+            <a class="module-link" href="../code/">Code module →</a>
+          </article>
+          <article class="tool-card" data-tool-category="models">
+            <div class="tool-card-top">
+              <h3>Llama 3.1 8B</h3>
+              <span class="tool-badge gold">Design</span>
+            </div>
+            <p>Strong general model — default for design and UX workflows.</p>
+            <div class="tool-cmd" id="tool-llama31">akomagni model pull llama-3.1-8b</div>
+            <button class="copy-btn" type="button" data-copy="tool-llama31">Copy command</button>
+            <a class="module-link" href="../design/">Design module →</a>
+          </article>
+        </div>
+      </div>
+
+      <div class="tools-category" data-tools-section>
+        <h2>BMAD skills</h2>
+        <p class="cat-desc">
+          17 agents and 80+ skills — discovered from your project or <code>~/.akomagni/skills/</code>.
+          Install BMAD in your repo or symlink skills.
+        </p>
+        <div class="tool-grid">
+          <article class="tool-card" data-tool-category="skills">
+            <div class="tool-card-top">
+              <h3>BMAD Method</h3>
+              <span class="tool-badge">Core</span>
+            </div>
+            <p>PRD, architecture, dev stories, code review, sprint planning.</p>
+            <div class="tool-cmd" id="tool-bmad">akomagni skill list | grep bmad-</div>
+            <button class="copy-btn" type="button" data-copy="tool-bmad">Copy command</button>
+            <a class="module-link" href="../code/">Code module →</a>
+          </article>
+          <article class="tool-card" data-tool-category="skills">
+            <div class="tool-card-top">
+              <h3>CIS Creative Suite</h3>
+              <span class="tool-badge">Creative</span>
+            </div>
+            <p>Brainstorming, design thinking, innovation strategy, storytelling.</p>
+            <div class="tool-cmd" id="tool-cis">akomagni flow route "brainstorm a product idea"</div>
+            <button class="copy-btn" type="button" data-copy="tool-cis">Copy command</button>
+            <a class="module-link" href="../design/">Design module →</a>
+          </article>
+          <article class="tool-card" data-tool-category="skills">
+            <div class="tool-card-top">
+              <h3>Game Dev (GDS)</h3>
+              <span class="tool-badge">Games</span>
+            </div>
+            <p>GDD, narrative, playtest plans, game architecture workflows.</p>
+            <div class="tool-cmd" id="tool-gds">akomagni skill list | grep gds-</div>
+            <button class="copy-btn" type="button" data-copy="tool-gds">Copy command</button>
+          </article>
+          <article class="tool-card" data-tool-category="skills">
+            <div class="tool-card-top">
+              <h3>Link skills directory</h3>
+              <span class="tool-badge">Setup</span>
+            </div>
+            <p>Copy or symlink BMAD skills into Akomagni search paths.</p>
+            <div class="tool-cmd" id="tool-skills-dir">mkdir -p ~/.akomagni/skills &amp;&amp; ln -s /path/to/.claude/skills/* ~/.akomagni/skills/</div>
+            <button class="copy-btn" type="button" data-copy="tool-skills-dir">Copy command</button>
+          </article>
+        </div>
+      </div>
+
+      <div class="tools-category" data-tools-section>
+        <h2>Agent &amp; inference</h2>
+        <p class="cat-desc">Serve local models and connect sandboxed MCP tools for agent mode.</p>
+        <div class="tool-grid">
+          <article class="tool-card" data-tool-category="agent">
+            <div class="tool-card-top">
+              <h3>Inference pack</h3>
+              <span class="tool-badge">Required</span>
+            </div>
+            <p>Hugging Face hub client for <code>model pull</code> and downloads.</p>
+            <div class="tool-cmd" id="tool-inference">pip install "akomagni[inference]"</div>
+            <button class="copy-btn" type="button" data-copy="tool-inference">Copy command</button>
+          </article>
+          <article class="tool-card" data-tool-category="agent">
+            <div class="tool-card-top">
+              <h3>Local inference server</h3>
+              <span class="tool-badge gold">API</span>
+            </div>
+            <p>OpenAI-compatible API on <code>127.0.0.1:8787</code> via llama.cpp.</p>
+            <div class="tool-cmd" id="tool-serve">akomagni serve --model qwen2.5-coder-7b</div>
+            <button class="copy-btn" type="button" data-copy="tool-serve">Copy command</button>
+            <a class="module-link" href="../models/">Models module →</a>
+          </article>
+          <article class="tool-card" data-tool-category="agent">
+            <div class="tool-card-top">
+              <h3>MCP agent tools</h3>
+              <span class="tool-badge">Agent</span>
+            </div>
+            <p>Sandboxed fs, shell, git — approval queue before execution.</p>
+            <div class="tool-cmd" id="tool-mcp">pip install "akomagni[agent]" &amp;&amp; akomagni mcp serve</div>
+            <button class="copy-btn" type="button" data-copy="tool-mcp">Copy command</button>
+            <a class="module-link" href="../code/">Code module →</a>
+          </article>
+          <article class="tool-card" data-tool-category="agent">
+            <div class="tool-card-top">
+              <h3>RAG indexer</h3>
+              <span class="tool-badge">Docs</span>
+            </div>
+            <p>Hybrid BM25 + vector search over your project files.</p>
+            <div class="tool-cmd" id="tool-rag">akomagni rag ingest docs/ --recursive</div>
+            <button class="copy-btn" type="button" data-copy="tool-rag">Copy command</button>
+            <a class="module-link" href="../write/">Write module →</a>
+          </article>
+        </div>
+      </div>
+
+      <div class="tools-category" data-tools-section>
+        <h2>Optional packs</h2>
+        <p class="cat-desc">Extra dependencies for specific workflows.</p>
+        <div class="tool-grid">
+          <article class="tool-card" data-tool-category="extras">
+            <div class="tool-card-top">
+              <h3>Developer tools</h3>
+              <span class="tool-badge">Contrib</span>
+            </div>
+            <p>pytest, ruff, bandit — for contributing to Akomagni.</p>
+            <div class="tool-cmd" id="tool-dev">pip install -e ".[dev]"</div>
+            <button class="copy-btn" type="button" data-copy="tool-dev">Copy command</button>
+          </article>
+          <article class="tool-card" data-tool-category="extras">
+            <div class="tool-card-top">
+              <h3>Hardware check</h3>
+              <span class="tool-badge">Setup</span>
+            </div>
+            <p>Scan RAM/GPU and recommend model profile before pulling.</p>
+            <div class="tool-cmd" id="tool-doctor">akomagni doctor &amp;&amp; akomagni model recommend</div>
+            <button class="copy-btn" type="button" data-copy="tool-doctor">Copy command</button>
+          </article>
+          <article class="tool-card" data-tool-category="extras">
+            <div class="tool-card-top">
+              <h3>Memory bootstrap</h3>
+              <span class="tool-badge">Memory</span>
+            </div>
+            <p>Initialize central and project memory stores.</p>
+            <div class="tool-cmd" id="tool-memory">akomagni memory status</div>
+            <button class="copy-btn" type="button" data-copy="tool-memory">Copy command</button>
+            <a class="module-link" href="../memory/">Memory module →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <h2>Not installed yet?</h2>
+      <p>Install Akomagni first, then add tools from this hub.</p>
+      <a class="btn btn-primary" href="../install/">Install Akomagni</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="../" style="color: #fff">
+            <span class="brand-mark">A</span>
+            Akomagni
+          </a>
+          <p>Install once. Add models, skills, and agent tools as you grow.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Get started</h4>
+          <a href="../install/">Install</a>
+          <a href="../tools/">Tools</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
+    </footer>
+
+    <script src="../assets/main.js"></script>
+  </body>
+</html>

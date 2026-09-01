@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Install — Akomagni</title>
+    <meta
+      name="description"
+      content="Install Akomagni in one command — Linux, macOS, and Windows. Local AI workstation, fully offline."
+    />
+    <meta name="theme-color" content="#0B3D2E" />
+    <link rel="stylesheet" href="../assets/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../">
+          <span class="brand-mark">A</span>
+          Akomagni
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
+        <nav class="site-nav" data-site-nav>
+          <a class="active" href="../install/">Install</a>
+          <a href="../tools/">Tools</a>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
+        </nav>
+        <div class="header-actions">
+          <a class="btn btn-primary" href="../tools/">Browse tools</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="../">Home</a> / Install</p>
+        <h1>Install Akomagni</h1>
+        <p class="lead">
+          One command to set up your local AI workstation. Python 3.11+, git, and 8 GB RAM minimum.
+        </p>
+      </div>
+    </section>
+
+    <section class="install-section">
+      <div class="platform-tabs">
+        <button class="platform-tab active" type="button" data-platform-tab="linux">Linux / macOS</button>
+        <button class="platform-tab" type="button" data-platform-tab="windows">Windows</button>
+        <button class="platform-tab" type="button" data-platform-tab="dev">Developer</button>
+      </div>
+
+      <div class="platform-panel active" data-platform-panel="linux">
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>One-liner install</span>
+            <button class="copy-btn" type="button" data-copy="cmd-linux">Copy</button>
+          </div>
+          <pre id="cmd-linux">curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash</pre>
+        </div>
+        <p style="color: var(--muted); font-size: 0.92rem">
+          Custom domain: replace with <code>https://akomagni.dev/install/linux</code> when configured.
+        </p>
+        <ul class="req-list">
+          <li>✦ Python 3.11+ and git in PATH</li>
+          <li>✦ Installs to <code>~/.local/share/akomagni</code></li>
+          <li>✦ Adds <code>~/.local/bin</code> to your shell profile</li>
+          <li>✦ Runs smoke test (<code>akomagni --version</code>, <code>doctor</code>)</li>
+        </ul>
+      </div>
+
+      <div class="platform-panel" data-platform-panel="windows">
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>PowerShell one-liner</span>
+            <button class="copy-btn" type="button" data-copy="cmd-windows">Copy</button>
+          </div>
+          <pre id="cmd-windows">irm https://hordricjr.github.io/Akomagni/install/windows | iex</pre>
+        </div>
+        <ul class="req-list">
+          <li>✦ Python 3.11+ and git in PATH</li>
+          <li>✦ Installs to <code>%LOCALAPPDATA%\akomagni</code></li>
+          <li>✦ Adds user PATH entry for <code>~\.local\bin</code></li>
+        </ul>
+      </div>
+
+      <div class="platform-panel" data-platform-panel="dev">
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Clone &amp; editable install</span>
+            <button class="copy-btn" type="button" data-copy="cmd-dev">Copy</button>
+          </div>
+          <pre id="cmd-dev">git clone https://github.com/HordRicJr/Akomagni.git
+cd Akomagni
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Linux/macOS: source .venv/bin/activate
+pip install -e ".[dev]"
+akomagni config init
+akomagni doctor</pre>
+        </div>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3>Install Akomagni</h3>
+          <p>Run the one-liner above for your platform.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3>Initialize config</h3>
+          <p><code>akomagni config init</code> creates <code>~/.akomagni/config.yaml</code>.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3>Install tools</h3>
+          <p>Pull models, enable BMAD skills, and optional agent packs from the <a href="../tools/">Tools hub</a>.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h3>Start working</h3>
+          <p><code>akomagni run cli</code> or <code>akomagni flow route "your task"</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <h2>Next: install models &amp; skills</h2>
+      <p>Browse the tools marketplace — GGUF models, BMAD skills, MCP agent tools, and optional packs.</p>
+      <a class="btn btn-primary" href="../tools/">Open Tools hub</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="../" style="color: #fff">
+            <span class="brand-mark">A</span>
+            Akomagni
+          </a>
+          <p>Local AI workstation — install once, add tools as you need them.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Get started</h4>
+          <a href="../install/">Install</a>
+          <a href="../tools/">Tools</a>
+          <a href="../code/">Modules</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
+    </footer>
+
+    <script src="../assets/main.js"></script>
+  </body>
+</html>
