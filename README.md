@@ -8,7 +8,7 @@
 
 **Local, open-source AI workstation** for creators — code, design, images, writing, research, and business workflows.
 
-[Français](README.fr.md) · [Documentation](docs/README.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
+[Français](README.fr.md) · [Site](https://hordricjr.github.io/Akomagni/) · [Install](https://hordricjr.github.io/Akomagni/install/) · [Tools hub](https://hordricjr.github.io/Akomagni/tools/) · [Documentation](docs/README.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ---
 
@@ -52,28 +52,32 @@ akomagni config init
 akomagni doctor
 ```
 
-### One-liner (when published)
+### One-liner install
 
 ```bash
 # Linux / macOS
-curl -fsSL https://akomagni.dev/install/linux | bash
+curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash
 
 # Windows (PowerShell)
-irm https://akomagni.dev/install/windows | iex
+irm https://hordricjr.github.io/Akomagni/install/windows | iex
 ```
 
-## Commands (v0.1)
+Full guide: [hordricjr.github.io/Akomagni/install/](https://hordricjr.github.io/Akomagni/install/)
+
+## Commands
 
 ```bash
 akomagni doctor                    # Scan hardware + recommend profile
 akomagni config init               # Create ~/.akomagni/config.yaml
+akomagni config language fr        # French CLI (en/fr)
 akomagni memory status             # Central + project memory
-akomagni flow route "your message" # Test agent/skill routing
-akomagni flow invoke "your message"# Write BMAD activation session
+akomagni flow route "your message" # Route to BMAD agent/skill
+akomagni flow router-mode auto     # ML router when inference is online
 akomagni skill list                # Discover installed BMAD skills
-akomagni model recommend           # Models for your hardware profile
-akomagni run cli                   # Interactive CLI (creates sessions)
-akomagni serve                     # Local inference API (stub → llama.cpp)
+akomagni model pull qwen2.5-coder-7b  # Download GGUF model
+akomagni serve                     # Local OpenAI-compatible API (:8787)
+akomagni mcp serve                 # MCP agent tools (Cursor / VS Code)
+akomagni train plan                # Preview LoRA dataset from memory (scaffold)
 ```
 
 ## Project structure
@@ -103,10 +107,10 @@ Akomagni/
 
 | Version | Focus |
 |---------|-------|
-| **v0.1** | CLI, doctor, config, Akomagni Flow (heuristic), memory scaffold, inference stub |
-| **v0.2** | llama.cpp server, model pull, BMAD skill invoke, RAG |
-| **v0.3** | Akomagni Train (LoRA), ML router |
-| **v1.0** | Akomagni IDE (VS Code fork), akomagni.dev site |
+| **v0.1** | CLI, doctor, config, Akomagni Flow (heuristic), memory scaffold ✅ |
+| **v0.2** | llama.cpp server, model pull, BMAD invoke, RAG, Memory epic, MCP agent ✅ |
+| **v0.3** | Akomagni Train (LoRA) — scaffold shipped; full training in progress |
+| **v1.0** | Akomagni IDE (VS Code fork) — MCP + roadmap page today |
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
