@@ -54,6 +54,23 @@ def test_site_nav_includes_ide_link():
         page = (SITE / route / "index.html").read_text(encoding="utf-8")
         assert 'href="../ide/"' in page, f"{route} missing IDE nav link"
 
+
+def test_install_page_includes_windows_guide():
+    install = (SITE / "install" / "index.html").read_text(encoding="utf-8")
+    assert "install/windows" in install
+    assert "PowerShell" in install
+    assert "winget install Python" in install
+    assert "cmd-bootstrap-win" in install
+    assert "cmd-fr-win" in install
+
+
+def test_homepage_includes_windows_install():
+    root = (SITE / "index.html").read_text(encoding="utf-8")
+    assert "hero-windows" in root
+    assert "install/windows" in root
+
+
+def test_install_scripts_exist_in_repo():
     """Source install scripts must exist; Pages workflow copies them to site/install/."""
     assert (ROOT / "install" / "install.sh").is_file()
     assert (ROOT / "install" / "install.ps1").is_file()
