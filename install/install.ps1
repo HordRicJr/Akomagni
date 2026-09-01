@@ -89,8 +89,9 @@ if ($userPath -notlike "*$BinDir*") {
 $env:Path = "$env:Path;$BinDir"
 
 Write-Host "==> Smoke test"
+$env:PYTHONUTF8 = "1"
 Invoke-Checked { & "$BinDir\akomagni.exe" --version }
-Invoke-Checked { & "$BinDir\akomagni.exe" doctor --json | Out-Null }
+Invoke-Checked { & "$BinDir\akomagni.exe" doctor --json *> $null }
 
 Write-Host ""
 Write-Host "Akomagni installed successfully." -ForegroundColor Green
