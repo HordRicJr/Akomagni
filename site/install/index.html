@@ -22,6 +22,7 @@
         <nav class="site-nav" data-site-nav>
           <a class="active" href="../install/">Install</a>
           <a href="../tools/">Tools</a>
+          <a href="../ide/">IDE</a>
           <a href="../code/">Code</a>
           <a href="../design/">Design</a>
           <a href="../write/">Write</a>
@@ -186,10 +187,26 @@ akomagni flow route "I want to build a budget app"</pre>
           <li><strong>No skills found</strong> — install BMAD or link skills; see <a href="../tools/">Tools hub</a>.</li>
         </ul>
       </div>
-    </section>
-      <h2>Next: install models &amp; skills</h2>
-      <p>Browse the tools marketplace — GGUF models, BMAD skills, MCP agent tools, and optional packs.</p>
-      <a class="btn btn-primary" href="../tools/">Open Tools hub</a>
+
+      <div class="tools-category" style="margin-top: 2rem">
+        <h2>Next: install models &amp; skills</h2>
+        <p class="cat-desc">Browse the tools marketplace — GGUF models, BMAD skills, MCP agent tools, and optional packs.</p>
+        <a class="btn btn-primary" href="../tools/">Open Tools hub</a>
+      </div>
+
+      <div class="tools-category">
+        <h2>Français</h2>
+        <p class="cat-desc">Interface CLI en français — activez la langue après l'installation.</p>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Configuration française</span>
+            <button class="copy-btn" type="button" data-copy="cmd-fr">Copy</button>
+          </div>
+          <pre id="cmd-fr">akomagni config language fr
+akomagni doctor
+akomagni flow route "je veux créer une app de budget"</pre>
+        </div>
+      </div>
     </section>
 
     <footer class="site-footer">

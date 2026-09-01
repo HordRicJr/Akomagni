@@ -46,7 +46,14 @@ def test_site_uses_relative_asset_paths():
         assert 'href="/assets/style.css"' not in page, f"{route} uses broken absolute path"
 
 
-def test_install_scripts_exist_in_repo():
+def test_site_nav_includes_ide_link():
+    """IDE hub route should be linked from main navigation."""
+    root_index = (SITE / "index.html").read_text(encoding="utf-8")
+    assert 'href="ide/"' in root_index
+    for route in (*REQUIRED_ROUTES, *HUB_ROUTES):
+        page = (SITE / route / "index.html").read_text(encoding="utf-8")
+        assert 'href="../ide/"' in page, f"{route} missing IDE nav link"
+
     """Source install scripts must exist; Pages workflow copies them to site/install/."""
     assert (ROOT / "install" / "install.sh").is_file()
     assert (ROOT / "install" / "install.ps1").is_file()
