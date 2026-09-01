@@ -115,8 +115,9 @@ def doctor(
     report = run_doctor(lang=lang)
     if json_output:
         import json
+        import sys
 
-        console.print_json(json.dumps(report, indent=2))
+        sys.stdout.write(json.dumps(report, indent=2, ensure_ascii=True) + "\n")
         return
     from rich.markup import escape
 
