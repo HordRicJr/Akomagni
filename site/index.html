@@ -53,14 +53,32 @@
             <a class="btn btn-outline" href="tools/">Browse tools</a>
           </div>
         </div>
-        <aside class="hero-card">
+        <aside class="hero-card" data-hero-install>
           <h3>Quick install</h3>
-          <div class="copy-block" style="margin: 0; box-shadow: none; border: none">
-            <pre style="font-size: 0.78rem; padding: 0.85rem">curl -fsSL \
-  https://hordricjr.github.io/Akomagni/install/linux | bash</pre>
+          <div class="hero-platform-tabs">
+            <button class="hero-platform-tab active" type="button" data-hero-platform="linux">Linux / macOS</button>
+            <button class="hero-platform-tab" type="button" data-hero-platform="windows">Windows</button>
+          </div>
+          <div class="hero-platform-panel active" data-hero-platform-panel="linux">
+            <div class="copy-block" style="margin: 0; box-shadow: none; border: none">
+              <div class="copy-block-header" style="border-radius: var(--radius) var(--radius) 0 0">
+                <span>Terminal</span>
+                <button class="copy-btn" type="button" data-copy="hero-linux">Copy</button>
+              </div>
+              <pre id="hero-linux" style="font-size: 0.78rem; padding: 0.85rem; border-radius: 0 0 var(--radius) var(--radius)">curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash</pre>
+            </div>
+          </div>
+          <div class="hero-platform-panel" data-hero-platform-panel="windows">
+            <div class="copy-block" style="margin: 0; box-shadow: none; border: none">
+              <div class="copy-block-header" style="border-radius: var(--radius) var(--radius) 0 0">
+                <span>PowerShell</span>
+                <button class="copy-btn" type="button" data-copy="hero-windows">Copy</button>
+              </div>
+              <pre id="hero-windows" style="font-size: 0.78rem; padding: 0.85rem; border-radius: 0 0 var(--radius) var(--radius)">irm https://hordricjr.github.io/Akomagni/install/windows | iex</pre>
+            </div>
           </div>
           <p style="margin: 0.75rem 0 0; font-size: 0.85rem; opacity: 0.85">
-            Windows? <a href="install/" style="color: var(--secondary)">See install guide →</a>
+            Full guide with prerequisites &amp; troubleshooting → <a href="install/" style="color: var(--secondary)">Install page</a>
           </p>
         </aside>
       </div>

@@ -46,13 +46,13 @@
     </section>
 
     <section class="install-section">
-      <div class="platform-tabs">
-        <button class="platform-tab active" type="button" data-platform-tab="linux">Linux / macOS</button>
+      <div class="platform-tabs" data-platform-tabs>
+        <button class="platform-tab" type="button" data-platform-tab="linux">Linux / macOS</button>
         <button class="platform-tab" type="button" data-platform-tab="windows">Windows</button>
         <button class="platform-tab" type="button" data-platform-tab="dev">Developer</button>
       </div>
 
-      <div class="platform-panel active" data-platform-panel="linux">
+      <div class="platform-panel" data-platform-panel="linux">
         <div class="copy-block">
           <div class="copy-block-header">
             <span>One-liner install</span>
@@ -60,9 +60,6 @@
           </div>
           <pre id="cmd-linux">curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash</pre>
         </div>
-        <p style="color: var(--muted); font-size: 0.92rem">
-          Custom domain: replace with <code>https://akomagni.dev/install/linux</code> when configured.
-        </p>
         <ul class="req-list">
           <li>✦ Python 3.11+ and git in PATH</li>
           <li>✦ Installs to <code>~/.local/share/akomagni</code></li>
@@ -72,6 +69,23 @@
       </div>
 
       <div class="platform-panel" data-platform-panel="windows">
+        <div class="platform-callout">
+          <strong>Windows 10/11</strong> — open <strong>PowerShell</strong> (not CMD). No admin required.
+        </div>
+
+        <h3 class="panel-subtitle">Step 1 — Prerequisites</h3>
+        <p class="cat-desc">Install Python 3.11+ and Git if missing. Check with <code>python --version</code> and <code>git --version</code>.</p>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>winget (recommended)</span>
+            <button class="copy-btn" type="button" data-copy="cmd-win-prereq">Copy</button>
+          </div>
+          <pre id="cmd-win-prereq">winget install Python.Python.3.12
+winget install Git.Git</pre>
+        </div>
+        <p class="cat-desc">Or download from <a href="https://www.python.org/downloads/">python.org</a> — check <strong>Add python.exe to PATH</strong> during setup.</p>
+
+        <h3 class="panel-subtitle">Step 2 — Install Akomagni</h3>
         <div class="copy-block">
           <div class="copy-block-header">
             <span>PowerShell one-liner</span>
@@ -79,11 +93,46 @@
           </div>
           <pre id="cmd-windows">irm https://hordricjr.github.io/Akomagni/install/windows | iex</pre>
         </div>
+        <p class="cat-desc">If blocked by execution policy, run once: <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></p>
+
+        <h3 class="panel-subtitle">Step 3 — Restart terminal</h3>
+        <p class="cat-desc">Close and reopen PowerShell so PATH picks up <code>%USERPROFILE%\.local\bin</code>.</p>
+
+        <h3 class="panel-subtitle">Step 4 — Verify</h3>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Smoke test</span>
+            <button class="copy-btn" type="button" data-copy="cmd-win-verify">Copy</button>
+          </div>
+          <pre id="cmd-win-verify">akomagni --version
+akomagni config init
+akomagni doctor</pre>
+        </div>
+
         <ul class="req-list">
-          <li>✦ Python 3.11+ and git in PATH</li>
           <li>✦ Installs to <code>%LOCALAPPDATA%\akomagni</code></li>
-          <li>✦ Adds user PATH entry for <code>~\.local\bin</code></li>
+          <li>✦ Binary at <code>%USERPROFILE%\.local\bin\akomagni.exe</code></li>
+          <li>✦ Config at <code>%USERPROFILE%\.akomagni\config.yaml</code></li>
+          <li>✦ Virtualenv at <code>%LOCALAPPDATA%\akomagni\.venv</code></li>
         </ul>
+
+        <h3 class="panel-subtitle">Windows bootstrap (full setup)</h3>
+        <p class="cat-desc">After install — models, inference, and first Flow route (~5 min).</p>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>PowerShell checklist</span>
+            <button class="copy-btn" type="button" data-copy="cmd-bootstrap-win">Copy</button>
+          </div>
+          <pre id="cmd-bootstrap-win">akomagni config init
+akomagni config language fr
+akomagni doctor
+pip install "akomagni[inference]"
+akomagni model recommend
+akomagni model pull qwen2.5-coder-7b
+akomagni serve --model qwen2.5-coder-7b
+akomagni inference status
+akomagni flow route "je veux créer une app de budget"</pre>
+        </div>
       </div>
 
       <div class="platform-panel" data-platform-panel="dev">
@@ -181,9 +230,11 @@ akomagni flow route "I want to build a budget app"</pre>
       <div class="tools-category">
         <h2>Troubleshooting</h2>
         <ul class="req-list">
-          <li><strong>Python not found</strong> — install Python 3.11+ and ensure <code>python3</code> / <code>python</code> is in PATH.</li>
-          <li><strong>Command not found after install</strong> — restart terminal or add <code>~/.local/bin</code> to PATH manually.</li>
-          <li><strong>Inference offline</strong> — run <code>akomagni serve</code> after pulling a model.</li>
+          <li><strong>Python not found</strong> — install Python 3.11+ and ensure <code>python</code> is in PATH (restart terminal after install).</li>
+          <li><strong>Command not found after install</strong> — restart PowerShell/terminal. On Windows, check <code>%USERPROFILE%\.local\bin</code> is in your user PATH.</li>
+          <li><strong>Execution policy blocked (Windows)</strong> — <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code> then retry the install command.</li>
+          <li><strong>git not found (Windows)</strong> — <code>winget install Git.Git</code> and restart terminal.</li>
+          <li><strong>Inference offline</strong> — run <code>akomagni serve --model &lt;name&gt;</code> after pulling a model.</li>
           <li><strong>No skills found</strong> — install BMAD or link skills; see <a href="../tools/">Tools hub</a>.</li>
         </ul>
       </div>
@@ -195,15 +246,26 @@ akomagni flow route "I want to build a budget app"</pre>
       </div>
 
       <div class="tools-category">
-        <h2>Français</h2>
-        <p class="cat-desc">Interface CLI en français — activez la langue après l'installation.</p>
+        <h2>Français / Windows</h2>
+        <p class="cat-desc">Installation Windows en PowerShell + interface CLI en français.</p>
         <div class="copy-block">
           <div class="copy-block-header">
-            <span>Configuration française</span>
-            <button class="copy-btn" type="button" data-copy="cmd-fr">Copy</button>
+            <span>Installation Windows (PowerShell)</span>
+            <button class="copy-btn" type="button" data-copy="cmd-fr-win">Copy</button>
           </div>
-          <pre id="cmd-fr">akomagni config language fr
+          <pre id="cmd-fr-win"># Prérequis (si besoin)
+winget install Python.Python.3.12
+winget install Git.Git
+
+# Installation Akomagni
+irm https://hordricjr.github.io/Akomagni/install/windows | iex
+
+# Redémarrer PowerShell, puis :
+akomagni config init
+akomagni config language fr
 akomagni doctor
+pip install "akomagni[inference]"
+akomagni model pull qwen2.5-coder-7b
 akomagni flow route "je veux créer une app de budget"</pre>
         </div>
       </div>

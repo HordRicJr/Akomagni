@@ -1,3 +1,29 @@
+function activatePlatformTab(target) {
+  document.querySelectorAll("[data-platform-tab]").forEach((t) => {
+    t.classList.toggle("active", t.getAttribute("data-platform-tab") === target);
+  });
+  document.querySelectorAll("[data-platform-panel]").forEach((panel) => {
+    panel.classList.toggle("active", panel.getAttribute("data-platform-panel") === target);
+  });
+}
+
+function activateHeroPlatform(target) {
+  document.querySelectorAll("[data-hero-platform]").forEach((t) => {
+    t.classList.toggle("active", t.getAttribute("data-hero-platform") === target);
+  });
+  document.querySelectorAll("[data-hero-platform-panel]").forEach((panel) => {
+    panel.classList.toggle("active", panel.getAttribute("data-hero-platform-panel") === target);
+  });
+}
+
+function detectPlatform() {
+  const ua = navigator.userAgent || "";
+  if (/Win/i.test(ua) || /Windows/i.test(navigator.platform || "")) {
+    return "windows";
+  }
+  return "linux";
+}
+
 document.querySelectorAll("[data-nav-toggle]").forEach((button) => {
   button.addEventListener("click", () => {
     const nav = document.querySelector("[data-site-nav]");
@@ -9,15 +35,23 @@ document.querySelectorAll("[data-nav-toggle]").forEach((button) => {
 
 document.querySelectorAll("[data-platform-tab]").forEach((tab) => {
   tab.addEventListener("click", () => {
-    const target = tab.getAttribute("data-platform-tab");
-    document.querySelectorAll("[data-platform-tab]").forEach((t) => {
-      t.classList.toggle("active", t.getAttribute("data-platform-tab") === target);
-    });
-    document.querySelectorAll("[data-platform-panel]").forEach((panel) => {
-      panel.classList.toggle("active", panel.getAttribute("data-platform-panel") === target);
-    });
+    activatePlatformTab(tab.getAttribute("data-platform-tab"));
   });
 });
+
+document.querySelectorAll("[data-hero-platform]").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    activateHeroPlatform(tab.getAttribute("data-hero-platform"));
+  });
+});
+
+if (document.querySelector("[data-platform-tabs]")) {
+  activatePlatformTab(detectPlatform());
+}
+
+if (document.querySelector("[data-hero-install]")) {
+  activateHeroPlatform(detectPlatform());
+}
 
 document.querySelectorAll("[data-filter]").forEach((pill) => {
   pill.addEventListener("click", () => {

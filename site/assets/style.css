@@ -668,6 +668,56 @@ pre {
   display: block;
 }
 
+.panel-subtitle {
+  margin: 1.75rem 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--primary);
+}
+
+.platform-callout {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+.hero-platform-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.hero-platform-tab {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 600;
+  font-size: 0.72rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.85);
+  transition: all 0.2s ease;
+}
+
+.hero-platform-tab.active,
+.hero-platform-tab:hover {
+  background: var(--secondary);
+  color: var(--primary);
+  border-color: var(--secondary);
+}
+
+.hero-platform-panel {
+  display: none;
+}
+
+.hero-platform-panel.active {
+  display: block;
+}
+
 .copy-block {
   background: var(--surface);
   border: 1px solid var(--border);
