@@ -89,12 +89,12 @@ def _ensure_memory_scaffold() -> None:
     profile = MEMORY_DIR / "profile.md"
     if not profile.exists():
         profile.write_text(
-            "# Profil Akomagni\n\n# Rempli à l'onboarding ou enrichi au fil du temps.\n",
+            "# Akomagni profile\n\n# Filled during onboarding or enriched over time.\n",
             encoding="utf-8",
         )
     prefs = MEMORY_DIR / "preferences.yaml"
     if not prefs.exists():
-        prefs.write_text("language: fr\n", encoding="utf-8")
+        prefs.write_text("language: en\n", encoding="utf-8")
     stacks = MEMORY_DIR / "stacks"
     stacks.mkdir(exist_ok=True)
     for name, body in {
