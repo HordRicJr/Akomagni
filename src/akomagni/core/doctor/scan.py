@@ -8,6 +8,8 @@ from typing import Any
 
 import psutil
 
+from akomagni.core.i18n import normalize_language, translate
+
 PROFILE_LIGHT = "light"
 PROFILE_STANDARD = "standard"
 PROFILE_POWER = "power"
@@ -57,7 +59,8 @@ def _model_suggestions(profile: str) -> list[str]:
     return list(DEFAULT_CONFIG["models"]["profiles"].get(profile, []))
 
 
-def run_doctor() -> dict[str, Any]:
+def run_doctor(*, lang: str | None = None) -> dict[str, Any]:
+    language = normalize_language(lang)
     vm = psutil.virtual_memory()
     disk = shutil.disk_usage("/") if platform.system() != "Windows" else shutil.disk_usage("C:\\")
     ram_total_gb = round(vm.total / (1024**3), 1)
@@ -68,25 +71,48 @@ def run_doctor() -> dict[str, Any]:
     models = _model_suggestions(profile)
 
     lines = [
-        "Akomagni doctor — rapport machine",
+        translate("doctor.title", language),
         "",
-        f"  OS          : {platform.system()} {platform.release()} ({platform.machine()})",
-        f"  CPU         : {psutil.cpu_count(logical=False)} cores / {psutil.cpu_count()} threads",
-        f"  RAM         : {ram_available_gb} Go libres / {ram_total_gb} Go total",
-        f"  Disque libre: {disk_free_gb} Go",
+        translate(
+            "doctor.os",
+            language,
+            os=platform.system(),
+            release=platform.release(),
+            machine=platform.machine(),
+        ),
+        translate(
+            "doctor.cpu",
+            language,
+            cores=psutil.cpu_count(logical=False),
+            threads=psutil.cpu_count(),
+        ),
+        translate(
+            "doctor.ram",
+            language,
+            available=ram_available_gb,
+            total=ram_total_gb,
+        ),
+        translate("doctor.disk", language, free=disk_free_gb),
     ]
     if gpu["name"]:
-        lines.append(f"  GPU         : {gpu['name']} ({gpu['vram_gb']} Go VRAM)")
+        lines.append(
+            translate(
+                "doctor.gpu",
+                language,
+                name=gpu["name"],
+                vram=gpu["vram_gb"],
+            )
+        )
     else:
-        lines.append("  GPU         : non détectée (CPU inference)")
+        lines.append(translate("doctor.gpu_none", language))
     lines.extend(
         [
             "",
-            f"  Profil recommandé : [bold]{profile}[/bold]",
-            f"  Modèles suggérés  : {', '.join(models)}",
+            translate("doctor.recommended_profile", language, profile=profile),
+            translate("doctor.suggested_models", language, models=", ".join(models)),
             "",
-            "  Tu peux installer des modèles plus gros si ta machine le permet.",
-            "  → akomagni model pull <name>  (à venir)",
+            translate("doctor.hint", language),
+            translate("doctor.pull_hint", language),
         ]
     )
 
@@ -100,4 +126,5 @@ def run_doctor() -> dict[str, Any]:
         "profile": profile,
         "models": models,
         "summary": "\n".join(lines),
+        "language": language,
     }
