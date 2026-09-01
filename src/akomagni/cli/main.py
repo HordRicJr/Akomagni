@@ -61,7 +61,8 @@ router_app = typer.Typer(help="Domain model router (code, design, image, text)."
 inference_app = typer.Typer(help="OpenAI-compatible local inference API.")
 rag_app = typer.Typer(help="RAG ingest and hybrid retrieval (BM25 + sqlite-vec).")
 mcp_app = typer.Typer(help="MCP agent tools with workspace sandbox.")
-train_app = typer.Typer(help="LoRA fine-tuning from Akomagni Memory (v0.3 scaffold).")
+train_app = typer.Typer(help="LoRA fine-tuning from Akomagni Memory (v0.3).")
+ide_app = typer.Typer(help="IDE setup — MCP config for Cursor/VS Code until v1.0 fork.")
 
 app.add_typer(run_app, name="run")
 app.add_typer(memory_app, name="memory")
@@ -74,6 +75,7 @@ app.add_typer(inference_app, name="inference")
 app.add_typer(rag_app, name="rag")
 app.add_typer(mcp_app, name="mcp")
 app.add_typer(train_app, name="train")
+app.add_typer(ide_app, name="ide")
 
 
 def _lang() -> str:
@@ -299,10 +301,11 @@ def run_agent() -> None:
 
 @run_app.command("ide")
 def run_ide() -> None:
-    """Ouvrir Akomagni IDE (fork VS Code — pas encore intégré en v0.1)."""
+    """Open Akomagni IDE (fork VS Code — use `akomagni ide setup` for MCP today)."""
     console.print(
-        "[yellow]Akomagni IDE[/] : build depuis [bold]ide/[/] (fork Code-OSS) — à venir.\n"
-        "En attendant : [bold]akomagni run cli[/] ou [bold]akomagni serve[/]."
+        "[yellow]Akomagni IDE[/] (v1.0 fork) is not bundled yet.\n"
+        "Today: [bold]akomagni ide setup[/] then use Cursor or VS Code with MCP.\n"
+        "Or: [bold]akomagni run cli[/] · [bold]akomagni serve[/]"
     )
     raise typer.Exit(code=1)
 
@@ -969,15 +972,17 @@ def train_plan(
     model: str = typer.Option("qwen2.5-coder-7b", "--model", "-m", help="Base GGUF catalog name."),
 ) -> None:
     """Build a LoRA training plan from Akomagni Memory learnings."""
-    from akomagni.train.lora import TrainError, build_train_plan
+    from akomagni.train.lora import TrainError, build_train_plan, collect_learning_examples
 
     try:
         plan = build_train_plan(base_model=model)
+        count = len(collect_learning_examples(plan.dataset_sources))
     except TrainError as exc:
         console.print(f"[red]{_t('error')}:[/] {exc}")
         raise typer.Exit(code=1) from exc
-    console.print("[bold]Train plan[/] (v0.3 scaffold)")
+    console.print("[bold]Train plan[/]")
     console.print(f"  Base model : {plan.base_model}")
+    console.print(f"  Examples   : {count}")
     console.print("  Sources    :")
     for src in plan.dataset_sources:
         console.print(f"    - {src}")
@@ -985,11 +990,50 @@ def train_plan(
     console.print(f"  [dim]{plan.notes}[/dim]")
 
 
+@train_app.command("export")
+def train_export(
+    model: str = typer.Option("qwen2.5-coder-7b", "--model", "-m", help="Base GGUF catalog name."),
+    output: str | None = typer.Option(None, "--output", "-o", help="JSONL output path."),
+) -> None:
+    """Export Memory learnings to JSONL for LoRA fine-tuning."""
+    from akomagni.train.lora import TrainError, build_train_plan, export_jsonl
+
+    try:
+        plan = build_train_plan(base_model=model)
+        dest = Path(output) if output else None
+        dataset_path, count = export_jsonl(plan, dest=dest)
+    except TrainError as exc:
+        console.print(f"[red]{_t('error')}:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"[green]Exported[/] {count} examples → {dataset_path}")
+
+
+@train_app.command("bundle")
+def train_bundle(
+    model: str = typer.Option("qwen2.5-coder-7b", "--model", "-m", help="Base GGUF catalog name."),
+) -> None:
+    """Export dataset + train.yaml + README for external QLoRA trainers."""
+    from akomagni.train.lora import TrainError, build_train_plan, prepare_train_bundle
+
+    try:
+        plan = build_train_plan(base_model=model)
+        bundle = prepare_train_bundle(plan)
+    except TrainError as exc:
+        console.print(f"[red]{_t('error')}:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print("[bold]Train bundle ready[/]")
+    console.print(f"  Examples : {bundle.example_count}")
+    console.print(f"  Dataset  : {bundle.dataset_path}")
+    console.print(f"  Config   : {bundle.config_path}")
+    console.print(f"  Readme   : {bundle.readme_path}")
+    console.print("[dim]Point your QLoRA tool at train.yaml — native trainer tracked on #15.[/dim]")
+
+
 @train_app.command("run")
 def train_run(
     model: str = typer.Option("qwen2.5-coder-7b", "--model", "-m", help="Base GGUF catalog name."),
 ) -> None:
-    """Run LoRA training (not yet implemented — issue #15)."""
+    """Prepare training bundle (native QLoRA runner ships in a later #15 milestone)."""
     from akomagni.train.lora import TrainError, build_train_plan, run_train_stub
 
     try:
@@ -998,3 +1042,59 @@ def train_run(
     except TrainError as exc:
         console.print(f"[yellow]{exc}[/]")
         raise typer.Exit(code=1) from exc
+
+
+@ide_app.command("setup")
+def ide_setup(
+    workspace: str | None = typer.Option(
+        None,
+        "--workspace",
+        "-w",
+        help="Project root (default: current directory).",
+    ),
+    force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing MCP config files."),
+) -> None:
+    """Write Cursor/VS Code MCP config for Akomagni agent tools."""
+    from akomagni.ide.setup import IdeSetupError, write_cursor_mcp_config
+
+    root = Path(workspace) if workspace else Path.cwd()
+    try:
+        result = write_cursor_mcp_config(root, overwrite=force)
+    except IdeSetupError as exc:
+        console.print(f"[red]{_t('error')}:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print("[bold]IDE MCP setup complete[/]")
+    console.print(f"  Workspace : {result.workspace}")
+    console.print(f"  Cursor    : {result.cursor_config}")
+    console.print(f"  VS Code   : {result.vscode_config}")
+    console.print(f"  Command   : {result.akomagni_command}")
+    console.print(
+        '\nNext: pip install "akomagni[agent]" · restart Cursor · enable MCP server "akomagni".'
+    )
+
+
+@ide_app.command("status")
+def ide_status_cmd(
+    workspace: str | None = typer.Option(
+        None,
+        "--workspace",
+        "-w",
+        help="Project root (default: current directory).",
+    ),
+) -> None:
+    """Show IDE/MCP readiness for the workspace."""
+    from akomagni.ide.setup import ide_status
+
+    root = Path(workspace) if workspace else Path.cwd()
+    status = ide_status(root)
+    console.print("[bold]IDE status[/]")
+    console.print(f"  Workspace           : {status['workspace']}")
+    console.print(f"  Cursor MCP config   : {'yes' if status['cursor_config'] else 'no'}")
+    console.print(f"  VS Code MCP config  : {'yes' if status['vscode_config'] else 'no'}")
+    console.print(
+        f"  Agent extra         : {'installed' if status['agent_extra_installed'] else 'missing'}"
+    )
+    console.print(f"  akomagni command    : {status['akomagni_command']}")
+    console.print(f"  Native IDE          : {status['native_ide']}")
+    if not status["cursor_config"]:
+        console.print("\nRun [bold]akomagni ide setup[/] to generate MCP config.")

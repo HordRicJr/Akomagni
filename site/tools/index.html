@@ -238,11 +238,30 @@
           </article>
           <article class="tool-card" data-tool-category="extras">
             <div class="tool-card-top">
-              <h3>Train plan (LoRA)</h3>
+              <h3>Train bundle (LoRA)</h3>
+              <span class="tool-badge">Memory</span>
+            </div>
+            <p>Export Memory learnings to JSONL + QLoRA config for external trainers.</p>
+            <div class="tool-cmd" id="tool-train-bundle">akomagni train bundle</div>
+            <button class="copy-btn" type="button" data-copy="tool-train-bundle">Copy command</button>
+          </article>
+          <article class="tool-card" data-tool-category="extras">
+            <div class="tool-card-top">
+              <h3>IDE MCP setup</h3>
+              <span class="tool-badge">IDE</span>
+            </div>
+            <p>Generate Cursor/VS Code MCP config for agent tools in your project.</p>
+            <div class="tool-cmd" id="tool-ide-setup">akomagni ide setup</div>
+            <button class="copy-btn" type="button" data-copy="tool-ide-setup">Copy command</button>
+            <a class="module-link" href="../ide/">IDE guide →</a>
+          </article>
+          <article class="tool-card" data-tool-category="extras">
+            <div class="tool-card-top">
+              <h3>Train export only</h3>
               <span class="tool-badge">Preview</span>
             </div>
-            <p>Scan memory learnings and preview a fine-tune dataset (v0.3 scaffold).</p>
-            <div class="tool-cmd" id="tool-train">akomagni train plan</div>
+            <p>Export JSONL dataset from Memory without full bundle.</p>
+            <div class="tool-cmd" id="tool-train">akomagni train export</div>
             <button class="copy-btn" type="button" data-copy="tool-train">Copy command</button>
           </article>
         </div>
