@@ -4,37 +4,89 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Write — Akomagni</title>
-    <link rel="stylesheet" href="/assets/style.css" />
+    <meta name="theme-color" content="#0B3D2E" />
+    <link rel="stylesheet" href="../assets/style.css" />
   </head>
   <body>
-    <header>
-      <div class="wrap">
-        <a class="brand" href="/">Akomagni</a>
-        <nav>
-          <a href="/code/">Code</a>
-          <a href="/design/">Design</a>
-          <a class="active" href="/write/">Write</a>
-          <a href="/models/">Models</a>
-          <a href="/memory/">Memory</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../">
+          <span class="brand-mark">A</span>
+          Akomagni
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
+        <nav class="site-nav" data-site-nav>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a class="active" href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
         </nav>
+        <div class="header-actions">
+          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+        </div>
       </div>
     </header>
-    <main class="wrap">
-      <h1>Write</h1>
-      <p class="lead">Specs, documentation, and content with project context.</p>
-      <ul class="feature-list">
-        <li>Interactive CLI chat with inference and memory injection</li>
-        <li>Bilingual docs (EN/FR) in the repository</li>
-        <li>Auto-capture learnings with user approval</li>
-        <li>RAG over your markdown and project files</li>
-      </ul>
-      <pre>akomagni run cli
+
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="../">Home</a> / Write</p>
+        <h1>Write</h1>
+        <p class="lead">Specs, documentation, and content with project context.</p>
+      </div>
+    </section>
+
+    <main class="page-content">
+      <div class="content-block">
+        <h2>Capabilities</h2>
+        <ul class="feature-list">
+          <li>Interactive CLI chat with inference and memory injection</li>
+          <li>Bilingual docs (EN/FR) in the repository</li>
+          <li>Auto-capture learnings with user approval</li>
+          <li>RAG over your markdown and project files</li>
+        </ul>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">Quick start</div>
+        <pre>akomagni run cli
 akomagni rag ingest docs/
 akomagni rag query "how does memory promotion work?"
 akomagni memory pending</pre>
+      </div>
     </main>
-    <footer class="wrap">
-      <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Full documentation</a>
+
+    <section class="cta-band">
+      <h2>Full documentation</h2>
+      <p>Bilingual guides for every Akomagni module.</p>
+      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Browse docs</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="../" style="color: #fff">
+            <span class="brand-mark">A</span>
+            Akomagni
+          </a>
+          <p>Local AI workstation — code, design, write, models, and memory.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Modules</h4>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
     </footer>
+
+    <script src="../assets/main.js"></script>
   </body>
 </html>

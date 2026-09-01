@@ -4,38 +4,90 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Memory — Akomagni</title>
-    <link rel="stylesheet" href="/assets/style.css" />
+    <meta name="theme-color" content="#0B3D2E" />
+    <link rel="stylesheet" href="../assets/style.css" />
   </head>
   <body>
-    <header>
-      <div class="wrap">
-        <a class="brand" href="/">Akomagni</a>
-        <nav>
-          <a href="/code/">Code</a>
-          <a href="/design/">Design</a>
-          <a href="/write/">Write</a>
-          <a href="/models/">Models</a>
-          <a class="active" href="/memory/">Memory</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../">
+          <span class="brand-mark">A</span>
+          Akomagni
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
+        <nav class="site-nav" data-site-nav>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a class="active" href="../memory/">Memory</a>
         </nav>
+        <div class="header-actions">
+          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+        </div>
       </div>
     </header>
-    <main class="wrap">
-      <h1>Memory</h1>
-      <p class="lead">Central and project memory with approval-based capture.</p>
-      <ul class="feature-list">
-        <li><strong>Project memory</strong> — <code>.akomagni/memory/</code> per repository</li>
-        <li><strong>Central memory</strong> — <code>~/.akomagni/memory/</code> across projects</li>
-        <li><strong>Promote</strong> — lift project learnings into central memory</li>
-        <li><strong>Auto-capture</strong> — queue exchanges for approval before saving</li>
-      </ul>
-      <pre>akomagni memory status
+
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="../">Home</a> / Memory</p>
+        <h1>Memory</h1>
+        <p class="lead">Central and project memory with approval-based capture.</p>
+      </div>
+    </section>
+
+    <main class="page-content">
+      <div class="content-block">
+        <h2>Capabilities</h2>
+        <ul class="feature-list">
+          <li><strong>Project memory</strong> — <code>.akomagni/memory/</code> per repository</li>
+          <li><strong>Central memory</strong> — <code>~/.akomagni/memory/</code> across projects</li>
+          <li><strong>Promote</strong> — lift project learnings into central memory</li>
+          <li><strong>Auto-capture</strong> — queue exchanges for approval before saving</li>
+        </ul>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">Quick start</div>
+        <pre>akomagni memory status
 akomagni memory add "Always use pytest fixtures" --title "Testing"
 akomagni memory promote
 akomagni memory pending
 akomagni memory approve &lt;capture-id&gt;</pre>
+      </div>
     </main>
-    <footer class="wrap">
-      <a href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/akomagni-memory.md">Memory docs</a>
+
+    <section class="cta-band">
+      <h2>Memory system guide</h2>
+      <p>Project and central memory with approval-based capture.</p>
+      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/akomagni-memory.md">Memory docs</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="../" style="color: #fff">
+            <span class="brand-mark">A</span>
+            Akomagni
+          </a>
+          <p>Local AI workstation — code, design, write, models, and memory.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Modules</h4>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
     </footer>
+
+    <script src="../assets/main.js"></script>
   </body>
 </html>
