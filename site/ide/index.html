@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IDE — Akomagni</title>
+    <meta
+      name="description"
+      content="Use Akomagni in Cursor or VS Code today via MCP. Native IDE fork planned for v1.0."
+    />
     <meta name="theme-color" content="#0B3D2E" />
     <link rel="stylesheet" href="../assets/style.css" />
   </head>
@@ -36,30 +40,83 @@
         <p class="breadcrumb"><a href="../">Home</a> / IDE</p>
         <h1>Akomagni IDE</h1>
         <p class="lead">
-          VS Code fork with chat sidebar, Flow integration, and local inference — planned for v1.0.
+          Use Akomagni agent tools in <strong>Cursor</strong> or <strong>VS Code</strong> today via MCP.
+          Native Code-OSS fork with chat sidebar — planned v1.0.
         </p>
       </div>
     </section>
 
     <main class="page-content">
       <div class="content-block">
-        <h2>Status: planned v1.0</h2>
+        <h2>Today: Cursor / VS Code + MCP</h2>
         <ul class="feature-list">
-          <li><strong>Today</strong> — use <code>akomagni run cli</code> or Cursor/VS Code + MCP (<code>akomagni mcp serve</code>)</li>
-          <li><strong>v1.0</strong> — Code-OSS fork with native chat sidebar and BMAD Flow</li>
-          <li><strong>Platforms</strong> — Windows and Linux first</li>
+          <li><strong>Step 1</strong> — Install Akomagni CLI (<a href="../install/">install guide</a>)</li>
+          <li><strong>Step 2</strong> — Agent pack: <code>pip install "akomagni[agent]"</code></li>
+          <li><strong>Step 3</strong> — Generate MCP config in your project</li>
+          <li><strong>Step 4</strong> — Restart Cursor/VS Code and enable the Akomagni MCP server</li>
         </ul>
       </div>
-      <div class="code-panel">
-        <div class="code-panel-header">Use MCP in Cursor today</div>
-        <pre>pip install "akomagni[agent]"
-akomagni mcp serve --workspace /path/to/project</pre>
+
+      <div class="tools-category">
+        <h2>One-command setup</h2>
+        <p class="cat-desc">Run inside your project root — writes <code>.cursor/mcp.json</code> and <code>.vscode/mcp.json</code>.</p>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Generate MCP config</span>
+            <button class="copy-btn" type="button" data-copy="cmd-ide-setup">Copy</button>
+          </div>
+          <pre id="cmd-ide-setup">pip install "akomagni[agent]"
+akomagni ide setup
+akomagni ide status</pre>
+        </div>
+      </div>
+
+      <div class="tools-category">
+        <h2>Windows (PowerShell)</h2>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Full IDE workflow on Windows</span>
+            <button class="copy-btn" type="button" data-copy="cmd-ide-win">Copy</button>
+          </div>
+          <pre id="cmd-ide-win">irm https://hordricjr.github.io/Akomagni/install/windows | iex
+# Restart PowerShell, then in your project:
+pip install "akomagni[agent]"
+akomagni ide setup
+akomagni serve --model qwen2.5-coder-7b</pre>
+        </div>
+      </div>
+
+      <div class="tools-category">
+        <h2>MCP tools available</h2>
+        <div class="tool-grid">
+          <article class="tool-card">
+            <h3>Filesystem</h3>
+            <p><code>fs_read</code>, <code>fs_write</code>, <code>fs_list</code> — sandboxed to workspace.</p>
+          </article>
+          <article class="tool-card">
+            <h3>Shell &amp; Git</h3>
+            <p><code>shell_run</code>, <code>git_status</code> — destructive ops need approval.</p>
+          </article>
+          <article class="tool-card">
+            <h3>Approval queue</h3>
+            <p><code>akomagni mcp pending</code> · <code>akomagni mcp approve &lt;id&gt;</code></p>
+          </article>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>v1.0 roadmap (native IDE)</h2>
+        <ul class="feature-list">
+          <li>Code-OSS fork with chat sidebar and BMAD Flow built-in</li>
+          <li>Local inference panel tied to <code>akomagni serve</code></li>
+          <li>Windows and Linux builds first</li>
+        </ul>
       </div>
     </main>
 
     <section class="cta-band">
-      <h2>Start with the CLI</h2>
-      <p>The full IDE is in development. Install Akomagni CLI and MCP tools now.</p>
+      <h2>Not installed yet?</h2>
+      <p>Install Akomagni CLI first, then run <code>akomagni ide setup</code> in your project.</p>
       <a class="btn btn-primary" href="../install/">Install guide</a>
     </section>
 
@@ -70,7 +127,7 @@ akomagni mcp serve --workspace /path/to/project</pre>
             <span class="brand-mark">A</span>
             Akomagni
           </a>
-          <p>CLI and Agent modes available today. IDE coming v1.0.</p>
+          <p>MCP in Cursor/VS Code today. Native IDE fork v1.0.</p>
         </div>
         <div class="footer-col">
           <h4>Get started</h4>

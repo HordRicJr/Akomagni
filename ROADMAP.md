@@ -26,14 +26,14 @@
 
 | Issue | Topic | Status |
 |-------|-------|--------|
-| [#15](https://github.com/HordRicJr/Akomagni/issues/15) | **EPIC** Akomagni Train (LoRA) | 🚧 scaffold (`train plan`) |
+| [#15](https://github.com/HordRicJr/Akomagni/issues/15) | **EPIC** Akomagni Train (LoRA) | 🚧 export + bundle shipped; native QLoRA runner pending |
 | [#16](https://github.com/HordRicJr/Akomagni/issues/16) | ML intent router | ✅ inference-based router shipped |
 
 ## v1.0 — IDE & Platform
 
 | Issue | Topic | Status |
 |-------|-------|--------|
-| [#17](https://github.com/HordRicJr/Akomagni/issues/17) | **EPIC** Akomagni IDE | 🚧 roadmap + MCP today |
+| [#17](https://github.com/HordRicJr/Akomagni/issues/17) | **EPIC** Akomagni IDE | 🚧 `ide setup` MCP + site guide; fork v1.0 pending |
 
 ## Engineering
 
