@@ -22,10 +22,15 @@ if [ -n "$AKOMAGNI_SOURCE_DIR" ]; then
   mkdir -p "$INSTALL_DIR"
   cp -a "$AKOMAGNI_SOURCE_DIR/." "$INSTALL_DIR/"
   rm -rf "$INSTALL_DIR/.venv"
-elif [ ! -d "$INSTALL_DIR/.git" ]; then
-  git clone --depth 1 "$AKOMAGNI_REPO" "$INSTALL_DIR"
-else
+elif [ -d "$INSTALL_DIR/.git" ]; then
+  echo "==> Updating existing install"
   git -C "$INSTALL_DIR" pull --ff-only
+else
+  if [ -d "$INSTALL_DIR" ]; then
+    echo "==> Removing incomplete install at $INSTALL_DIR"
+    rm -rf "$INSTALL_DIR"
+  fi
+  git clone --depth 1 "$AKOMAGNI_REPO" "$INSTALL_DIR"
 fi
 
 if [ ! -d "$INSTALL_DIR/.venv" ]; then

@@ -18,6 +18,10 @@ if ($LASTEXITCODE -ne 0) {
     throw "Python 3.11+ required"
 }
 
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    throw "git required (winget install Git.Git)"
+}
+
 if ($SourceDir) {
     Write-Host "==> Copying from $SourceDir"
     New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
@@ -26,11 +30,16 @@ if ($SourceDir) {
         Remove-Item -Recurse -Force "$InstallDir\.venv"
     }
 }
-elseif (-not (Test-Path "$InstallDir\.git")) {
-    git clone --depth 1 $Repo $InstallDir
+elseif (Test-Path "$InstallDir\.git") {
+    Write-Host "==> Updating existing install" -ForegroundColor Cyan
+    git -C $InstallDir pull --ff-only
 }
 else {
-    git -C $InstallDir pull --ff-only
+    if (Test-Path $InstallDir) {
+        Write-Host "==> Removing incomplete install at $InstallDir" -ForegroundColor Yellow
+        Remove-Item -Recurse -Force $InstallDir
+    }
+    git clone --depth 1 $Repo $InstallDir
 }
 
 if (-not (Test-Path "$InstallDir\.venv")) {
