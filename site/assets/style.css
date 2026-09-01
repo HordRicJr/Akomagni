@@ -626,3 +626,264 @@ pre {
     display: none;
   }
 }
+
+/* ── Install hub ── */
+.install-section {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+.platform-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.platform-tab {
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.2s ease;
+}
+
+.platform-tab.active,
+.platform-tab:hover {
+  border-color: var(--primary-mid);
+  color: var(--primary);
+  background: rgba(11, 61, 46, 0.06);
+}
+
+.platform-panel {
+  display: none;
+}
+
+.platform-panel.active {
+  display: block;
+}
+
+.copy-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.25rem;
+}
+
+.copy-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  background: rgba(11, 61, 46, 0.06);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.copy-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--primary);
+}
+
+.copy-btn:hover {
+  background: rgba(11, 61, 46, 0.08);
+}
+
+.copy-block pre {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  background: var(--primary);
+  color: #e2f5ea;
+  border-radius: 0;
+  font-size: 0.85rem;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.step-num {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--secondary);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.85rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.65rem;
+}
+
+.step-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.step-card p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.req-list {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.req-list li {
+  padding: 0.4rem 0;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+/* ── Tools marketplace ── */
+.tools-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.filter-pill {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.filter-pill.active,
+.filter-pill:hover {
+  border-color: var(--primary-mid);
+  color: var(--primary);
+  background: rgba(11, 61, 46, 0.06);
+}
+
+.tools-category {
+  margin-bottom: 2.5rem;
+}
+
+.tools-category h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.5rem;
+  color: var(--primary);
+  margin: 0 0 0.35rem;
+}
+
+.tools-category .cat-desc {
+  margin: 0 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.tool-card.hidden {
+  display: none;
+}
+
+.tool-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tool-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--primary);
+}
+
+.tool-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(11, 61, 46, 0.08);
+  color: var(--primary-mid);
+  white-space: nowrap;
+}
+
+.tool-badge.gold {
+  background: rgba(255, 215, 0, 0.25);
+  color: #8a7200;
+}
+
+.tool-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  flex: 1;
+}
+
+.tool-cmd {
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  background: rgba(11, 61, 46, 0.06);
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  color: var(--primary);
+  word-break: break-all;
+}
+
+.tool-card .copy-btn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
+.tool-card a.module-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: auto;
+}
