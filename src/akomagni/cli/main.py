@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import typer
 from rich.console import Console
@@ -10,6 +11,7 @@ from rich.console import Console
 from akomagni import __version__
 from akomagni.core.config import MODELS_DIR, ensure_default_config, load_config
 from akomagni.core.doctor import run_doctor
+from akomagni.core.i18n import resolve_language, translate
 from akomagni.core.registry import list_catalog, recommend_models
 from akomagni.core.router import classify_domain
 from akomagni.flow.orchestrator import route_message
@@ -72,6 +74,14 @@ app.add_typer(rag_app, name="rag")
 app.add_typer(mcp_app, name="mcp")
 
 
+def _lang() -> str:
+    return resolve_language(load_config())
+
+
+def _t(key: str, **kwargs: Any) -> str:
+    return translate(key, _lang(), **kwargs)
+
+
 def _version_callback(value: bool) -> None:
     if value:
         console.print(f"akomagni {__version__}")
@@ -97,7 +107,8 @@ def doctor(
     json_output: bool = typer.Option(False, "--json", help="Sortie JSON machine."),
 ) -> None:
     """Scanner la machine et recommander un profil + modèles."""
-    report = run_doctor()
+    lang = _lang()
+    report = run_doctor(lang=lang)
     if json_output:
         import json
 
@@ -106,11 +117,7 @@ def doctor(
     from rich.markup import escape
 
     for line in report["summary"].splitlines():
-        if line.startswith("  Profil recommandé"):
-            console.print(f"  Profil recommandé : [bold]{report['profile']}[/bold]")
-        elif line.startswith("  Modèles suggérés"):
-            console.print(f"  Modèles suggérés  : {', '.join(report['models'])}")
-        elif "[bold]" in line:
+        if "[bold]" in line:
             console.print(line.replace("[bold]", "").replace("[/bold]", ""))
         else:
             console.print(escape(line))
@@ -177,15 +184,15 @@ def run_cli(
     port = int(inf_cfg.get("port", 8787))
     model_override = inf_cfg.get("default_model")
 
-    console.print("[bold]Akomagni CLI[/] — type a message (Ctrl+C to quit).")
+    console.print(f"[bold]{_t('run.cli_banner')}[/]")
     inference_online = False
     if inference:
         status = check_health(host=host, port=port)
         inference_online = status.online
         if inference_online:
-            console.print(f"[dim]Inference online — {status.base_url}[/]")
+            console.print(f"[dim]{_t('run.inference_online', url=status.base_url)}[/]")
         else:
-            console.print("[dim]Inference offline — routing only (run: akomagni serve)[/]")
+            console.print(f"[dim]{_t('run.inference_offline')}[/]")
 
     while True:
         try:
@@ -254,33 +261,32 @@ def run_cli(
                 console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
                 if auto_capture:
                     preview = build_capture_text(message, reply)
-                    console.print("[dim]Memory capture preview:[/]")
+                    console.print(f"[dim]{_t('memory.capture_preview')}[/]")
                     console.print(preview[:240] + ("…" if len(preview) > 240 else ""))
                     try:
-                        answer = console.input("Save to memory? [y/N/later] ").strip().lower()
+                        answer = console.input(f"{_t('memory.save_prompt')} ").strip().lower()
                     except (KeyboardInterrupt, EOFError):
                         console.print()
                         break
-                    if answer in {"y", "yes"}:
+                    if answer in {"y", "yes", "o", "oui"}:
                         saved = maybe_prompt_capture(
                             message,
                             reply,
                             global_=capture_global,
                             approved=True,
                         )
-                        console.print(f"[green]Saved to memory:[/] {saved}")
-                    elif answer in {"l", "later", "pending"}:
+                        console.print(f"[green]{_t('memory.saved_to')}:[/] {saved}")
+                    elif answer in {"l", "later", "pending", "p", "plus tard"}:
                         proposal = propose_capture(
                             message,
                             reply,
                             global_=capture_global,
                         )
                         console.print(
-                            f"[yellow]Queued pending capture[/] `{proposal.capture_id}` "
-                            f"(akomagni memory approve {proposal.capture_id})"
+                            f"[yellow]{_t('memory.queued_capture', capture_id=proposal.capture_id)}[/]"
                         )
             else:
-                console.print("[yellow]Inference call failed — route/session kept.[/]")
+                console.print(f"[yellow]{_t('run.inference_failed')}[/]")
 
 
 @run_app.command("agent")
@@ -320,10 +326,10 @@ def memory_cmd_add(
     try:
         path = add_memory(text, global_=global_, title=title)
     except MemoryError as exc:
-        console.print(f"[red]Error:[/] {exc}")
+        console.print(f"[red]{_t('error')}:[/] {exc}")
         raise typer.Exit(code=1) from exc
-    scope = "central" if global_ else "project"
-    console.print(f"[green]Saved ({scope}):[/] {path}")
+    label = _t("memory.saved_central") if global_ else _t("memory.saved_project")
+    console.print(f"[green]{label}:[/] {path}")
 
 
 @memory_app.command("promote")
@@ -332,10 +338,10 @@ def memory_cmd_promote() -> None:
     try:
         result = promote_project_memory()
     except MemoryError as exc:
-        console.print(f"[red]Error:[/] {exc}")
+        console.print(f"[red]{_t('error')}:[/] {exc}")
         raise typer.Exit(code=1) from exc
     console.print(
-        f"[green]Promoted[/] {result.files_copied} file(s)\n"
+        f"[green]{_t('memory.promoted', count=result.files_copied)}[/]\n"
         f"  from: {result.source}\n"
         f"  to:   {result.destination}"
     )
@@ -353,10 +359,10 @@ def memory_cmd_pending(
     """List memory captures awaiting approval."""
     pending = list_pending(global_=global_)
     if not pending:
-        console.print("[dim]No pending captures.[/]")
+        console.print(f"[dim]{_t('memory.no_pending')}[/]")
         return
     scope = "central" if global_ else "project"
-    console.print(f"[bold]Pending captures ({scope})[/]")
+    console.print(f"[bold]{_t('memory.pending_title', scope=scope)}[/]")
     for item in pending:
         preview = item.suggested_text.replace("\n", " ")
         if len(preview) > 100:
@@ -380,9 +386,9 @@ def memory_cmd_approve(
     try:
         path = approve_capture(capture_id, global_=global_, title=title)
     except CaptureError as exc:
-        console.print(f"[red]Error:[/] {exc}")
+        console.print(f"[red]{_t('error')}:[/] {exc}")
         raise typer.Exit(code=1) from exc
-    console.print(f"[green]Approved and saved:[/] {path}")
+    console.print(f"[green]{_t('memory.approved')}:[/] {path}")
 
 
 @memory_app.command("reject")
@@ -399,9 +405,9 @@ def memory_cmd_reject(
     try:
         reject_capture(capture_id, global_=global_)
     except CaptureError as exc:
-        console.print(f"[red]Error:[/] {exc}")
+        console.print(f"[red]{_t('error')}:[/] {exc}")
         raise typer.Exit(code=1) from exc
-    console.print(f"[yellow]Rejected[/] capture `{capture_id}`")
+    console.print(f"[yellow]{_t('memory.rejected')}[/] capture `{capture_id}`")
 
 
 @flow_app.command("route")
@@ -433,7 +439,7 @@ def flow_invoke(
     result = invoke_skill(message, skill_override=skill, execute=execute)
     decision = result.decision
     console.print(f"{decision.badge}  skill={decision.skill}")
-    console.print(f"[bold green]Session written:[/] {result.session_path}")
+    console.print(f"[bold green]{_t('flow.session_written')}:[/] {result.session_path}")
     if result.skill:
         console.print(f"Skill: {result.skill.path}")
     else:
@@ -443,9 +449,11 @@ def flow_invoke(
         )
     if execute and result.run_result is not None:
         if result.run_result.success:
-            console.print(f"[bold green]Workflow rendered:[/] {result.run_result.workflow_path}")
+            console.print(
+                f"[bold green]{_t('flow.workflow_rendered')}:[/] {result.run_result.workflow_path}"
+            )
         else:
-            console.print(f"[yellow]Skill exec failed:[/] {result.run_result.error}")
+            console.print(f"[yellow]{_t('flow.skill_exec_failed')}:[/] {result.run_result.error}")
     state = load_state(result.project_root)
     if state.get("active_agent"):
         console.print(f"Workflow state updated — active agent: {state['active_agent']}")
@@ -470,7 +478,7 @@ def skill_list(
     skills = discover_skills()
     if not skills:
         console.print(
-            "[yellow]No skills found.[/] Install BMAD or link skills to ~/.akomagni/skills/"
+            f"[yellow]{_t('skill.none_found')}[/] Install BMAD or link skills to ~/.akomagni/skills/"
         )
         raise typer.Exit(code=1)
     for skill_id in sorted(skills):
@@ -491,7 +499,7 @@ def skill_path(
     """Print the filesystem path for a skill."""
     info = find_skill(skill_id)
     if not info:
-        console.print(f"[red]Skill not found:[/] {skill_id}")
+        console.print(f"[red]{_t('skill.not_found')}:[/] {skill_id}")
         raise typer.Exit(code=1)
     console.print(info.path)
 
@@ -527,9 +535,9 @@ def router_plan(
 def model_recommend() -> None:
     """Recommend models for this machine (uses akomagni doctor)."""
     rec = recommend_models()
-    console.print(f"Profile: [bold]{rec['profile']}[/bold]")
-    console.print(f"Models : {', '.join(rec['models'])}")
-    console.print(f"Cache  : {rec['models_dir']}")
+    console.print(f"{_t('model.profile')}: [bold]{rec['profile']}[/bold]")
+    console.print(f"{_t('model.models')} : {', '.join(rec['models'])}")
+    console.print(f"{_t('model.cache')}  : {rec['models_dir']}")
     console.print("\n[dim]akomagni model catalog — list downloadable GGUF models[/dim]")
     console.print("[dim]akomagni model pull <name> — download a model[/dim]")
 
@@ -609,9 +617,9 @@ def inference_swap(
 def inference_stop() -> None:
     """Stop the background inference worker."""
     if stop_worker():
-        console.print("[green]Inference worker stopped.[/]")
+        console.print(f"[green]{_t('inference.worker_stopped')}[/]")
     else:
-        console.print("[dim]No background worker running.[/]")
+        console.print(f"[dim]{_t('inference.no_worker')}[/]")
 
 
 @inference_app.command("worker")
@@ -619,7 +627,7 @@ def inference_worker() -> None:
     """Show background worker state."""
     state = read_worker_state()
     if state is None:
-        console.print("[dim]No background worker state.[/]")
+        console.print(f"[dim]{_t('inference.no_worker_state')}[/]")
         return
     console.print(f"PID   : {state.pid}")
     console.print(f"Model : {state.model_path}")
@@ -635,11 +643,11 @@ def inference_status() -> None:
     port = int(inference.get("port", 8787))
     status = check_health(host=host, port=port)
     if status.online:
-        console.print(f"[green]Online[/] — {status.base_url}")
+        console.print(f"[green]{_t('inference.online')}[/] — {status.base_url}")
         if status.models:
             console.print(f"Models: {', '.join(status.models)}")
     else:
-        console.print(f"[red]Offline[/] — {status.base_url}")
+        console.print(f"[red]{_t('inference.offline')}[/] — {status.base_url}")
         if status.error:
             console.print(status.error)
         raise typer.Exit(code=1)
@@ -775,7 +783,35 @@ def rag_query(
 def config_init() -> None:
     """Créer ~/.akomagni/config.yaml avec les valeurs par défaut."""
     path = ensure_default_config()
-    console.print(f"Config initialisée : [bold]{path}[/]")
+    console.print(f"{_t('config.initialized')} : [bold]{path}[/]")
+
+
+@config_app.command("language")
+def config_language(
+    lang: str | None = typer.Argument(
+        None,
+        help="Language code: en or fr (omit to show current).",
+    ),
+) -> None:
+    """Show or set CLI output language."""
+    import yaml
+
+    from akomagni.core.config import CONFIG_PATH
+
+    cfg = load_config()
+    if lang is None:
+        console.print(_t("config.language_current", code=_lang()))
+        return
+    code = lang.strip().lower().split("-")[0]
+    if code not in {"en", "fr"}:
+        console.print(f"[red]{_t('config.language_invalid', code=lang)}[/]")
+        raise typer.Exit(code=1)
+    merged = {**cfg, "language": code}
+    CONFIG_PATH.write_text(
+        yaml.dump(merged, allow_unicode=True, default_flow_style=False),
+        encoding="utf-8",
+    )
+    console.print(f"[green]{_t('config.language_set', code=code)}[/]")
 
 
 @config_app.command("show")

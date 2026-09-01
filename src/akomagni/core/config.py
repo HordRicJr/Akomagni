@@ -17,6 +17,7 @@ SKILLS_DIR = DATA_DIR / "skills"
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "version": 1,
+    "language": "en",
     "router": {
         "mode": "auto",
         "model": "router",

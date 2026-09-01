@@ -24,7 +24,7 @@ def test_memory_status_with_project(tmp_path, monkeypatch):
     proj.mkdir(parents=True)
     (proj / "notes.md").write_text("decision", encoding="utf-8")
 
-    text = memory_status()
+    text = memory_status(lang="fr")
     assert "✓" in text
     assert "entrées" in text
 
