@@ -68,4 +68,6 @@ def test_classify_with_router_auto_uses_ml_when_online():
 def test_parse_ml_response():
     from akomagni.flow.ml_router import _parse_ml_response
 
-    assert _parse_ml_response('prefix {"agent_id": "akomagni", "confidence": 0.5} suffix') is not None
+    assert (
+        _parse_ml_response('prefix {"agent_id": "akomagni", "confidence": 0.5} suffix') is not None
+    )
