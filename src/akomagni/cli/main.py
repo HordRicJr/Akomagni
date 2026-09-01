@@ -129,6 +129,25 @@ def doctor(
 
 
 @app.command()
+def update() -> None:
+    """Update Akomagni from git (pull + reinstall)."""
+    from akomagni.core.update import UpdateError, run_update
+
+    try:
+        result = run_update()
+    except UpdateError as exc:
+        console.print(f"[red]{_t('error')}:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(f"[green]{_t('update.success')}[/]")
+    if result.previous_ref != result.current_ref:
+        console.print(_t("update.from_to", previous=result.previous_ref, current=result.current_ref))
+    else:
+        console.print("  Already up to date.")
+    console.print(_t("update.install_dir", path=result.install_dir))
+    console.print(_t("update.bin_path", path=result.bin_path))
+
+
+@app.command()
 def serve(
     host: str = typer.Option(None, help="Hôte API OpenAI-compatible."),
     port: int = typer.Option(None, help="Port API."),

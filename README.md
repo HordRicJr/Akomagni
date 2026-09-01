@@ -69,6 +69,7 @@ Full guide: [hordricjr.github.io/Akomagni/install/](https://hordricjr.github.io/
 ```bash
 akomagni doctor                    # Scan hardware + recommend profile
 akomagni config init               # Create ~/.akomagni/config.yaml
+akomagni update                    # Pull latest + reinstall CLI
 akomagni config language fr        # French CLI (en/fr)
 akomagni memory status             # Central + project memory
 akomagni flow route "your message" # Route to BMAD agent/skill
