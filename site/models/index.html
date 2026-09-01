@@ -4,38 +4,90 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Models — Akomagni</title>
-    <link rel="stylesheet" href="/assets/style.css" />
+    <meta name="theme-color" content="#0B3D2E" />
+    <link rel="stylesheet" href="../assets/style.css" />
   </head>
   <body>
-    <header>
-      <div class="wrap">
-        <a class="brand" href="/">Akomagni</a>
-        <nav>
-          <a href="/code/">Code</a>
-          <a href="/design/">Design</a>
-          <a href="/write/">Write</a>
-          <a class="active" href="/models/">Models</a>
-          <a href="/memory/">Memory</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../">
+          <span class="brand-mark">A</span>
+          Akomagni
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
+        <nav class="site-nav" data-site-nav>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a class="active" href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
         </nav>
+        <div class="header-actions">
+          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+        </div>
       </div>
     </header>
-    <main class="wrap">
-      <h1>Models</h1>
-      <p class="lead">Local GGUF inference with OpenAI-compatible API.</p>
-      <ul class="feature-list">
-        <li><code>akomagni serve</code> — llama-server on <code>127.0.0.1:8787</code></li>
-        <li><code>akomagni model pull</code> — download models from Hugging Face</li>
-        <li>Domain router swaps models for code, design, image, and text</li>
-        <li>Hardware-aware recommendations via <code>akomagni doctor</code></li>
-      </ul>
-      <pre>akomagni doctor
+
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="../">Home</a> / Models</p>
+        <h1>Models</h1>
+        <p class="lead">Local GGUF inference with OpenAI-compatible API.</p>
+      </div>
+    </section>
+
+    <main class="page-content">
+      <div class="content-block">
+        <h2>Capabilities</h2>
+        <ul class="feature-list">
+          <li><code>akomagni serve</code> — llama-server on <code>127.0.0.1:8787</code></li>
+          <li><code>akomagni model pull</code> — download models from Hugging Face</li>
+          <li>Domain router swaps models for code, design, image, and text</li>
+          <li>Hardware-aware recommendations via <code>akomagni doctor</code></li>
+        </ul>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">Quick start</div>
+        <pre>akomagni doctor
 akomagni model recommend
 akomagni model pull Qwen2.5-Coder-7B
 akomagni serve --model qwen2.5-coder-7b
 akomagni inference chat "Explain this function"</pre>
+      </div>
     </main>
-    <footer class="wrap">
-      <a href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/inference-api.md">Inference API docs</a>
+
+    <section class="cta-band">
+      <h2>Inference API reference</h2>
+      <p>OpenAI-compatible endpoints for local GGUF models.</p>
+      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/inference-api.md">API docs</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="../" style="color: #fff">
+            <span class="brand-mark">A</span>
+            Akomagni
+          </a>
+          <p>Local AI workstation — code, design, write, models, and memory.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Modules</h4>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
     </footer>
+
+    <script src="../assets/main.js"></script>
   </body>
 </html>

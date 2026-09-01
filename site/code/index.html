@@ -4,37 +4,89 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Code — Akomagni</title>
-    <link rel="stylesheet" href="/assets/style.css" />
+    <meta name="theme-color" content="#0B3D2E" />
+    <link rel="stylesheet" href="../assets/style.css" />
   </head>
   <body>
-    <header>
-      <div class="wrap">
-        <a class="brand" href="/">Akomagni</a>
-        <nav>
-          <a class="active" href="/code/">Code</a>
-          <a href="/design/">Design</a>
-          <a href="/write/">Write</a>
-          <a href="/models/">Models</a>
-          <a href="/memory/">Memory</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../">
+          <span class="brand-mark">A</span>
+          Akomagni
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
+        <nav class="site-nav" data-site-nav>
+          <a class="active" href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
         </nav>
+        <div class="header-actions">
+          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+        </div>
       </div>
     </header>
-    <main class="wrap">
-      <h1>Code</h1>
-      <p class="lead">BMAD agent orchestration and developer-focused local AI.</p>
-      <ul class="feature-list">
-        <li><strong>Akomagni Flow</strong> — heuristic router across 17 BMAD agents</li>
-        <li><strong>Skills</strong> — discover and invoke BMAD skills via <code>uv run</code></li>
-        <li><strong>MCP tools</strong> — sandboxed fs, shell, and git for agent mode</li>
-        <li><strong>RAG</strong> — hybrid BM25 + sqlite-vec retrieval injected into prompts</li>
-      </ul>
-      <pre>akomagni flow route "Add JWT auth to the API"
+
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="../">Home</a> / Code</p>
+        <h1>Code</h1>
+        <p class="lead">BMAD agent orchestration and developer-focused local AI.</p>
+      </div>
+    </section>
+
+    <main class="page-content">
+      <div class="content-block">
+        <h2>Capabilities</h2>
+        <ul class="feature-list">
+          <li><strong>Akomagni Flow</strong> — heuristic router across 17 BMAD agents</li>
+          <li><strong>Skills</strong> — discover and invoke BMAD skills via <code>uv run</code></li>
+          <li><strong>MCP tools</strong> — sandboxed fs, shell, and git for agent mode</li>
+          <li><strong>RAG</strong> — hybrid BM25 + sqlite-vec retrieval injected into prompts</li>
+        </ul>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">Quick start</div>
+        <pre>akomagni flow route "Add JWT auth to the API"
 akomagni flow invoke "Add JWT auth to the API" --exec
 akomagni skill list
 akomagni mcp serve</pre>
+      </div>
     </main>
-    <footer class="wrap">
-      <a href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/akomagni-flow.md">Flow docs</a>
+
+    <section class="cta-band">
+      <h2>Learn more about Flow</h2>
+      <p>Route tasks to the right BMAD agent automatically.</p>
+      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/akomagni-flow.md">Flow docs</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="../" style="color: #fff">
+            <span class="brand-mark">A</span>
+            Akomagni
+          </a>
+          <p>Local AI workstation — code, design, write, models, and memory.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Modules</h4>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
     </footer>
+
+    <script src="../assets/main.js"></script>
   </body>
 </html>
