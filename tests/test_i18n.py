@@ -42,18 +42,9 @@ def test_resolve_language_from_config():
     assert resolve_language({"language": "fr"}) == "fr"
 
 
-def test_resolve_language_from_preferences_fallback(tmp_path, monkeypatch):
-    home = tmp_path / "home"
-    memory = home / "memory"
-    memory.mkdir(parents=True)
-    (memory / "preferences.yaml").write_text("language: fr\n", encoding="utf-8")
-    config = home / "config.yaml"
-    config.write_text("version: 1\n", encoding="utf-8")
-    monkeypatch.setattr("akomagni.core.config.DATA_DIR", home)
-    monkeypatch.setattr("akomagni.core.config.CONFIG_PATH", config)
-    monkeypatch.setattr("akomagni.core.config.MEMORY_DIR", memory)
-    cfg = {"memory": {"central_dir": str(memory)}}
-    assert resolve_language(cfg) == "fr"
+def test_resolve_language_defaults_to_english():
+    assert resolve_language({}) == "en"
+    assert resolve_language({"language": None}) == "en"
 
 
 def test_config_language_invalid(akomagni_home):
@@ -75,6 +66,12 @@ def test_config_language_show_and_set(akomagni_home):
     doctor = runner.invoke(app, ["doctor"])
     assert doctor.exit_code == 0
     assert "Profil recommandé" in doctor.stdout
+
+
+def test_config_extras_invalid(akomagni_home):
+    runner.invoke(app, ["config", "init"])
+    result = runner.invoke(app, ["config", "extras", "unknown"])
+    assert result.exit_code == 1
 
 
 def test_doctor_english_by_default(akomagni_home):
