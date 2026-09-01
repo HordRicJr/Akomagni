@@ -120,8 +120,20 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         detail = (pip_upgrade.stderr or pip_upgrade.stdout or "").strip()
         raise UpdateError(f"pip upgrade failed: {detail}")
 
+    from akomagni.core.deps import CORE_DEPENDENCIES
+
+    pip_deps = subprocess.run(  # nosec B603
+        [python_exe, "-m", "pip", "install", "--upgrade", *CORE_DEPENDENCIES],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if pip_deps.returncode != 0:
+        detail = (pip_deps.stderr or pip_deps.stdout or "").strip()
+        raise UpdateError(f"dependency install failed: {detail}")
+
     pip_install = subprocess.run(  # nosec B603
-        [python_exe, "-m", "pip", "install", "-e", str(root)],
+        [python_exe, "-m", "pip", "install", "-e", str(root), "--no-deps"],
         capture_output=True,
         text=True,
         check=False,

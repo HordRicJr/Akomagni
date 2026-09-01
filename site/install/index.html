@@ -241,7 +241,8 @@ akomagni flow route "I want to build a budget app"</pre>
       <div class="tools-category">
         <h2>Troubleshooting</h2>
         <ul class="req-list">
-          <li><strong>Python not found</strong> — install Python 3.11+ and ensure <code>python</code> is in PATH (restart terminal after install).</li>
+          <li><strong>pip: No matching distribution (platformdirs…)</strong> — check internet access to pypi.org. Or install manually: <code>python -m pip install platformdirs typer rich pyyaml psutil sqlite-vec</code> then <code>pip install -e . --no-deps</code> in <code>%LOCALAPPDATA%\akomagni</code>.</li>
+          <li><strong>Python 3.14+</strong> — Python 3.12 is recommended: <code>winget install Python.Python.3.12</code></li>
           <li><strong>Command not found after install</strong> — restart PowerShell/terminal. On Windows, check <code>%USERPROFILE%\.local\bin</code> is in your user PATH.</li>
           <li><strong>Execution policy blocked (Windows)</strong> — <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code> then retry the install command.</li>
           <li><strong>git not found (Windows)</strong> — <code>winget install Git.Git</code> and restart terminal.</li>

@@ -37,7 +37,16 @@ if [ ! -d "$INSTALL_DIR/.venv" ]; then
   python3 -m venv "$INSTALL_DIR/.venv"
 fi
 "$INSTALL_DIR/.venv/bin/pip" install -U pip
-"$INSTALL_DIR/.venv/bin/pip" install -e "$INSTALL_DIR"
+echo "==> Installing core dependencies"
+"$INSTALL_DIR/.venv/bin/pip" install --upgrade \
+  "platformdirs>=4.0" \
+  "typer>=0.12" \
+  "rich>=13.7" \
+  "pyyaml>=6.0" \
+  "psutil>=5.9" \
+  "sqlite-vec>=0.1.6"
+echo "==> Installing Akomagni (editable)"
+"$INSTALL_DIR/.venv/bin/pip" install -e "$INSTALL_DIR" --no-deps
 
 mkdir -p "$BIN_DIR"
 ln -sf "$INSTALL_DIR/.venv/bin/akomagni" "$BIN_DIR/akomagni"

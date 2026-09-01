@@ -37,6 +37,10 @@ if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
     throw "Python 3.11+ required (python in PATH). Install: winget install Python.Python.3.12"
 }
 Invoke-Checked { python -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)" }
+$pyMinor = python -c "import sys; print(sys.version_info.minor)"
+if ([int]$pyMinor -gt 13) {
+    Write-Host "WARNING: Python 3.$pyMinor detected. Python 3.12 is recommended (winget install Python.Python.3.12)." -ForegroundColor Yellow
+}
 
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     throw "git required. Install: winget install Git.Git"
@@ -71,7 +75,18 @@ if (-not (Test-Path "$InstallDir\.venv")) {
 
 Write-Host "==> Installing Python package"
 Invoke-Checked { & $PythonExe -m pip install -U pip }
-Invoke-Checked { & $PythonExe -m pip install -e $InstallDir }
+Write-Host "==> Installing core dependencies"
+Invoke-Checked {
+    & $PythonExe -m pip install --upgrade `
+        "platformdirs>=4.0" `
+        "typer>=0.12" `
+        "rich>=13.7" `
+        "pyyaml>=6.0" `
+        "psutil>=5.9" `
+        "sqlite-vec>=0.1.6"
+}
+Write-Host "==> Installing Akomagni (editable)"
+Invoke-Checked { & $PythonExe -m pip install -e $InstallDir --no-deps }
 
 if (-not (Test-Path $AkomagniExe)) {
     throw "akomagni.exe not found after install — check pip output above."
