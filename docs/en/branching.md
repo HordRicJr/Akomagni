@@ -87,6 +87,8 @@ bash scripts/enable-github-pages.sh
 .\scripts\enable-github-pages.ps1
 ```
 
+The script allows deployment from **`main`** and **`develop`** (`github-pages` environment). Without `main`, deploy fails after merging to `main`.
+
 Then merge `develop` → `main` (or re-run the Pages workflow). Optional custom domain: `akomagni.dev` in repo Settings → Pages.
 
 See [ROADMAP.md](ROADMAP.md) and [GitHub Issues](https://github.com/HordRicJr/Akomagni/issues) for planned work.
