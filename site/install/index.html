@@ -124,9 +124,69 @@ akomagni doctor</pre>
           <p><code>akomagni run cli</code> or <code>akomagni flow route "your task"</code>.</p>
         </div>
       </div>
-    </section>
 
-    <section class="cta-band">
+      <div class="tools-category" style="margin-top: 3rem">
+        <h2>First-run checklist (copy &amp; paste)</h2>
+        <p class="cat-desc">Complete setup in ~5 minutes after install.</p>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Full bootstrap</span>
+            <button class="copy-btn" type="button" data-copy="cmd-bootstrap">Copy</button>
+          </div>
+          <pre id="cmd-bootstrap">akomagni config init
+akomagni config language fr
+akomagni doctor
+pip install "akomagni[inference]"
+akomagni model recommend
+akomagni model pull qwen2.5-coder-7b
+akomagni serve --model qwen2.5-coder-7b
+akomagni inference status
+akomagni flow route "I want to build a budget app"</pre>
+        </div>
+      </div>
+
+      <div class="tools-category">
+        <h2>Optional: agent mode &amp; BMAD skills</h2>
+        <p class="cat-desc">Enable MCP tools and link BMAD skills for full Flow orchestration.</p>
+        <div class="tool-grid">
+          <article class="tool-card">
+            <h3>Agent pack</h3>
+            <p>Sandboxed fs, shell, git with approval queue.</p>
+            <div class="tool-cmd">pip install "akomagni[agent]"</div>
+          </article>
+          <article class="tool-card">
+            <h3>BMAD skills</h3>
+            <p>Symlink skills into <code>~/.akomagni/skills/</code> or run inside a BMAD project.</p>
+            <div class="tool-cmd">akomagni skill list</div>
+          </article>
+          <article class="tool-card">
+            <h3>Flow router (ML)</h3>
+            <p>Use local inference for smarter agent routing when online.</p>
+            <div class="tool-cmd">akomagni flow router-mode auto</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="tools-category">
+        <h2>Environment variables</h2>
+        <ul class="req-list">
+          <li><code>AKOMAGNI_REPO</code> — git URL (default: github.com/HordRicJr/Akomagni)</li>
+          <li><code>AKOMAGNI_INSTALL_DIR</code> — install location</li>
+          <li><code>AKOMAGNI_BIN_DIR</code> — binary directory for PATH</li>
+          <li><code>AKOMAGNI_SOURCE_DIR</code> — copy from local path instead of git clone</li>
+        </ul>
+      </div>
+
+      <div class="tools-category">
+        <h2>Troubleshooting</h2>
+        <ul class="req-list">
+          <li><strong>Python not found</strong> — install Python 3.11+ and ensure <code>python3</code> / <code>python</code> is in PATH.</li>
+          <li><strong>Command not found after install</strong> — restart terminal or add <code>~/.local/bin</code> to PATH manually.</li>
+          <li><strong>Inference offline</strong> — run <code>akomagni serve</code> after pulling a model.</li>
+          <li><strong>No skills found</strong> — install BMAD or link skills; see <a href="../tools/">Tools hub</a>.</li>
+        </ul>
+      </div>
+    </section>
       <h2>Next: install models &amp; skills</h2>
       <p>Browse the tools marketplace — GGUF models, BMAD skills, MCP agent tools, and optional packs.</p>
       <a class="btn btn-primary" href="../tools/">Open Tools hub</a>

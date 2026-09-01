@@ -61,6 +61,7 @@ router_app = typer.Typer(help="Domain model router (code, design, image, text)."
 inference_app = typer.Typer(help="OpenAI-compatible local inference API.")
 rag_app = typer.Typer(help="RAG ingest and hybrid retrieval (BM25 + sqlite-vec).")
 mcp_app = typer.Typer(help="MCP agent tools with workspace sandbox.")
+train_app = typer.Typer(help="LoRA fine-tuning from Akomagni Memory (v0.3 scaffold).")
 
 app.add_typer(run_app, name="run")
 app.add_typer(memory_app, name="memory")
@@ -72,6 +73,7 @@ app.add_typer(router_app, name="router")
 app.add_typer(inference_app, name="inference")
 app.add_typer(rag_app, name="rag")
 app.add_typer(mcp_app, name="mcp")
+app.add_typer(train_app, name="train")
 
 
 def _lang() -> str:
@@ -418,6 +420,39 @@ def flow_route(
     decision = route_message(message)
     console.print(f"{decision.badge}  agent={decision.agent_id}  skill={decision.skill}")
     console.print(decision.hint)
+
+
+@flow_app.command("router-mode")
+def flow_router_mode(
+    mode: str | None = typer.Argument(
+        None,
+        help="Flow router mode: heuristic, ml, or auto (omit to show current).",
+    ),
+) -> None:
+    """Show or set Akomagni Flow intent router mode (heuristic / ML / auto)."""
+    import yaml
+
+    from akomagni.core.config import CONFIG_PATH
+
+    cfg = load_config()
+    router = dict(cfg.get("router", {}))
+    if mode is None:
+        console.print(f"Flow router mode: [bold]{router.get('mode', 'auto')}[/bold]")
+        console.print(
+            "[dim]heuristic = regex only · ml = inference classifier · auto = ML if online[/dim]"
+        )
+        return
+    normalized = mode.strip().lower()
+    if normalized not in {"heuristic", "ml", "auto"}:
+        console.print("[red]Invalid mode. Use: heuristic, ml, or auto[/red]")
+        raise typer.Exit(code=1)
+    router["mode"] = normalized
+    merged = {**cfg, "router": router}
+    CONFIG_PATH.write_text(
+        yaml.dump(merged, allow_unicode=True, default_flow_style=False),
+        encoding="utf-8",
+    )
+    console.print(f"[green]Flow router mode set to[/] {normalized}")
 
 
 @flow_app.command("invoke")
@@ -927,3 +962,39 @@ def mcp_reject(
         console.print(f"[red]Error:[/] {exc}")
         raise typer.Exit(code=1) from exc
     console.print(f"[yellow]Rejected[/] request `{request_id}`")
+
+
+@train_app.command("plan")
+def train_plan(
+    model: str = typer.Option("qwen2.5-coder-7b", "--model", "-m", help="Base GGUF catalog name."),
+) -> None:
+    """Build a LoRA training plan from Akomagni Memory learnings."""
+    from akomagni.train.lora import TrainError, build_train_plan
+
+    try:
+        plan = build_train_plan(base_model=model)
+    except TrainError as exc:
+        console.print(f"[red]{_t('error')}:[/] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print("[bold]Train plan[/] (v0.3 scaffold)")
+    console.print(f"  Base model : {plan.base_model}")
+    console.print("  Sources    :")
+    for src in plan.dataset_sources:
+        console.print(f"    - {src}")
+    console.print(f"  Output     : {plan.output_dir}")
+    console.print(f"  [dim]{plan.notes}[/dim]")
+
+
+@train_app.command("run")
+def train_run(
+    model: str = typer.Option("qwen2.5-coder-7b", "--model", "-m", help="Base GGUF catalog name."),
+) -> None:
+    """Run LoRA training (not yet implemented — issue #15)."""
+    from akomagni.train.lora import TrainError, build_train_plan, run_train_stub
+
+    try:
+        plan = build_train_plan(base_model=model)
+        run_train_stub(plan)
+    except TrainError as exc:
+        console.print(f"[yellow]{exc}[/]")
+        raise typer.Exit(code=1) from exc

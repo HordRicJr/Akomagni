@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
 
 REQUIRED_ROUTES = ("code", "design", "write", "models", "memory")
-HUB_ROUTES = ("install", "tools")
+HUB_ROUTES = ("install", "tools", "ide")
 
 
 def test_site_root_exists():

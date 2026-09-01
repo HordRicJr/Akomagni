@@ -32,7 +32,7 @@ jobs:
       - name: Verify site routes
         run: |
           test -f site/index.html
-          for route in code design write models memory install tools; do
+          for route in code design write models memory install tools ide; do
             test -f "site/${route}/index.html"
           done
           test -f site/install/linux
