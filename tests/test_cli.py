@@ -172,6 +172,19 @@ def test_flow_route(tmp_path, monkeypatch):
     assert "bmad-agent-dev" in result.stdout
 
 
+def test_flow_router_mode_show_and_set(akomagni_home):
+    runner.invoke(app, ["config", "init"])
+    show = runner.invoke(app, ["flow", "router-mode"])
+    assert show.exit_code == 0
+    assert "auto" in show.stdout
+
+    set_heuristic = runner.invoke(app, ["flow", "router-mode", "heuristic"])
+    assert set_heuristic.exit_code == 0
+
+    invalid = runner.invoke(app, ["flow", "router-mode", "invalid"])
+    assert invalid.exit_code == 1
+
+
 def test_flow_invoke(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     result = runner.invoke(app, ["flow", "invoke", "fix bug in auth"])
