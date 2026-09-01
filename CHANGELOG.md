@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Git Flow: `develop` integration branch, `main` for stable releases only
-- CI workflows: **Quality** (ruff lint/format, i18n), **Test** (regression + 90% coverage), **Security** (pip-audit, bandit, gitleaks)
-- Branching docs (EN/FR), ROADMAP.md, GitHub issues for full v0.2–v1.0 roadmap
-- Commit convention: `type(#issue): summary`
-- PR template targets `develop`
+- **Site** — GitHub Pages hub: install, tools marketplace, IDE roadmap, module pages
+- **CLI i18n** — English/French (`akomagni config language fr`)
+- **ML flow router** — `heuristic` / `ml` / `auto` modes via local inference
+- **Train scaffold** — `akomagni train plan` previews LoRA dataset from memory
+- **Memory epic** — add, promote, auto-capture with approval queue
+- **MCP agent tools** — sandboxed fs/shell/git with approval queue
+- **RAG** — hybrid BM25 + vector ingest/query
+- **Inference** — llama.cpp server, model pull, OpenAI-compatible API on :8787
+- Install one-liners published at `hordricjr.github.io/Akomagni/install/`
 
 ### Added (v0.1.1)
 

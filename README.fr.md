@@ -8,7 +8,7 @@
 
 **Poste de travail IA local et open source** pour les créateurs — code, design, image, rédaction, recherche et business.
 
-[English](README.md) · [Documentation](docs/README.md) · [Contribuer](CONTRIBUTING.fr.md) · [Code de conduite](CODE_OF_CONDUCT.fr.md)
+[English](README.md) · [Site](https://hordricjr.github.io/Akomagni/) · [Installation](https://hordricjr.github.io/Akomagni/install/) · [Hub outils](https://hordricjr.github.io/Akomagni/tools/) · [Documentation](docs/README.md) · [Contribuer](CONTRIBUTING.fr.md) · [Code de conduite](CODE_OF_CONDUCT.fr.md)
 
 ---
 
@@ -52,15 +52,30 @@ akomagni config init
 akomagni doctor
 ```
 
-## Commandes (v0.1)
+### Installation en une ligne
+
+```bash
+# Linux / macOS
+curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash
+
+# Windows (PowerShell)
+irm https://hordricjr.github.io/Akomagni/install/windows | iex
+```
+
+Guide complet : [hordricjr.github.io/Akomagni/install/](https://hordricjr.github.io/Akomagni/install/)
+
+## Commandes
 
 ```bash
 akomagni doctor                    # Scan machine + profil recommandé
 akomagni config init               # Crée ~/.akomagni/config.yaml
+akomagni config language fr        # Interface CLI en français
 akomagni memory status             # Mémoire centrale + projet
-akomagni flow route "ton message"  # Tester le routage agent/skill
-akomagni run cli                   # CLI interactive (stub)
-akomagni serve                     # API inference locale (stub → llama.cpp)
+akomagni flow route "ton message"  # Routage vers agent/skill BMAD
+akomagni flow router-mode auto     # Routeur ML si l'inférence est en ligne
+akomagni model pull qwen2.5-coder-7b  # Télécharger un modèle GGUF
+akomagni serve                     # API locale compatible OpenAI (:8787)
+akomagni mcp serve                 # Outils agent MCP (Cursor / VS Code)
 ```
 
 ## Documentation
