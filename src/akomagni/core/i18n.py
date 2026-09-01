@@ -127,22 +127,12 @@ def normalize_language(lang: str | None) -> str:
 
 
 def resolve_language(config: dict[str, Any] | None = None) -> str:
-    """Read CLI language from config (``language`` key)."""
+    """Read CLI language from config (``language`` key, default English)."""
     if config is None:
         from akomagni.core.config import load_config
 
         config = load_config()
     raw = config.get("language")
-    if raw is None:
-        prefs = config.get("memory", {}).get("central_dir")
-        # Fallback: legacy preferences.yaml language when config has no key
-        if prefs:
-            pref_path = __import__("pathlib").Path(prefs) / "preferences.yaml"
-            if pref_path.is_file():
-                import yaml
-
-                data = yaml.safe_load(pref_path.read_text(encoding="utf-8")) or {}
-                raw = data.get("language")
     return normalize_language(str(raw) if raw else None)
 
 

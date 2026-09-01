@@ -853,6 +853,29 @@ def config_language(
     console.print(f"[green]{_t('config.language_set', code=code)}[/]")
 
 
+@config_app.command("extras")
+def config_extras(
+    pack: str = typer.Argument(..., help="Extra pack: inference, agent, or dev."),
+) -> None:
+    """Install optional dependency packs into the Akomagni Python environment."""
+    import subprocess
+    import sys
+
+    allowed = {"inference", "agent", "dev"}
+    name = pack.strip().lower()
+    if name not in allowed:
+        console.print(f"[red]Unknown pack:[/] {pack} (use: {', '.join(sorted(allowed))})")
+        raise typer.Exit(code=1)
+    console.print(f"[bold]Installing akomagni[{name}][/] …")
+    result = subprocess.run(  # nosec B603
+        [sys.executable, "-m", "pip", "install", f"akomagni[{name}]"],
+        check=False,
+    )
+    if result.returncode != 0:
+        raise typer.Exit(code=1)
+    console.print(f"[green]Installed[/] akomagni[{name}]")
+
+
 @config_app.command("show")
 def config_show() -> None:
     """Afficher la configuration active."""

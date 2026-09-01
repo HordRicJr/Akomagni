@@ -97,4 +97,5 @@ Write-Host ""
 Write-Host "Akomagni installed successfully." -ForegroundColor Green
 Write-Host "  akomagni doctor"
 Write-Host "  akomagni config init"
+Write-Host "  akomagni config extras inference"
 Write-Host "  akomagni run cli"
