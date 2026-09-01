@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IDE — Akomagni</title>
+    <meta name="theme-color" content="#0B3D2E" />
+    <link rel="stylesheet" href="../assets/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../">
+          <span class="brand-mark">A</span>
+          Akomagni
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
+        <nav class="site-nav" data-site-nav>
+          <a href="../install/">Install</a>
+          <a href="../tools/">Tools</a>
+          <a href="../code/">Code</a>
+          <a href="../design/">Design</a>
+          <a href="../write/">Write</a>
+          <a href="../models/">Models</a>
+          <a href="../memory/">Memory</a>
+        </nav>
+        <div class="header-actions">
+          <a class="btn btn-primary" href="../install/">Install CLI</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="breadcrumb"><a href="../">Home</a> / IDE</p>
+        <h1>Akomagni IDE</h1>
+        <p class="lead">
+          VS Code fork with chat sidebar, Flow integration, and local inference — planned for v1.0.
+        </p>
+      </div>
+    </section>
+
+    <main class="page-content">
+      <div class="content-block">
+        <h2>Status: planned v1.0</h2>
+        <ul class="feature-list">
+          <li><strong>Today</strong> — use <code>akomagni run cli</code> or Cursor/VS Code + MCP (<code>akomagni mcp serve</code>)</li>
+          <li><strong>v1.0</strong> — Code-OSS fork with native chat sidebar and BMAD Flow</li>
+          <li><strong>Platforms</strong> — Windows and Linux first</li>
+        </ul>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">Use MCP in Cursor today</div>
+        <pre>pip install "akomagni[agent]"
+akomagni mcp serve --workspace /path/to/project</pre>
+      </div>
+    </main>
+
+    <section class="cta-band">
+      <h2>Start with the CLI</h2>
+      <p>The full IDE is in development. Install Akomagni CLI and MCP tools now.</p>
+      <a class="btn btn-primary" href="../install/">Install guide</a>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a class="brand" href="../" style="color: #fff">
+            <span class="brand-mark">A</span>
+            Akomagni
+          </a>
+          <p>CLI and Agent modes available today. IDE coming v1.0.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Get started</h4>
+          <a href="../install/">Install</a>
+          <a href="../tools/">Tools</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="https://github.com/HordRicJr/Akomagni/issues/17">Issue #17</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
+    </footer>
+
+    <script src="../assets/main.js"></script>
+  </body>
+</html>

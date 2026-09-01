@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 
 from akomagni.flow.gates import apply_workflow_gates
-from akomagni.flow.intent import RouteDecision, classify_message
+from akomagni.flow.intent import RouteDecision
 
 
 def _project_workflow_dir() -> Path:
@@ -47,7 +47,26 @@ def _is_greenfield(message: str) -> bool:
 def route_message(message: str, project_root: Path | None = None) -> RouteDecision:
     """Classify user message and return agent + skill decision."""
     greenfield = _is_greenfield(message)
-    decision = classify_message(message, greenfield=greenfield)
+    from akomagni.core.config import load_config
+
+    cfg = load_config()
+    router_cfg = cfg.get("router", {})
+    inf = cfg.get("inference", {})
+    host = str(inf.get("host", "127.0.0.1"))
+    port = int(inf.get("port", 8787))
+    model = router_cfg.get("model") if router_cfg.get("model") != "router" else None
+
+    from akomagni.flow.ml_router import classify_with_router
+
+    mode = str(router_cfg.get("mode", "auto"))
+    decision = classify_with_router(
+        message,
+        mode=mode,
+        host=host,
+        port=port,
+        model=model,
+        greenfield=greenfield,
+    )
     if (
         greenfield
         and decision.skill != "bmad-brainstorming"
