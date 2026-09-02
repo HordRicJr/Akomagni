@@ -1,88 +1,119 @@
 const vscode = require("vscode");
-const https = require("https");
-const http = require("http");
-
-/** @type {vscode.WebviewView | undefined} */
-let chatView;
-
-/**
- * @param {vscode.ExtensionContext} context
- */
-function activate(context) {
-  const provider = new AkomagniChatProvider(context.extensionUri);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider("akomagni.chatView", provider),
-    vscode.commands.registerCommand("akomagni.openChat", () => {
-      vscode.commands.executeCommand("akomagni.chatView.focus");
-    }),
-    vscode.commands.registerCommand("akomagni.newChat", () => {
-      provider.resetChat();
-    })
-  );
-}
-
-function deactivate() {}
+const fs = require("fs");
+const path = require("path");
+const { resolveEndpoint } = require("./lib/config");
+const { checkHealth, chatCompletion } = require("./lib/inference");
+const { routeMessage, buildSystemPrompt } = require("./lib/bmad");
 
 class AkomagniChatProvider {
-  /** @param {vscode.Uri} extensionUri */
   constructor(extensionUri) {
     this.extensionUri = extensionUri;
-    /** @type {vscode.WebviewView | undefined} */
     this.view = undefined;
-    /** @type {Array<{role: string, content: string}>} */
     this.messages = [];
+    this.systemPrompt = "";
+    this.lastRoute = null;
   }
 
   resetChat() {
     this.messages = [];
-    if (this.view) {
-      this.view.webview.postMessage({ type: "reset" });
-    }
+    this.systemPrompt = "";
+    this.lastRoute = null;
+    this.post({ type: "reset" });
+    this.sendStatus();
   }
 
-  /** @param {vscode.WebviewView} webviewView */
   resolveWebviewView(webviewView) {
     this.view = webviewView;
-    chatView = webviewView;
     webviewView.webview.options = {
       enableScripts: true,
       localResourceRoots: [this.extensionUri],
     };
-    webviewView.webview.html = this.getHtml();
-    webviewView.webview.onDidReceiveMessage(async (message) => {
-      if (message.type === "send") {
-        await this.handleUserMessage(String(message.text || ""));
-      }
+    webviewView.webview.html = this.getHtml(webviewView.webview);
+    webviewView.webview.onDidReceiveMessage(async (msg) => {
+      if (msg.type === "ready") this.sendStatus();
+      if (msg.type === "send") await this.handleSend(String(msg.text || ""));
+      if (msg.type === "newChat") this.resetChat();
+      if (msg.type === "setProvider") await this.setProvider(String(msg.provider));
+      if (msg.type === "setModel") await this.setModel(String(msg.model));
+      if (msg.type === "refresh") this.sendStatus();
     });
   }
 
-  /** @param {string} text */
-  async handleUserMessage(text) {
+  async setProvider(provider) {
+    const cfg = vscode.workspace.getConfiguration("akomagni");
+    await cfg.update("provider", provider, vscode.ConfigurationTarget.Workspace);
+    this.sendStatus();
+  }
+
+  async setModel(model) {
+    const cfg = vscode.workspace.getConfiguration("akomagni");
+    await cfg.update("model", model, vscode.ConfigurationTarget.Workspace);
+    this.sendStatus();
+  }
+
+  post(payload) {
+    this.view?.webview.postMessage(payload);
+  }
+
+  async sendStatus() {
+    const endpoint = resolveEndpoint();
+    const health = await checkHealth(endpoint);
+    this.post({
+      type: "status",
+      provider: endpoint.provider,
+      model: endpoint.model,
+      baseUrl: endpoint.baseUrl,
+      online: health.online,
+      models: health.models || [],
+      hasKey: Boolean(endpoint.apiKey) || endpoint.isLocal,
+    });
+  }
+
+  async handleSend(text) {
     if (!text.trim()) return;
-    this.messages.push({ role: "user", content: text });
-    this.post({ type: "user", text });
+    const endpoint = resolveEndpoint();
+    const folder = vscode.workspace.workspaceFolders?.[0];
+    const wsName = folder?.name || "workspace";
 
-    const config = vscode.workspace.getConfiguration("akomagni");
-    const baseUrl = String(config.get("baseUrl") || "https://api.rodiumai.io/v1").replace(/\/$/, "");
-    const apiKey = String(config.get("apiKey") || "");
-    const model = String(config.get("model") || "openai/gpt-4o");
-
-    if (!apiKey) {
+    if (!endpoint.isLocal && !endpoint.apiKey) {
       this.post({
         type: "error",
-        text: "No API key. Run: akomagni connect rodium (or foundry <url>)",
+        text: "No API key. Run in terminal: akomagni connect rodium  (or: akomagni connect foundry <url>)",
       });
+      return;
+    }
+
+    this.post({ type: "user", text });
+    this.messages.push({ role: "user", content: text });
+
+    let route = null;
+    if (endpoint.bmadEnabled !== false) {
+      route = await routeMessage(text, folder?.uri.fsPath);
+      this.lastRoute = route;
+      if (route) {
+        this.post({
+          type: "route",
+          agent: route.agent_id,
+          skill: route.skill,
+          confidence: route.confidence,
+          badge: route.badge,
+        });
+        this.systemPrompt = buildSystemPrompt(route, wsName);
+      }
+    }
+
+    const health = await checkHealth(endpoint);
+    if (!health.online) {
+      const hint = endpoint.isLocal
+        ? "Start local server: akomagni serve --model <name>"
+        : "Check API key and URL (akomagni inference status)";
+      this.post({ type: "error", text: `Inference offline. ${hint}` });
       return;
     }
 
     this.post({ type: "thinking" });
     try {
-      const reply = await chatCompletion({
-        baseUrl,
-        apiKey,
-        model,
-        messages: this.messages,
-      });
+      const reply = await chatCompletion(endpoint, this.messages, this.systemPrompt);
       this.messages.push({ role: "assistant", content: reply });
       this.post({ type: "assistant", text: reply });
     } catch (err) {
@@ -90,118 +121,57 @@ class AkomagniChatProvider {
     }
   }
 
-  /** @param {object} payload */
-  post(payload) {
-    this.view?.webview.postMessage(payload);
-  }
-
-  getHtml() {
+  getHtml(webview) {
+    const style = webview.asWebviewUri(path.join(this.extensionUri, "media", "chat.css"));
+    const script = webview.asWebviewUri(path.join(this.extensionUri, "media", "chat.js"));
+    const nonce = String(Date.now());
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';" />
-  <style>
-    body { font-family: var(--vscode-font-family); margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--vscode-editor-background); color: var(--vscode-editor-foreground); }
-    #log { flex: 1; overflow-y: auto; padding: 12px; }
-    .msg { margin-bottom: 10px; white-space: pre-wrap; line-height: 1.4; }
-    .user { color: var(--vscode-textLink-foreground); }
-    .assistant { color: var(--vscode-foreground); }
-    .error { color: var(--vscode-errorForeground); }
-    .thinking { opacity: 0.6; font-style: italic; }
-    #bar { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--vscode-panel-border); }
-    #input { flex: 1; resize: none; min-height: 36px; background: var(--vscode-input-background); color: var(--vscode-input-foreground); border: 1px solid var(--vscode-input-border); border-radius: 4px; padding: 8px; }
-    button { background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; }
-  </style>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';" />
+  <link rel="stylesheet" href="${style}" />
 </head>
 <body>
-  <div id="log"><div class="msg thinking">Akomagni Chat — ask anything. Configure with <code>akomagni connect</code>.</div></div>
+  <header id="toolbar">
+    <select id="provider" title="Provider">
+      <option value="local">Local</option>
+      <option value="rodium">Rodium AI</option>
+      <option value="azure">Azure Foundry</option>
+    </select>
+    <select id="model" title="Model"></select>
+    <span id="status-dot" title="Status"></span>
+    <button id="newChat" title="New chat">+</button>
+  </header>
+  <div id="log"></div>
   <div id="bar">
-    <textarea id="input" placeholder="Message Akomagni…"></textarea>
+    <textarea id="input" rows="2" placeholder="Ask Akomagni (BMAD agents + inference)…"></textarea>
     <button id="send">Send</button>
   </div>
-  <script>
-    const vscode = acquireVsCodeApi();
-    const log = document.getElementById('log');
-    const input = document.getElementById('input');
-    document.getElementById('send').onclick = send;
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
-    function send() {
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-      vscode.postMessage({ type: 'send', text });
-    }
-    window.addEventListener('message', (event) => {
-      const m = event.data;
-      if (m.type === 'reset') { log.innerHTML = ''; return; }
-      if (m.type === 'thinking') {
-        const el = document.createElement('div');
-        el.className = 'msg thinking';
-        el.id = 'thinking';
-        el.textContent = 'Thinking…';
-        log.appendChild(el);
-        log.scrollTop = log.scrollHeight;
-        return;
-      }
-      const thinking = document.getElementById('thinking');
-      if (thinking) thinking.remove();
-      const el = document.createElement('div');
-      el.className = 'msg ' + (m.type || 'assistant');
-      el.textContent = (m.type === 'user' ? '› ' : '') + m.text;
-      log.appendChild(el);
-      log.scrollTop = log.scrollHeight;
-    });
-  </script>
+  <script nonce="${nonce}" src="${script}"></script>
 </body>
 </html>`;
   }
 }
 
-/**
- * @param {{baseUrl: string, apiKey: string, model: string, messages: Array<{role: string, content: string}>}} opts
- * @returns {Promise<string>}
- */
-function chatCompletion(opts) {
-  const url = new URL(`${opts.baseUrl}/chat/completions`);
-  const body = JSON.stringify({
-    model: opts.model,
-    messages: opts.messages,
-    stream: false,
-  });
-  const lib = url.protocol === "https:" ? https : http;
-  return new Promise((resolve, reject) => {
-    const req = lib.request(
-      url,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${opts.apiKey}`,
-          "Content-Length": Buffer.byteLength(body),
-        },
-      },
-      (res) => {
-        let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => {
-          if (res.statusCode && res.statusCode >= 400) {
-            reject(new Error(`HTTP ${res.statusCode}: ${data}`));
-            return;
-          }
-          try {
-            const parsed = JSON.parse(data);
-            resolve(parsed.choices[0].message.content);
-          } catch (err) {
-            reject(err);
-          }
-        });
-      }
-    );
-    req.on("error", reject);
-    req.write(body);
-    req.end();
-  });
+function activate(context) {
+  const provider = new AkomagniChatProvider(context.extensionUri);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider("akomagni.chatView", provider, {
+      webviewOptions: { retainContextWhenHidden: true },
+    }),
+    vscode.commands.registerCommand("akomagni.openChat", () => {
+      vscode.commands.executeCommand("akomagni.chatView.focus");
+    }),
+    vscode.commands.registerCommand("akomagni.newChat", () => provider.resetChat()),
+    vscode.commands.registerCommand("akomagni.connectRodium", async () => {
+      const term = vscode.window.createTerminal("Akomagni Connect");
+      term.show();
+      term.sendText("akomagni connect rodium");
+    })
+  );
 }
+
+function deactivate() {}
 
 module.exports = { activate, deactivate };

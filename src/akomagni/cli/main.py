@@ -535,9 +535,27 @@ def memory_cmd_reject(
 @flow_app.command("route")
 def flow_route(
     message: str = typer.Argument(..., help="User message to route."),
+    json_output: bool = typer.Option(False, "--json", help="Machine-readable JSON output."),
 ) -> None:
     """Test Akomagni Flow routing (agent + skill)."""
     decision = route_message(message)
+    if json_output:
+        import json
+
+        print(
+            json.dumps(
+                {
+                    "agent_id": decision.agent_id,
+                    "skill": decision.skill,
+                    "confidence": decision.confidence,
+                    "badge": decision.badge,
+                    "hint": decision.hint,
+                    "greenfield": decision.greenfield,
+                },
+                ensure_ascii=False,
+            )
+        )
+        return
     console.print(f"{decision.badge}  agent={decision.agent_id}  skill={decision.skill}")
     console.print(decision.hint)
 
