@@ -53,7 +53,9 @@ def test_run_update_git_pull_and_pip(tmp_path, monkeypatch):
         return Result()
 
     monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
-    monkeypatch.setattr("akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None)
+    monkeypatch.setattr(
+        "akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None
+    )
     monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Windows")
 
     result = run_update(install_dir=install, bin_dir=tmp_path / "bin")

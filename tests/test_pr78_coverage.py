@@ -131,7 +131,9 @@ def test_sync_vscode_settings_non_dict_payload(tmp_path):
 
 def test_sync_vscode_settings_missing_workspace(tmp_path):
     missing = tmp_path / "missing"
-    assert sync_vscode_settings(missing, provider="local", base_url="http://x", api_key=None) is None
+    assert (
+        sync_vscode_settings(missing, provider="local", base_url="http://x", api_key=None) is None
+    )
 
 
 def test_resolve_azure_endpoint_inline_key():
@@ -311,7 +313,9 @@ def test_run_update_git_missing(tmp_path, monkeypatch):
     install.mkdir()
     (install / "pyproject.toml").write_text("[project]\nname='akomagni'\n", encoding="utf-8")
     (install / ".git").mkdir()
-    monkeypatch.setattr("akomagni.core.update.shutil.which", lambda name: None if name == "git" else name)
+    monkeypatch.setattr(
+        "akomagni.core.update.shutil.which", lambda name: None if name == "git" else name
+    )
     with pytest.raises(UpdateError, match="git is required"):
         run_update(install_dir=install)
 
@@ -431,7 +435,9 @@ def test_run_update_pip_install_failure(tmp_path, monkeypatch):
         return Result()
 
     monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
-    monkeypatch.setattr("akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None)
+    monkeypatch.setattr(
+        "akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None
+    )
     monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Windows")
     with pytest.raises(UpdateError, match="pip install failed"):
         run_update(install_dir=install)
@@ -479,7 +485,9 @@ def test_run_update_missing_binary_after_pip(tmp_path, monkeypatch):
         return Result()
 
     monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
-    monkeypatch.setattr("akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None)
+    monkeypatch.setattr(
+        "akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None
+    )
     monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Windows")
     with pytest.raises(UpdateError, match="Missing CLI binary"):
         run_update(install_dir=install)
