@@ -6,8 +6,7 @@
   const modelSel = document.getElementById("model");
   const statusDot = document.getElementById("status-dot");
 
-  log.innerHTML =
-    '<div class="msg welcome">Akomagni Chat — BMAD agents + local / Rodium / Azure Foundry.<br>Run <code>akomagni connect rodium</code> or start <code>akomagni serve</code> for local models.</div>';
+  log.innerHTML = '<div class="msg loading">Chargement d\'Akomagni Chat…</div>';
 
   document.getElementById("send").onclick = send;
   document.getElementById("newChat").onclick = () => vscode.postMessage({ type: "newChat" });
@@ -51,6 +50,15 @@
       return;
     }
     if (m.type === "status") {
+      if (!m.ready && m.initError) {
+        log.innerHTML =
+          '<div class="msg error">Initialisation en cours — ' + m.initError + "</div>";
+        return;
+      }
+      if (document.querySelector(".msg.loading")) {
+        log.innerHTML =
+          '<div class="msg welcome">Akomagni Chat — agents BMAD + Local / Rodium / Azure.<br><code>akomagni connect rodium</code> ou <code>akomagni serve</code> pour le local.</div>';
+      }
       providerSel.value = m.provider || "local";
       statusDot.className = "online";
       statusDot.classList.toggle("online", m.online);

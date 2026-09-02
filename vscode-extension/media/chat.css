@@ -66,6 +66,7 @@ body {
 .msg.error { color: var(--vscode-errorForeground); }
 .msg.thinking { opacity: 0.6; font-style: italic; }
 .msg.welcome { opacity: 0.75; font-size: 12px; }
+.msg.loading { opacity: 0.7; font-size: 12px; font-style: italic; }
 #bar {
   display: flex;
   gap: 8px;

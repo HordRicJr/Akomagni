@@ -2,12 +2,12 @@
   "name": "akomagni-chat",
   "displayName": "Akomagni Chat",
   "description": "BMAD agent chat for VS Code — local llama-server, Rodium AI, or Azure AI Foundry.",
-  "version": "0.2.0",
-  "publisher": "HordRicJr",
+  "version": "0.2.2",
+  "publisher": "Akomagni",
   "license": "Apache-2.0",
   "icon": "media/icon-128.png",
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.97.0"
   },
   "categories": ["AI", "Chat", "Machine Learning"],
   "keywords": [
@@ -56,10 +56,10 @@
       }
     },
     "viewsContainers": {
-      "activitybar": [
+      "secondarySideBar": [
         {
           "id": "akomagni",
-          "title": "Akomagni",
+          "title": "Akomagni Chat",
           "icon": "media/icon.svg"
         }
       ]
@@ -69,7 +69,8 @@
         {
           "type": "webview",
           "id": "akomagni.chatView",
-          "name": "Chat"
+          "name": "Chat",
+          "contextualTitle": "Akomagni Chat"
         }
       ]
     },

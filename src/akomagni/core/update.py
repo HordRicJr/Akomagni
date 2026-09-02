@@ -63,9 +63,16 @@ def find_install_root() -> Path | None:
     return None
 
 
+def _git_exe() -> str:
+    git = shutil.which("git")
+    if not git:
+        raise UpdateError("git is required for akomagni update.")
+    return git
+
+
 def _git_ref(root: Path) -> str:
     result = subprocess.run(  # nosec B603
-        ["git", "-C", str(root), "rev-parse", "--short", "HEAD"],
+        [_git_exe(), "-C", str(root), "rev-parse", "--short", "HEAD"],
         capture_output=True,
         text=True,
         check=False,
@@ -90,9 +97,10 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
     if shutil.which("git") is None:
         raise UpdateError("git is required for akomagni update.")
 
+    git = _git_exe()
     previous = _git_ref(root)
     pull = subprocess.run(  # nosec B603
-        ["git", "-C", str(root), "pull", "--ff-only"],
+        [git, "-C", str(root), "pull", "--ff-only"],
         capture_output=True,
         text=True,
         check=False,

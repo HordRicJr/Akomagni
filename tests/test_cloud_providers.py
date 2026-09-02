@@ -54,7 +54,7 @@ def test_config_provider_rodium(akomagni_home, monkeypatch):
 
 def test_build_vscode_extensions_includes_akomagni_chat():
     payload = build_vscode_extensions_recommendations(provider="rodium")
-    assert "HordRicJr.akomagni-chat" in payload["recommendations"]
+    assert "Akomagni.akomagni-chat" in payload["recommendations"]
 
 
 def test_build_env_example_mentions_rodium_and_azure():

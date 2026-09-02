@@ -162,9 +162,7 @@ def connect_cmd(
     console.print("  akomagni run cli          # chat in terminal")
     console.print("  akomagni ide open         # open VS Code with Akomagni Chat")
     if normalized == "azure":
-        console.print(
-            "  Or install Foundry Toolkit: ms-windows-ai-studio.windows-ai-studio"
-        )
+        console.print("  Or install Foundry Toolkit: ms-windows-ai-studio.windows-ai-studio")
 
 
 def _lang() -> str:
@@ -1342,7 +1340,9 @@ def ide_open(
     code_cmd = shutil.which("code") or shutil.which("code.cmd")
     if not code_cmd:
         console.print("[red]VS Code CLI not found.[/] Install VS Code and enable 'code' in PATH.")
-        console.print(f"Then install extension: [bold]{AKOMAGNI_CHAT_NAME}[/] ({AKOMAGNI_CHAT_EXTENSION})")
+        console.print(
+            f"Then install extension: [bold]{AKOMAGNI_CHAT_NAME}[/] ({AKOMAGNI_CHAT_EXTENSION})"
+        )
         raise typer.Exit(code=1)
 
     ext_dir = Path(__file__).resolve().parents[3] / "vscode-extension"
@@ -1355,7 +1355,9 @@ def ide_open(
     subprocess.run([code_cmd, str(root)], check=False)  # nosec B603
     console.print(f"[green]Opened[/] {root} in VS Code")
     console.print("Click the Akomagni icon in the sidebar → Chat")
-    console.print(f"If needed, install [bold]{AKOMAGNI_CHAT_NAME}[/] from Extensions ({AKOMAGNI_CHAT_EXTENSION})")
+    console.print(
+        f"If needed, install [bold]{AKOMAGNI_CHAT_NAME}[/] from Extensions ({AKOMAGNI_CHAT_EXTENSION})"
+    )
 
 
 @ide_app.command("status")

@@ -12,7 +12,7 @@ from akomagni.inference.endpoint import (
 
 FOUNDRY_TOOLKIT_EXTENSION = "ms-windows-ai-studio.windows-ai-studio"
 FOUNDRY_TOOLKIT_NAME = "Microsoft Foundry Toolkit"
-AKOMAGNI_CHAT_EXTENSION = "HordRicJr.akomagni-chat"
+AKOMAGNI_CHAT_EXTENSION = "Akomagni.akomagni-chat"
 AKOMAGNI_CHAT_NAME = "Akomagni Chat"
 
 
