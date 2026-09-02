@@ -63,9 +63,16 @@ def find_install_root() -> Path | None:
     return None
 
 
+def _git_exe() -> str:
+    git = shutil.which("git")
+    if not git:
+        raise UpdateError("git is required for akomagni update.")
+    return git
+
+
 def _git_ref(root: Path) -> str:
     result = subprocess.run(  # nosec B603
-        ["git", "-C", str(root), "rev-parse", "--short", "HEAD"],
+        [_git_exe(), "-C", str(root), "rev-parse", "--short", "HEAD"],
         capture_output=True,
         text=True,
         check=False,
@@ -85,16 +92,15 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         )
 
     if not (root / ".git").is_dir():
-        raise UpdateError(
-            f"No git checkout at {root}. Re-run the install one-liner to reinstall."
-        )
+        raise UpdateError(f"No git checkout at {root}. Re-run the install one-liner to reinstall.")
 
     if shutil.which("git") is None:
         raise UpdateError("git is required for akomagni update.")
 
+    git = _git_exe()
     previous = _git_ref(root)
     pull = subprocess.run(  # nosec B603
-        ["git", "-C", str(root), "pull", "--ff-only"],
+        [git, "-C", str(root), "pull", "--ff-only"],
         capture_output=True,
         text=True,
         check=False,
@@ -104,8 +110,11 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         raise UpdateError(f"git pull failed: {detail}")
 
     python_exe = sys.executable
-    venv_python = root / ".venv" / ("Scripts" if platform.system() == "Windows" else "bin") / (
-        "python.exe" if platform.system() == "Windows" else "python"
+    venv_python = (
+        root
+        / ".venv"
+        / ("Scripts" if platform.system() == "Windows" else "bin")
+        / ("python.exe" if platform.system() == "Windows" else "python")
     )
     if venv_python.is_file():
         python_exe = str(venv_python)
@@ -120,8 +129,20 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         detail = (pip_upgrade.stderr or pip_upgrade.stdout or "").strip()
         raise UpdateError(f"pip upgrade failed: {detail}")
 
+    from akomagni.core.deps import CORE_DEPENDENCIES
+
+    pip_deps = subprocess.run(  # nosec B603
+        [python_exe, "-m", "pip", "install", "--upgrade", *CORE_DEPENDENCIES],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if pip_deps.returncode != 0:
+        detail = (pip_deps.stderr or pip_deps.stdout or "").strip()
+        raise UpdateError(f"dependency install failed: {detail}")
+
     pip_install = subprocess.run(  # nosec B603
-        [python_exe, "-m", "pip", "install", "-e", str(root)],
+        [python_exe, "-m", "pip", "install", "-e", str(root), "--no-deps"],
         capture_output=True,
         text=True,
         check=False,

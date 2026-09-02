@@ -6,7 +6,7 @@ from akomagni.core.doctor.scan import _detect_gpu, _recommend_profile
 from akomagni.core.project import find_project_root, skill_search_roots
 from akomagni.core.registry.models import recommend_models
 from akomagni.flow.orchestrator import route_message
-from akomagni.flow.state import load_state, record_invocation, save_state
+from akomagni.flow.state import load_state, record_invocation, save_state, workflow_dir
 from akomagni.skills.discovery import discover_skills, find_skill
 
 
@@ -75,6 +75,13 @@ def test_find_project_root(tmp_path):
     assert find_project_root(tmp_path) == tmp_path
 
 
+def test_workflow_dir_uses_central_when_no_project(tmp_path, monkeypatch):
+    home = tmp_path / "akomagni-home"
+    home.mkdir()
+    monkeypatch.setattr("akomagni.core.config.DATA_DIR", home)
+    assert workflow_dir(None, discover=False) == home / "workflow"
+
+
 def test_skill_search_roots_includes_global(tmp_path, monkeypatch):
     global_skills = tmp_path / "global-skills"
     global_skills.mkdir()
@@ -113,6 +120,7 @@ def test_route_message_forces_brainstorm_on_greenfield(tmp_path, monkeypatch):
 
 
 def test_is_greenfield_skips_when_brainstorm_complete(tmp_path, monkeypatch):
+    (tmp_path / "_bmad").mkdir()
     monkeypatch.chdir(tmp_path)
     wf = tmp_path / ".akomagni" / "workflow"
     wf.mkdir(parents=True)
@@ -123,6 +131,7 @@ def test_is_greenfield_skips_when_brainstorm_complete(tmp_path, monkeypatch):
 
 
 def test_is_greenfield_skips_when_memlog_exists(tmp_path, monkeypatch):
+    (tmp_path / "_bmad").mkdir()
     monkeypatch.chdir(tmp_path)
     brainstorm = tmp_path / ".akomagni" / "workflow" / "brainstorm" / "session1"
     brainstorm.mkdir(parents=True)
@@ -133,13 +142,13 @@ def test_is_greenfield_skips_when_memlog_exists(tmp_path, monkeypatch):
 
 
 def test_load_workflow_state_from_file(tmp_path, monkeypatch):
+    (tmp_path / "_bmad").mkdir()
     monkeypatch.chdir(tmp_path)
     wf = tmp_path / ".akomagni" / "workflow"
     wf.mkdir(parents=True)
     (wf / "state.yaml").write_text("phase: plan\n", encoding="utf-8")
-    from akomagni.flow.orchestrator import _load_workflow_state
 
-    assert _load_workflow_state()["phase"] == "plan"
+    assert load_state(tmp_path)["phase"] == "plan"
 
 
 def test_route_message_greenfield(tmp_path, monkeypatch):

@@ -18,7 +18,9 @@ from akomagni.inference.client import (
     InferenceStatus,
     chat_completion,
     check_health,
+    check_health_from_config,
 )
+from akomagni.inference.endpoint import resolve_inference_endpoint
 
 
 @dataclass(frozen=True)
@@ -53,14 +55,18 @@ def plan_inference_chat(
     cfg = config or load_config()
     models = models_dir or MODELS_DIR
     domain_plan = resolve_domain_model(message, config=cfg, models_dir=models)
-    inference_status = status or check_health(host=host, port=port)
+    endpoint = resolve_inference_endpoint(cfg)
+    if endpoint.is_local:
+        inference_status = status or check_health(host=host, port=port)
+    else:
+        inference_status = status or check_health_from_config(cfg)
     swap_plan = plan_model_swap(
         status=inference_status,
         target_path=domain_plan.model_path,
         target_model_id=domain_plan.model_id,
     )
     model_id = domain_plan.model_id
-    if inference_status.models and not swap_plan.needs_swap:
+    if inference_status.models and not swap_plan.needs_swap and endpoint.is_local:
         model_id = inference_status.models[0]
     return InferenceChatPlan(domain_plan=domain_plan, swap_plan=swap_plan, model_id=model_id)
 
@@ -75,19 +81,28 @@ def try_chat_with_inference(
     auto_swap: bool = False,
     rag_context: str = "",
 ) -> str | None:
-    """Call local /v1/chat/completions when the server is online."""
-    plan = plan_inference_chat(message, host=host, port=port)
+    """Call /v1/chat/completions when the configured provider is online."""
+    cfg = load_config()
+    endpoint = resolve_inference_endpoint(cfg)
+    plan = plan_inference_chat(message, host=host, port=port, config=cfg)
     if plan.domain_plan.skip_inference:
         return None
 
-    status = check_health(host=host, port=port)
+    if endpoint.is_local:
+        status = check_health(host=host, port=port)
+    else:
+        status = check_health_from_config(cfg)
     if not status.online:
         return None
 
-    if auto_swap and plan.swap_plan.needs_swap and plan.domain_plan.model_path is not None:
+    if (
+        endpoint.is_local
+        and auto_swap
+        and plan.swap_plan.needs_swap
+        and plan.domain_plan.model_path is not None
+    ):
         from akomagni.inference.worker import hot_swap_model
 
-        cfg = load_config()
         inference = cfg.get("inference", {})
         swap = hot_swap_model(
             plan.domain_plan.catalog_name or plan.domain_plan.model_id or "",
@@ -101,7 +116,7 @@ def try_chat_with_inference(
         if not swap.swapped and "not found" in swap.message.lower():
             return None
         status = check_health(host=host, port=port)
-        plan = plan_inference_chat(message, host=host, port=port, status=status)
+        plan = plan_inference_chat(message, host=host, port=port, status=status, config=cfg)
 
     model_id = model or plan.model_id or (status.models[0] if status.models else None)
     try:
@@ -109,6 +124,8 @@ def try_chat_with_inference(
             message,
             host=host,
             port=port,
+            base_url=None if endpoint.is_local else endpoint.base_url,
+            api_key=endpoint.api_key,
             model=model_id,
             system_prompt=build_flow_system_prompt(decision, rag_context=rag_context),
         )

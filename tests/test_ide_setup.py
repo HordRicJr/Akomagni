@@ -25,6 +25,8 @@ def test_write_cursor_mcp_config(tmp_path):
     result = write_cursor_mcp_config(tmp_path, akomagni_command="akomagni")
     assert result.cursor_config.is_file()
     assert result.vscode_config.is_file()
+    assert result.extensions_config is not None
+    assert result.extensions_config.is_file()
     payload = json.loads(result.cursor_config.read_text(encoding="utf-8"))
     assert "akomagni" in payload["mcpServers"]
 
@@ -55,7 +57,7 @@ def test_ide_setup_cli(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     result = runner.invoke(app, ["ide", "setup"])
     assert result.exit_code == 0
-    assert "IDE MCP setup complete" in result.stdout
+    assert "IDE setup complete" in result.stdout
     assert (tmp_path / ".cursor" / "mcp.json").is_file()
 
 

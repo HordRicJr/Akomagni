@@ -20,8 +20,13 @@ def load_central_context() -> str:
     return "\n\n".join(parts)
 
 
-def load_project_context() -> str:
-    project_dir = Path.cwd() / ".akomagni" / "memory"
+def load_project_context(project_root: Path | None = None) -> str:
+    from akomagni.core.project import find_project_root
+
+    root = project_root or find_project_root()
+    if root is None:
+        return ""
+    project_dir = root / ".akomagni" / "memory"
     if not project_dir.exists():
         return ""
     chunks: list[str] = []

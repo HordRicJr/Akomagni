@@ -8,8 +8,13 @@ from akomagni.core.config import MEMORY_DIR, load_config
 from akomagni.core.i18n import resolve_language, translate
 
 
-def project_memory_dir() -> Path:
-    return Path.cwd() / ".akomagni" / "memory"
+def project_memory_dir(project_root: Path | None = None) -> Path:
+    from akomagni.core.project import find_project_root
+
+    root = project_root or find_project_root()
+    if root is None:
+        return Path(".akomagni") / "memory"
+    return root / ".akomagni" / "memory"
 
 
 def memory_status(*, lang: str | None = None) -> str:

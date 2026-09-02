@@ -8,6 +8,7 @@ from pathlib import Path
 from akomagni.core.registry.catalog import resolve_catalog_name
 from akomagni.core.router.domain import DomainClassification, ModelDomain, classify_domain
 from akomagni.inference.client import InferenceStatus
+from akomagni.inference.endpoint import cloud_model_for_domain
 from akomagni.inference.llama import resolve_model_path
 
 
@@ -46,7 +47,7 @@ def resolve_domain_model(
     config: dict,
     models_dir: Path,
 ) -> DomainModelPlan:
-    """Classify message and resolve a local GGUF model for inference."""
+    """Classify message and resolve a model for inference (local GGUF or cloud)."""
     classification = classify_domain(message)
     if classification.domain is ModelDomain.IMAGE:
         return DomainModelPlan(
@@ -56,6 +57,25 @@ def resolve_domain_model(
             model_id=None,
             skip_inference=True,
             reason="image domain uses a separate pipeline (not text GGUF)",
+        )
+
+    provider = str((config.get("inference") or {}).get("provider", "local")).lower()
+    if provider in {"rodium", "azure"}:
+        model_id = cloud_model_for_domain(classification.domain.value, config=config)
+        if not model_id:
+            return DomainModelPlan(
+                classification=classification,
+                catalog_name=None,
+                model_path=None,
+                model_id=None,
+                reason=f"no cloud model mapping for domain={classification.domain.value}",
+            )
+        return DomainModelPlan(
+            classification=classification,
+            catalog_name=model_id,
+            model_path=None,
+            model_id=model_id,
+            reason=f"cloud provider={provider}",
         )
 
     catalog_name = default_domain_catalog(classification.domain, config)

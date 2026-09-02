@@ -1,0 +1,94 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  background: var(--vscode-sideBar-background);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+#toolbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  flex-wrap: wrap;
+}
+#toolbar select, #toolbar button {
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+#toolbar button { cursor: pointer; min-width: 28px; }
+#status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--vscode-descriptionForeground);
+  margin-left: auto;
+}
+#status-dot.online { background: #3fb950; }
+#status-dot.offline { background: #f85149; }
+#log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+.msg {
+  margin-bottom: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.msg.user {
+  color: var(--vscode-textLink-foreground);
+  border-left: 2px solid var(--vscode-textLink-foreground);
+  padding-left: 8px;
+}
+.msg.assistant {
+  background: var(--vscode-editor-inactiveSelectionBackground);
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+.msg.route {
+  font-size: 11px;
+  opacity: 0.85;
+  padding: 6px 8px;
+  border: 1px dashed var(--vscode-panel-border);
+  border-radius: 4px;
+}
+.msg.error { color: var(--vscode-errorForeground); }
+.msg.thinking { opacity: 0.6; font-style: italic; }
+.msg.welcome { opacity: 0.75; font-size: 12px; }
+.msg.loading { opacity: 0.7; font-size: 12px; font-style: italic; }
+#bar {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border-top: 1px solid var(--vscode-panel-border);
+}
+#input {
+  flex: 1;
+  resize: none;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 6px;
+  padding: 8px;
+  font-family: inherit;
+}
+#send {
+  align-self: flex-end;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+}

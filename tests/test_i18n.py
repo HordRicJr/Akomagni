@@ -74,6 +74,12 @@ def test_config_extras_invalid(akomagni_home):
     assert result.exit_code == 1
 
 
+def test_extras_alias_invalid(akomagni_home):
+    runner.invoke(app, ["config", "init"])
+    result = runner.invoke(app, ["extras", "unknown"])
+    assert result.exit_code == 1
+
+
 def test_doctor_english_by_default(akomagni_home):
     runner.invoke(app, ["config", "init"])
     result = runner.invoke(app, ["doctor"])
