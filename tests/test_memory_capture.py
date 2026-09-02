@@ -173,8 +173,8 @@ def test_run_cli_auto_capture_save(akomagni_home, tmp_path, monkeypatch):
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        "akomagni.cli.main.check_health",
-        lambda **_: InferenceStatus(
+        "akomagni.cli.main.check_health_from_config",
+        lambda *_args, **_kwargs: InferenceStatus(
             online=True,
             base_url="http://127.0.0.1:8787/v1",
             models=["local"],

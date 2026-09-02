@@ -17,7 +17,11 @@ from akomagni.core.router import classify_domain
 from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import load_state
 from akomagni.inference.chat import plan_inference_chat, try_chat_with_inference
-from akomagni.inference.client import InferenceClientError, chat_completion, check_health
+from akomagni.inference.client import (
+    InferenceClientError,
+    chat_completion,
+    check_health_from_config,
+)
 from akomagni.inference.llama import list_local_models
 from akomagni.inference.pull import ModelPullError, pull_model
 from akomagni.inference.server import serve as start_inference_server
@@ -140,7 +144,9 @@ def update() -> None:
         raise typer.Exit(code=1) from exc
     console.print(f"[green]{_t('update.success')}[/]")
     if result.previous_ref != result.current_ref:
-        console.print(_t("update.from_to", previous=result.previous_ref, current=result.current_ref))
+        console.print(
+            _t("update.from_to", previous=result.previous_ref, current=result.current_ref)
+        )
     else:
         console.print("  Already up to date.")
     console.print(_t("update.install_dir", path=result.install_dir))
@@ -211,12 +217,18 @@ def run_cli(
     console.print(f"[bold]{_t('run.cli_banner')}[/]")
     inference_online = False
     if inference:
-        status = check_health(host=host, port=port)
+        status = check_health_from_config(cfg)
         inference_online = status.online
         if inference_online:
             console.print(f"[dim]{_t('run.inference_online', url=status.base_url)}[/]")
         else:
-            console.print(f"[dim]{_t('run.inference_offline')}[/]")
+            provider = str(inf_cfg.get("provider", "local"))
+            if provider == "local":
+                console.print(f"[dim]{_t('run.inference_offline')}[/]")
+            else:
+                console.print(
+                    f"[dim]Cloud inference ({provider}) offline — check API key and base URL[/]"
+                )
 
     while True:
         try:
@@ -694,18 +706,16 @@ def inference_worker() -> None:
 
 @inference_app.command("status")
 def inference_status() -> None:
-    """Check whether the local OpenAI-compatible API is online."""
+    """Check whether the configured inference provider is online."""
     cfg = load_config()
-    inference = cfg.get("inference", {})
-    host = inference.get("host", "127.0.0.1")
-    port = int(inference.get("port", 8787))
-    status = check_health(host=host, port=port)
+    status = check_health_from_config(cfg)
+    provider = str((cfg.get("inference") or {}).get("provider", "local"))
     if status.online:
-        console.print(f"[green]{_t('inference.online')}[/] — {status.base_url}")
+        console.print(f"[green]{_t('inference.online')}[/] — {status.base_url} ({provider})")
         if status.models:
-            console.print(f"Models: {', '.join(status.models)}")
+            console.print(f"Models: {', '.join(status.models[:5])}")
     else:
-        console.print(f"[red]{_t('inference.offline')}[/] — {status.base_url}")
+        console.print(f"[red]{_t('inference.offline')}[/] — {status.base_url} ({provider})")
         if status.error:
             console.print(status.error)
         raise typer.Exit(code=1)
@@ -717,12 +727,22 @@ def inference_chat(
     model: str | None = typer.Option(None, "--model", "-m", help="Model id override."),
 ) -> None:
     """Send one message to /v1/chat/completions and print the reply."""
+    from akomagni.inference.endpoint import resolve_inference_endpoint
+
     cfg = load_config()
+    endpoint = resolve_inference_endpoint(cfg)
     inference = cfg.get("inference", {})
     host = inference.get("host", "127.0.0.1")
     port = int(inference.get("port", 8787))
     try:
-        reply = chat_completion(message, host=host, port=port, model=model)
+        reply = chat_completion(
+            message,
+            host=host,
+            port=port,
+            base_url=None if endpoint.is_local else endpoint.base_url,
+            api_key=endpoint.api_key,
+            model=model,
+        )
     except InferenceClientError as exc:
         console.print(f"[red]Error:[/] {exc}")
         raise typer.Exit(code=1) from exc
@@ -905,6 +925,55 @@ def _install_extras_pack(pack: str) -> None:
     if result.returncode != 0:
         raise typer.Exit(code=1)
     console.print(f"[green]Installed[/] akomagni[{name}]")
+
+
+@config_app.command("provider")
+def config_provider(
+    name: str = typer.Argument(..., help="Provider: local, rodium, or azure."),
+    base_url: str | None = typer.Option(
+        None,
+        "--base-url",
+        help="Azure Foundry endpoint, e.g. https://RESOURCE.openai.azure.com/openai/v1/",
+    ),
+) -> None:
+    """Switch inference provider (local llama-server, Rodium AI, or Azure Foundry)."""
+    import yaml
+
+    from akomagni.core.config import CONFIG_PATH
+    from akomagni.inference.providers import apply_provider_preset
+
+    provider = name.strip().lower()
+    if provider not in {"local", "rodium", "azure"}:
+        console.print(f"[red]Unknown provider:[/] {name} (use: local, rodium, azure)")
+        raise typer.Exit(code=1)
+    if provider == "azure" and not base_url:
+        console.print(
+            "[yellow]Azure requires --base-url[/] "
+            "(https://YOUR-RESOURCE.openai.azure.com/openai/v1/)"
+        )
+        raise typer.Exit(code=1)
+
+    cfg = load_config()
+    try:
+        merged = apply_provider_preset(cfg, provider, azure_base_url=base_url)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/]")
+        raise typer.Exit(code=1) from exc
+
+    CONFIG_PATH.write_text(
+        yaml.dump(merged, allow_unicode=True, default_flow_style=False),
+        encoding="utf-8",
+    )
+    console.print(f"[green]Inference provider set to[/] {provider}")
+    if provider == "rodium":
+        console.print("Set RODIUMAI_API_KEY (rd_sk_…) then: akomagni inference status")
+    elif provider == "azure":
+        console.print("Set AZURE_OPENAI_API_KEY then: akomagni inference status")
+        console.print(
+            "Install Microsoft Foundry Toolkit in VS Code: ms-windows-ai-studio.windows-ai-studio"
+        )
+    else:
+        console.print("Run: akomagni serve --model <name>")
 
 
 @config_app.command("show")
@@ -1107,25 +1176,49 @@ def ide_setup(
         "-w",
         help="Project root (default: current directory).",
     ),
+    provider: str = typer.Option(
+        "local",
+        "--provider",
+        "-p",
+        help="Cloud guide: local, rodium, or azure.",
+    ),
     force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing MCP config files."),
 ) -> None:
-    """Write Cursor/VS Code MCP config for Akomagni agent tools."""
-    from akomagni.ide.setup import IdeSetupError, write_cursor_mcp_config
+    """Write Cursor/VS Code MCP config, extensions, and cloud provider guide."""
+    from akomagni.ide.setup import IDE_GUIDE_FILENAME, IdeSetupError, write_cursor_mcp_config
 
     root = Path(workspace) if workspace else Path.cwd()
+    prov = provider.strip().lower()
+    if prov not in {"local", "rodium", "azure"}:
+        console.print(f"[red]Unknown provider:[/] {provider}")
+        raise typer.Exit(code=1)
     try:
-        result = write_cursor_mcp_config(root, overwrite=force)
+        result = write_cursor_mcp_config(root, overwrite=force, provider=prov)
     except IdeSetupError as exc:
         console.print(f"[red]{_t('error')}:[/] {exc}")
         raise typer.Exit(code=1) from exc
-    console.print("[bold]IDE MCP setup complete[/]")
-    console.print(f"  Workspace : {result.workspace}")
-    console.print(f"  Cursor    : {result.cursor_config}")
-    console.print(f"  VS Code   : {result.vscode_config}")
-    console.print(f"  Command   : {result.akomagni_command}")
-    console.print(
-        '\nNext: pip install "akomagni[agent]" · restart Cursor · enable MCP server "akomagni".'
-    )
+    console.print("[bold]IDE setup complete[/]")
+    console.print(f"  Workspace   : {result.workspace}")
+    console.print(f"  Cursor MCP  : {result.cursor_config}")
+    console.print(f"  VS Code MCP : {result.vscode_config}")
+    if result.extensions_config:
+        console.print(f"  Extensions  : {result.extensions_config}")
+    if result.env_example:
+        console.print(f"  Env template: {result.env_example}")
+    if result.guide_path:
+        console.print(f"  Guide       : {result.guide_path}")
+    console.print(f"  Command     : {result.akomagni_command}")
+    console.print("\nNext steps:")
+    console.print("  1. akomagni config extras agent")
+    console.print("  2. Restart Cursor/VS Code and enable MCP server akomagni")
+    if prov == "rodium":
+        console.print("  3. akomagni config provider rodium  (set RODIUMAI_API_KEY)")
+    elif prov == "azure":
+        console.print("  3. Install Microsoft Foundry Toolkit extension in VS Code")
+        console.print("  4. akomagni config provider azure --base-url <foundry-endpoint>")
+    else:
+        console.print("  3. akomagni config provider local  OR  akomagni config provider rodium")
+    console.print(f"  See {IDE_GUIDE_FILENAME} in your project for full instructions.")
 
 
 @ide_app.command("status")
@@ -1146,10 +1239,19 @@ def ide_status_cmd(
     console.print(f"  Workspace           : {status['workspace']}")
     console.print(f"  Cursor MCP config   : {'yes' if status['cursor_config'] else 'no'}")
     console.print(f"  VS Code MCP config  : {'yes' if status['vscode_config'] else 'no'}")
+    console.print(f"  Extensions config   : {'yes' if status.get('extensions_config') else 'no'}")
     console.print(
         f"  Agent extra         : {'installed' if status['agent_extra_installed'] else 'missing'}"
     )
+    console.print(f"  Inference provider  : {status.get('inference_provider', 'local')}")
+    console.print(
+        "  API key set         : "
+        f"{'yes' if status.get('inference_api_key_set') else 'no (cloud only)'}"
+    )
     console.print(f"  akomagni command    : {status['akomagni_command']}")
+    console.print(f"  Foundry Toolkit     : {status.get('foundry_toolkit_extension')}")
     console.print(f"  Native IDE          : {status['native_ide']}")
+    if status.get("guide_path"):
+        console.print(f"  Guide               : {status['guide_path']}")
     if not status["cursor_config"]:
         console.print("\nRun [bold]akomagni ide setup[/] to generate MCP config.")

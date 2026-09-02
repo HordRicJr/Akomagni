@@ -20,10 +20,17 @@ class InferenceStatus:
     health_url: str | None = None
     models: list[str] | None = None
     error: str | None = None
+    provider: str = "local"
 
 
 def api_base_url(*, host: str = "127.0.0.1", port: int = 8787) -> str:
     return f"http://{host}:{port}/v1"
+
+
+def _auth_headers(api_key: str | None) -> dict[str, str]:
+    if not api_key:
+        return {}
+    return {"Authorization": f"Bearer {api_key}"}
 
 
 def _request_json(
@@ -32,9 +39,10 @@ def _request_json(
     method: str = "GET",
     payload: dict[str, Any] | None = None,
     timeout: float = 30.0,
+    api_key: str | None = None,
 ) -> Any:
     data = None
-    headers = {"Accept": "application/json"}
+    headers = {"Accept": "application/json", **_auth_headers(api_key)}
     if payload is not None:
         data = json.dumps(payload).encode("utf-8")
         headers["Content-Type"] = "application/json"
@@ -50,23 +58,31 @@ def _request_json(
         raise InferenceClientError(str(exc)) from exc
 
 
-def check_health(*, host: str = "127.0.0.1", port: int = 8787) -> InferenceStatus:
-    """Probe llama-server health and list available models."""
-    base = f"http://{host}:{port}"
-    base_v1 = api_base_url(host=host, port=port)
+def check_health(
+    *,
+    host: str = "127.0.0.1",
+    port: int = 8787,
+    base_url: str | None = None,
+    api_key: str | None = None,
+    provider: str = "local",
+) -> InferenceStatus:
+    """Probe an OpenAI-compatible /v1 API (local llama-server or cloud)."""
+    base_v1 = (base_url or api_base_url(host=host, port=port)).rstrip("/")
+    base = base_v1.removesuffix("/v1")
     online = False
     health_url: str | None = None
     models: list[str] | None = None
 
-    try:
-        _request_json(f"{base}/health", timeout=3.0)
-        online = True
-        health_url = f"{base}/health"
-    except InferenceClientError:
-        pass
+    if provider == "local":
+        try:
+            _request_json(f"{base}/health", timeout=3.0)
+            online = True
+            health_url = f"{base}/health"
+        except InferenceClientError:
+            pass
 
     try:
-        data = _request_json(f"{base_v1}/models", timeout=3.0)
+        data = _request_json(f"{base_v1}/models", timeout=8.0, api_key=api_key)
         online = True
         if health_url is None:
             health_url = f"{base_v1}/models"
@@ -87,11 +103,36 @@ def check_health(*, host: str = "127.0.0.1", port: int = 8787) -> InferenceStatu
             base_url=base_v1,
             health_url=health_url,
             models=models,
+            provider=provider,
         )
+    offline_hint = "Inference server offline — run: akomagni serve"
+    if provider == "rodium":
+        offline_hint = "Rodium AI offline — check RODIUMAI_API_KEY and network"
+    elif provider == "azure":
+        offline_hint = "Azure Foundry offline — check AZURE_OPENAI_API_KEY and base_url"
     return InferenceStatus(
         online=False,
         base_url=base_v1,
-        error="Inference server offline — run: akomagni serve",
+        error=offline_hint,
+        provider=provider,
+    )
+
+
+def check_health_from_config(config: dict | None = None) -> InferenceStatus:
+    """Probe the configured inference provider."""
+    from akomagni.inference.endpoint import resolve_inference_endpoint
+
+    endpoint = resolve_inference_endpoint(config)
+    if endpoint.is_local:
+        base = endpoint.base_url.rstrip("/")
+        host_port = base.removeprefix("http://").removeprefix("https://").split("/")[0]
+        host, _, port_str = host_port.partition(":")
+        port = int(port_str or 8787)
+        return check_health(host=host, port=port, provider="local")
+    return check_health(
+        base_url=endpoint.base_url,
+        api_key=endpoint.api_key,
+        provider=endpoint.provider,
     )
 
 
@@ -100,6 +141,8 @@ def chat_completion(
     *,
     host: str = "127.0.0.1",
     port: int = 8787,
+    base_url: str | None = None,
+    api_key: str | None = None,
     model: str | None = None,
     system_prompt: str | None = None,
     timeout: float = 120.0,
@@ -117,8 +160,9 @@ def chat_completion(
     if model:
         payload["model"] = model
 
-    url = f"{api_base_url(host=host, port=port)}/chat/completions"
-    data = _request_json(url, method="POST", payload=payload, timeout=timeout)
+    root = (base_url or api_base_url(host=host, port=port)).rstrip("/")
+    url = f"{root}/chat/completions"
+    data = _request_json(url, method="POST", payload=payload, timeout=timeout, api_key=api_key)
     try:
         return data["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as exc:

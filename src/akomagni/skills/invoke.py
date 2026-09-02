@@ -129,9 +129,7 @@ def invoke_skill(
     bmad_root = project_root or find_project_root()
     decision = route_message(message, project_root=bmad_root)
     skill_id = skill_override or decision.skill
-    skill = (
-        find_skill(skill_id, bmad_root) if skill_id not in ("chat", "image-pipeline") else None
-    )
+    skill = find_skill(skill_id, bmad_root) if skill_id not in ("chat", "image-pipeline") else None
     agent_path = _agent_skill_path(decision.agent_id, bmad_root)
     central = load_central_context()
     project = load_project_context(bmad_root)

@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from akomagni.core.doctor.scan import _detect_gpu, _recommend_profile
-from akomagni.core.project import find_project_root, resolve_workspace_root, skill_search_roots
+from akomagni.core.project import find_project_root, skill_search_roots
 from akomagni.core.registry.models import recommend_models
 from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import load_state, record_invocation, save_state, workflow_dir

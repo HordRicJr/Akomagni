@@ -51,21 +51,59 @@
         <h2>Today: Cursor / VS Code + MCP</h2>
         <ul class="feature-list">
           <li><strong>Step 1</strong> — Install Akomagni CLI (<a href="../install/">install guide</a>)</li>
-          <li><strong>Step 2</strong> — Agent pack: <code>pip install "akomagni[agent]"</code></li>
+          <li><strong>Step 2</strong> — Agent pack: <code>akomagni config extras agent</code></li>
           <li><strong>Step 3</strong> — Generate MCP config in your project</li>
           <li><strong>Step 4</strong> — Restart Cursor/VS Code and enable the Akomagni MCP server</li>
         </ul>
       </div>
 
       <div class="tools-category">
+        <h2>Online inference (Rodium AI)</h2>
+        <p class="cat-desc">
+          Rodium AI is OpenAI-compatible at <code>https://api.rodiumai.io/v1</code>.
+          <a href="https://www.rodiumai.io/docs" target="_blank" rel="noopener">Docs</a>
+        </p>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Rodium + Akomagni CLI</span>
+            <button class="copy-btn" type="button" data-copy="cmd-rodium">Copy</button>
+          </div>
+          <pre id="cmd-rodium">$env:RODIUMAI_API_KEY="rd_sk_..."
+akomagni config provider rodium
+akomagni ide setup --provider rodium
+akomagni inference status
+akomagni run cli</pre>
+        </div>
+      </div>
+
+      <div class="tools-category">
+        <h2>Azure AI Foundry + VS Code</h2>
+        <p class="cat-desc">
+          Install <strong>Microsoft Foundry Toolkit</strong> for chat in VS Code.
+          <a href="https://learn.microsoft.com/azure/foundry/how-to/develop/get-started-projects-visual-studio-code" target="_blank" rel="noopener">Learn docs</a>
+        </p>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Azure Foundry workflow</span>
+            <button class="copy-btn" type="button" data-copy="cmd-azure">Copy</button>
+          </div>
+          <pre id="cmd-azure"># VS Code extension: ms-windows-ai-studio.windows-ai-studio
+$env:AZURE_OPENAI_API_KEY="..."
+akomagni config provider azure --base-url https://YOUR-RESOURCE.openai.azure.com/openai/v1/
+akomagni ide setup --provider azure
+akomagni inference status</pre>
+        </div>
+      </div>
+
+      <div class="tools-category">
         <h2>One-command setup</h2>
-        <p class="cat-desc">Run inside your project root — writes <code>.cursor/mcp.json</code> and <code>.vscode/mcp.json</code>.</p>
+        <p class="cat-desc">Run inside your project root — writes MCP config, extensions.json, .env.example, and AKOMAGNI_IDE.md.</p>
         <div class="copy-block">
           <div class="copy-block-header">
             <span>Generate MCP config</span>
             <button class="copy-btn" type="button" data-copy="cmd-ide-setup">Copy</button>
           </div>
-          <pre id="cmd-ide-setup">pip install "akomagni[agent]"
+          <pre id="cmd-ide-setup">akomagni config extras agent
 akomagni ide setup
 akomagni ide status</pre>
         </div>
@@ -80,8 +118,9 @@ akomagni ide status</pre>
           </div>
           <pre id="cmd-ide-win">irm https://hordricjr.github.io/Akomagni/install/windows | iex
 # Restart PowerShell, then in your project:
-pip install "akomagni[agent]"
+akomagni config extras agent
 akomagni ide setup
+akomagni config provider local
 akomagni serve --model qwen2.5-coder-7b</pre>
         </div>
       </div>

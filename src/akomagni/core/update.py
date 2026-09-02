@@ -85,9 +85,7 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         )
 
     if not (root / ".git").is_dir():
-        raise UpdateError(
-            f"No git checkout at {root}. Re-run the install one-liner to reinstall."
-        )
+        raise UpdateError(f"No git checkout at {root}. Re-run the install one-liner to reinstall.")
 
     if shutil.which("git") is None:
         raise UpdateError("git is required for akomagni update.")
@@ -104,8 +102,11 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         raise UpdateError(f"git pull failed: {detail}")
 
     python_exe = sys.executable
-    venv_python = root / ".venv" / ("Scripts" if platform.system() == "Windows" else "bin") / (
-        "python.exe" if platform.system() == "Windows" else "python"
+    venv_python = (
+        root
+        / ".venv"
+        / ("Scripts" if platform.system() == "Windows" else "bin")
+        / ("python.exe" if platform.system() == "Windows" else "python")
     )
     if venv_python.is_file():
         python_exe = str(venv_python)

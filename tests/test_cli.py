@@ -60,8 +60,8 @@ def test_inference_status_online(akomagni_home, monkeypatch):
     from akomagni.inference.client import InferenceStatus
 
     monkeypatch.setattr(
-        "akomagni.cli.main.check_health",
-        lambda **_: InferenceStatus(
+        "akomagni.cli.main.check_health_from_config",
+        lambda *_args, **_kwargs: InferenceStatus(
             online=True,
             base_url="http://127.0.0.1:8787/v1",
             models=["local"],
@@ -346,7 +346,7 @@ def test_run_cli_with_inference(tmp_path, monkeypatch, akomagni_home):
             raise EOFError
 
     with (
-        patch("akomagni.cli.main.check_health") as mock_health,
+        patch("akomagni.cli.main.check_health_from_config") as mock_health,
         patch("akomagni.cli.main.try_chat_with_inference", return_value="Use JWT."),
         patch("akomagni.cli.main.console.input", side_effect=fake_input),
     ):
