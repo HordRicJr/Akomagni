@@ -71,22 +71,21 @@ def test_regression_flow_routes_dev(tmp_path, monkeypatch):
     assert decision.skill == "bmad-build"
 
 
-def test_regression_flow_invoke_writes_session_and_state(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+def test_regression_flow_invoke_writes_session_and_state(akomagni_home, monkeypatch):
     monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
 
     result = invoke_skill("implement the login API with JWT")
     assert result.session_path.is_file()
     assert "login API" in result.session_path.read_text(encoding="utf-8")
     assert result.decision.agent_id == "bmad-agent-dev"
+    assert result.project_root is None
 
-    state_path = tmp_path / ".akomagni" / "workflow" / "state.yaml"
+    state_path = akomagni_home / "workflow" / "state.yaml"
     assert state_path.is_file()
     assert "active_agent" in state_path.read_text(encoding="utf-8")
 
 
-def test_regression_flow_cli_invoke_and_status(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+def test_regression_flow_cli_invoke_and_status(akomagni_home, monkeypatch):
     monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
 
     invoke = runner.invoke(app, ["flow", "invoke", "design landing page"])

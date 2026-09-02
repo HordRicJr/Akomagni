@@ -225,15 +225,14 @@ def test_flow_invoke_exec_success(tmp_path, monkeypatch):
     assert "Workflow rendered" in result.stdout
 
 
-def test_flow_invoke_open(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+def test_flow_invoke_open(akomagni_home, monkeypatch):
+    monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
     result = runner.invoke(app, ["flow", "invoke", "design landing page", "--open"])
     assert result.exit_code == 0
     assert "Akomagni Flow session" in result.stdout
 
 
-def test_flow_status(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+def test_flow_status(akomagni_home, monkeypatch):
     monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
     runner.invoke(app, ["flow", "invoke", "design landing page"])
     result = runner.invoke(app, ["flow", "status"])

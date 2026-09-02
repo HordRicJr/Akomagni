@@ -512,7 +512,7 @@ def flow_invoke(
             )
         else:
             console.print(f"[yellow]{_t('flow.skill_exec_failed')}:[/] {result.run_result.error}")
-    state = load_state(result.project_root)
+    state = load_state(result.project_root, discover=result.project_root is not None)
     if state.get("active_agent"):
         console.print(f"Workflow state updated — active agent: {state['active_agent']}")
     if open_session:
@@ -877,6 +877,18 @@ def config_extras(
     pack: str = typer.Argument(..., help="Extra pack: inference, agent, or dev."),
 ) -> None:
     """Install optional dependency packs into the Akomagni Python environment."""
+    _install_extras_pack(pack)
+
+
+@app.command("extras")
+def extras_alias(
+    pack: str = typer.Argument(..., help="Extra pack: inference, agent, or dev."),
+) -> None:
+    """Alias for ``akomagni config extras``."""
+    _install_extras_pack(pack)
+
+
+def _install_extras_pack(pack: str) -> None:
     import subprocess
     import sys
 

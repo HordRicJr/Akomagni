@@ -6,6 +6,7 @@ from akomagni.memory.store import memory_status, project_memory_dir
 
 
 def test_project_memory_dir(tmp_path, monkeypatch):
+    (tmp_path / "_bmad").mkdir()
     monkeypatch.chdir(tmp_path)
     assert project_memory_dir() == tmp_path / ".akomagni" / "memory"
 
@@ -19,6 +20,7 @@ def test_memory_status_with_project(tmp_path, monkeypatch):
     (memory / "stacks").mkdir()
 
     monkeypatch.setattr("akomagni.memory.store.MEMORY_DIR", memory)
+    (tmp_path / "_bmad").mkdir()
     monkeypatch.chdir(tmp_path)
     proj = tmp_path / ".akomagni" / "memory"
     proj.mkdir(parents=True)
@@ -49,6 +51,7 @@ def test_load_project_context_empty(tmp_path, monkeypatch):
 
 
 def test_load_project_context_with_files(tmp_path, monkeypatch):
+    (tmp_path / "_bmad").mkdir()
     monkeypatch.chdir(tmp_path)
     proj = tmp_path / ".akomagni" / "memory"
     proj.mkdir(parents=True)

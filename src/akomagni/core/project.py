@@ -19,6 +19,27 @@ def find_project_root(start: Path | None = None) -> Path | None:
     return None
 
 
+def resolve_workspace_root(
+    project_root: Path | None = None,
+    *,
+    start: Path | None = None,
+) -> tuple[Path, bool]:
+    """Return ``(storage_root, is_bmad_project)`` for workflow/session data.
+
+    In a BMAD workspace, data lives under ``<project>/.akomagni/``. Outside a
+    project, use the central Akomagni data directory (``platformdirs``) instead
+    of the current working directory — so running from ``System32`` still works.
+    """
+    if project_root is not None:
+        return project_root.resolve(), True
+    found = find_project_root(start)
+    if found is not None:
+        return found, True
+    from akomagni.core.config import DATA_DIR
+
+    return DATA_DIR, False
+
+
 def skill_search_roots(project_root: Path | None = None) -> list[Path]:
     """Directories to scan for installed BMAD skill folders."""
     from akomagni.core.config import SKILLS_DIR

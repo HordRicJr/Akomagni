@@ -8,6 +8,7 @@ from akomagni.skills.invoke import invoke_skill
 
 
 def test_invoke_writes_session(tmp_path, monkeypatch):
+    (tmp_path / "_bmad").mkdir()
     monkeypatch.chdir(tmp_path)
     result = invoke_skill("implement the login API with JWT")
     assert result.session_path.is_file()

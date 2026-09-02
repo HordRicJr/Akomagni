@@ -4,30 +4,17 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
-
 from akomagni.flow.gates import apply_workflow_gates
 from akomagni.flow.intent import RouteDecision
-
-
-def _project_workflow_dir() -> Path:
-    return Path.cwd() / ".akomagni" / "workflow"
-
-
-def _load_workflow_state() -> dict:
-    path = _project_workflow_dir() / "state.yaml"
-    if not path.exists():
-        return {}
-    with path.open(encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+from akomagni.flow.state import load_state, workflow_dir
 
 
 def _is_greenfield(message: str) -> bool:
-    state = _load_workflow_state()
+    state = load_state()
     gates = state.get("gates") or {}
     if gates.get("brainstorm") == "complete":
         return False
-    brainstorm_dir = _project_workflow_dir() / "brainstorm"
+    brainstorm_dir = workflow_dir() / "brainstorm"
     if brainstorm_dir.exists() and any(brainstorm_dir.glob("**/.memlog.md")):
         return False
     lowered = message.lower()
