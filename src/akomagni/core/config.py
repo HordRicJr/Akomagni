@@ -29,12 +29,33 @@ DEFAULT_CONFIG: dict[str, Any] = {
         },
     },
     "inference": {
+        "provider": "local",
         "host": "127.0.0.1",
         "port": 8787,
         "binary": None,
         "default_model": None,
         "ctx_size": 4096,
         "n_gpu_layers": -1,
+    },
+    "providers": {
+        "rodium": {
+            "base_url": "https://api.rodiumai.io/v1",
+            "api_key_env": "RODIUMAI_API_KEY",
+            "models": {
+                "code": "openai/gpt-4o",
+                "design": "anthropic/claude-sonnet-4-6",
+                "text": "google/gemini-3.1-flash-lite-preview",
+            },
+        },
+        "azure": {
+            "base_url": None,
+            "api_key_env": "AZURE_OPENAI_API_KEY",
+            "deployments": {
+                "code": "gpt-4o",
+                "design": "gpt-4o",
+                "text": "gpt-4o-mini",
+            },
+        },
     },
     "workflow": {
         "brainstorm": {

@@ -1,0 +1,103 @@
+{
+  "name": "akomagni-chat",
+  "displayName": "Akomagni Chat",
+  "description": "BMAD agent chat for VS Code — local llama-server, Rodium AI, or Azure AI Foundry.",
+  "version": "0.2.2",
+  "publisher": "Akomagni",
+  "license": "Apache-2.0",
+  "icon": "media/icon-128.png",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": ["AI", "Chat", "Machine Learning"],
+  "keywords": [
+    "akomagni",
+    "bmad",
+    "copilot",
+    "chat",
+    "rodium",
+    "azure",
+    "foundry",
+    "local llm",
+    "ollama"
+  ],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Akomagni",
+      "properties": {
+        "akomagni.provider": {
+          "type": "string",
+          "default": "local",
+          "enum": ["local", "rodium", "azure"],
+          "description": "Inference provider: local (akomagni serve), rodium, or azure (Foundry)."
+        },
+        "akomagni.baseUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8787/v1",
+          "description": "OpenAI-compatible API base URL."
+        },
+        "akomagni.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key — set automatically by akomagni connect."
+        },
+        "akomagni.model": {
+          "type": "string",
+          "default": "openai/gpt-4o",
+          "description": "Model or Azure deployment name."
+        },
+        "akomagni.bmadRouting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Route messages through BMAD agents (requires akomagni CLI on PATH)."
+        }
+      }
+    },
+    "viewsContainers": {
+      "secondarySideBar": [
+        {
+          "id": "akomagni",
+          "title": "Akomagni Chat",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "akomagni": [
+        {
+          "type": "webview",
+          "id": "akomagni.chatView",
+          "name": "Chat",
+          "contextualTitle": "Akomagni Chat"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "akomagni.openChat",
+        "title": "Akomagni: Open Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "akomagni.newChat",
+        "title": "Akomagni: New Chat",
+        "icon": "$(add)"
+      },
+      {
+        "command": "akomagni.connectRodium",
+        "title": "Akomagni: Connect Rodium AI"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "akomagni.newChat",
+          "when": "view == akomagni.chatView",
+          "group": "navigation"
+        }
+      ]
+    }
+  }
+}

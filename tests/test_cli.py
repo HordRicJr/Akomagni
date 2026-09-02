@@ -60,8 +60,8 @@ def test_inference_status_online(akomagni_home, monkeypatch):
     from akomagni.inference.client import InferenceStatus
 
     monkeypatch.setattr(
-        "akomagni.cli.main.check_health",
-        lambda **_: InferenceStatus(
+        "akomagni.cli.main.check_health_from_config",
+        lambda *_args, **_kwargs: InferenceStatus(
             online=True,
             base_url="http://127.0.0.1:8787/v1",
             models=["local"],
@@ -225,15 +225,14 @@ def test_flow_invoke_exec_success(tmp_path, monkeypatch):
     assert "Workflow rendered" in result.stdout
 
 
-def test_flow_invoke_open(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+def test_flow_invoke_open(akomagni_home, monkeypatch):
+    monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
     result = runner.invoke(app, ["flow", "invoke", "design landing page", "--open"])
     assert result.exit_code == 0
     assert "Akomagni Flow session" in result.stdout
 
 
-def test_flow_status(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+def test_flow_status(akomagni_home, monkeypatch):
     monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
     runner.invoke(app, ["flow", "invoke", "design landing page"])
     result = runner.invoke(app, ["flow", "status"])
@@ -347,7 +346,7 @@ def test_run_cli_with_inference(tmp_path, monkeypatch, akomagni_home):
             raise EOFError
 
     with (
-        patch("akomagni.cli.main.check_health") as mock_health,
+        patch("akomagni.cli.main.check_health_from_config") as mock_health,
         patch("akomagni.cli.main.try_chat_with_inference", return_value="Use JWT."),
         patch("akomagni.cli.main.console.input", side_effect=fake_input),
     ):

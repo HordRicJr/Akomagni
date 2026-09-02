@@ -9,13 +9,15 @@
       content="Install Akomagni in one command — Linux, macOS, and Windows. Local AI workstation, fully offline."
     />
     <meta name="theme-color" content="#0B3D2E" />
+    <link rel="icon" href="../assets/logo.png" type="image/png" />
+    <link rel="apple-touch-icon" href="../assets/logo.png" />
     <link rel="stylesheet" href="../assets/style.css" />
   </head>
   <body>
     <header class="site-header">
       <div class="header-inner">
         <a class="brand" href="../">
-          <span class="brand-mark">A</span>
+          <img class="brand-logo" src="../assets/logo.png" alt="" width="38" height="38" />
           Akomagni
         </a>
         <button class="nav-toggle" type="button" data-nav-toggle aria-label="Menu">☰</button>
@@ -241,7 +243,8 @@ akomagni flow route "I want to build a budget app"</pre>
       <div class="tools-category">
         <h2>Troubleshooting</h2>
         <ul class="req-list">
-          <li><strong>Python not found</strong> — install Python 3.11+ and ensure <code>python</code> is in PATH (restart terminal after install).</li>
+          <li><strong>pip: No matching distribution (platformdirs…)</strong> — check internet access to pypi.org. Or install manually: <code>python -m pip install platformdirs typer rich pyyaml psutil sqlite-vec</code> then <code>pip install -e . --no-deps</code> in <code>%LOCALAPPDATA%\akomagni</code>.</li>
+          <li><strong>Python 3.14+</strong> — Python 3.12 is recommended: <code>winget install Python.Python.3.12</code></li>
           <li><strong>Command not found after install</strong> — restart PowerShell/terminal. On Windows, check <code>%USERPROFILE%\.local\bin</code> is in your user PATH.</li>
           <li><strong>Execution policy blocked (Windows)</strong> — <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code> then retry the install command.</li>
           <li><strong>git not found (Windows)</strong> — <code>winget install Git.Git</code> and restart terminal.</li>
@@ -286,7 +289,7 @@ akomagni flow route "je veux créer une app de budget"</pre>
       <div class="footer-inner">
         <div class="footer-brand">
           <a class="brand" href="../" style="color: #fff">
-            <span class="brand-mark">A</span>
+            <img class="brand-logo" src="../assets/logo.png" alt="" width="38" height="38" />
             Akomagni
           </a>
           <p>Local AI workstation — install once, add tools as you need them.</p>

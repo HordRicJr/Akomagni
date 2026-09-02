@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from unittest.mock import patch
-
 import pytest
 from typer.testing import CliRunner
 
@@ -39,12 +36,14 @@ def test_run_update_git_pull_and_pip(tmp_path, monkeypatch):
 
     def fake_run(cmd, **kwargs):
         calls.append(cmd)
+
         class Result:
             returncode = 0
             stdout = "ok"
             stderr = ""
 
-        if cmd[:4] == ["git", "-C", str(install), "rev-parse"]:
+        if len(cmd) >= 4 and cmd[1] == "-C" and cmd[3] == "rev-parse":
+
             class Ref:
                 returncode = 0
                 stdout = "abc123\n" if len(calls) == 1 else "def456\n"
@@ -54,6 +53,9 @@ def test_run_update_git_pull_and_pip(tmp_path, monkeypatch):
         return Result()
 
     monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
+    monkeypatch.setattr(
+        "akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None
+    )
     monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Windows")
 
     result = run_update(install_dir=install, bin_dir=tmp_path / "bin")

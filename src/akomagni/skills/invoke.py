@@ -10,7 +10,7 @@ from akomagni.core.config import load_config
 from akomagni.core.project import find_project_root
 from akomagni.flow.intent import RouteDecision
 from akomagni.flow.orchestrator import route_message
-from akomagni.flow.state import record_invocation
+from akomagni.flow.state import record_invocation, workflow_dir
 from akomagni.memory.inject import load_central_context, load_project_context
 from akomagni.rag.context import retrieve_rag_context
 from akomagni.skills.discovery import SkillInfo, find_skill
@@ -126,13 +126,13 @@ def invoke_skill(
     rag_context: str | None = None,
 ) -> InvokeResult:
     """Route *message*, resolve skill paths, write session bundle."""
-    root = project_root or find_project_root() or Path.cwd()
-    decision = route_message(message, project_root=root)
+    bmad_root = project_root or find_project_root()
+    decision = route_message(message, project_root=bmad_root)
     skill_id = skill_override or decision.skill
-    skill = find_skill(skill_id, root) if skill_id not in ("chat", "image-pipeline") else None
-    agent_path = _agent_skill_path(decision.agent_id, root)
+    skill = find_skill(skill_id, bmad_root) if skill_id not in ("chat", "image-pipeline") else None
+    agent_path = _agent_skill_path(decision.agent_id, bmad_root)
     central = load_central_context()
-    project = load_project_context()
+    project = load_project_context(bmad_root)
     rag = rag_context
     if rag is None:
         cfg = load_config()
@@ -141,7 +141,7 @@ def invoke_skill(
             rag = retrieve_rag_context(
                 message,
                 project=bool(rag_cfg.get("inject_project", True)),
-                project_root=root,
+                project_root=bmad_root,
                 limit=int(rag_cfg.get("inject_limit", 3)),
                 rrf_k=int(rag_cfg.get("rrf_k", 60)),
             )
@@ -153,7 +153,7 @@ def invoke_skill(
     run_result: SkillRunResult | None = None
     if execute and skill is not None:
         run_result = run_skill_subprocess(
-            project_root=root,
+            project_root=bmad_root or Path.cwd(),
             skill_path=skill.path,
             message=message,
             central_context=central,
@@ -161,7 +161,7 @@ def invoke_skill(
             rag_context=rag,
         )
 
-    sessions = root / ".akomagni" / "workflow" / "sessions"
+    sessions = workflow_dir(bmad_root, discover=bmad_root is not None) / "sessions"
     sessions.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
     safe_skill = skill_id.replace("/", "-")
@@ -182,12 +182,12 @@ def invoke_skill(
         agent_id=decision.agent_id,
         skill_id=skill_id,
         session_path=session_path,
-        project_root=root,
+        project_root=bmad_root,
     )
     return InvokeResult(
         decision=decision,
         session_path=session_path,
         skill=skill,
-        project_root=root,
+        project_root=bmad_root,
         run_result=run_result,
     )
