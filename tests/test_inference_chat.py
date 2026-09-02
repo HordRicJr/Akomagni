@@ -18,16 +18,22 @@ def test_build_flow_system_prompt():
 
 def test_try_chat_with_inference_offline():
     decision = classify_message("hello")
-    with patch(
-        "akomagni.inference.chat.check_health",
-        return_value=InferenceStatus(online=False, base_url="http://127.0.0.1:8787/v1"),
+    local_endpoint = type("E", (), {"is_local": True, "base_url": "http://127.0.0.1:8787/v1", "api_key": None, "provider": "local"})()
+    with (
+        patch("akomagni.inference.chat.resolve_inference_endpoint", return_value=local_endpoint),
+        patch(
+            "akomagni.inference.chat.check_health",
+            return_value=InferenceStatus(online=False, base_url="http://127.0.0.1:8787/v1"),
+        ),
     ):
         assert try_chat_with_inference("hello", decision) is None
 
 
 def test_try_chat_with_inference_online():
     decision = classify_message("implement login API")
+    local_endpoint = type("E", (), {"is_local": True, "base_url": "http://127.0.0.1:8787/v1", "api_key": None, "provider": "local"})()
     with (
+        patch("akomagni.inference.chat.resolve_inference_endpoint", return_value=local_endpoint),
         patch(
             "akomagni.inference.chat.check_health",
             return_value=InferenceStatus(

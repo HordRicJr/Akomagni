@@ -52,9 +52,9 @@ def test_config_provider_rodium(akomagni_home, monkeypatch):
     assert "api.rodiumai.io" in show.stdout
 
 
-def test_build_vscode_extensions_includes_foundry():
-    payload = build_vscode_extensions_recommendations(provider="azure")
-    assert "ms-windows-ai-studio.windows-ai-studio" in payload["recommendations"]
+def test_build_vscode_extensions_includes_akomagni_chat():
+    payload = build_vscode_extensions_recommendations(provider="rodium")
+    assert "HordRicJr.akomagni-chat" in payload["recommendations"]
 
 
 def test_build_env_example_mentions_rodium_and_azure():

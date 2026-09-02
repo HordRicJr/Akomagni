@@ -1,0 +1,71 @@
+{
+  "name": "akomagni-chat",
+  "displayName": "Akomagni Chat",
+  "description": "Akomagni AI chat sidebar — Rodium AI, Azure Foundry, or local inference.",
+  "version": "0.1.0",
+  "publisher": "HordRicJr",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["AI", "Chat"],
+  "keywords": ["akomagni", "rodium", "azure", "foundry", "chat", "bmad"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Akomagni",
+      "properties": {
+        "akomagni.provider": {
+          "type": "string",
+          "default": "rodium",
+          "enum": ["rodium", "azure", "local"],
+          "description": "Active inference provider."
+        },
+        "akomagni.baseUrl": {
+          "type": "string",
+          "default": "https://api.rodiumai.io/v1",
+          "description": "OpenAI-compatible API base URL."
+        },
+        "akomagni.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key (set via akomagni connect)."
+        },
+        "akomagni.model": {
+          "type": "string",
+          "default": "openai/gpt-4o",
+          "description": "Model or deployment name."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "akomagni",
+          "title": "Akomagni",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "akomagni": [
+        {
+          "type": "webview",
+          "id": "akomagni.chatView",
+          "name": "Chat"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "akomagni.openChat",
+        "title": "Akomagni: Open Chat"
+      },
+      {
+        "command": "akomagni.newChat",
+        "title": "Akomagni: New Chat"
+      }
+    ]
+  }
+}

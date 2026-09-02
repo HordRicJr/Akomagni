@@ -82,6 +82,91 @@ app.add_typer(train_app, name="train")
 app.add_typer(ide_app, name="ide")
 
 
+@app.command("connect")
+def connect_cmd(
+    provider: str = typer.Argument(..., help="Cloud provider: rodium, foundry, or local."),
+    url: str | None = typer.Argument(
+        None,
+        help="API base URL (optional for Rodium; required for Foundry).",
+    ),
+    workspace: str | None = typer.Option(
+        None,
+        "--workspace",
+        "-w",
+        help="Project folder for VS Code settings sync.",
+    ),
+    no_sync: bool = typer.Option(False, "--no-sync", help="Skip writing .vscode/settings.json."),
+) -> None:
+    """Connect a cloud AI provider — prompts for API key interactively."""
+    from akomagni.inference.connect import (
+        FOUNDRY_URL_HINT,
+        RODIUM_DEFAULT_URL,
+        ConnectError,
+        connect_provider,
+        normalize_provider,
+    )
+
+    try:
+        normalized = normalize_provider(provider)
+    except ConnectError as exc:
+        console.print(f"[red]{exc}[/]")
+        raise typer.Exit(code=1) from exc
+
+    if normalized == "local":
+        result = connect_provider("local", sync_ide=False)
+        console.print("[green]Connected to local inference[/] (offline mode)")
+        console.print("Run: akomagni serve --model <name>")
+        return
+
+    base_url = url
+    if normalized == "rodium" and not base_url:
+        base_url = typer.prompt(
+            "Rodium API URL",
+            default=RODIUM_DEFAULT_URL,
+        )
+    elif normalized == "azure" and not base_url:
+        base_url = typer.prompt(
+            "Azure Foundry URL",
+            default=FOUNDRY_URL_HINT,
+        )
+
+    key_label = "Rodium API key (rd_sk_…)" if normalized == "rodium" else "Azure API key"
+    api_key = typer.prompt(key_label, hide_input=True)
+    if not api_key.strip():
+        console.print("[red]API key cannot be empty.[/]")
+        raise typer.Exit(code=1)
+
+    root = Path(workspace) if workspace else Path.cwd()
+    try:
+        result = connect_provider(
+            normalized,
+            base_url=base_url,
+            api_key=api_key,
+            workspace=root,
+            sync_ide=not no_sync,
+        )
+    except ConnectError as exc:
+        console.print(f"[red]{exc}[/]")
+        raise typer.Exit(code=1) from exc
+
+    label = "Rodium AI" if normalized == "rodium" else "Azure Foundry"
+    if result.online:
+        console.print(f"[green]Connected to {label}[/] — {result.base_url}")
+        if result.models:
+            console.print(f"Models available: {len(result.models)}")
+    else:
+        console.print(f"[yellow]Saved credentials for {label}[/] but API check failed.")
+        if result.error:
+            console.print(f"[dim]{result.error}[/]")
+    console.print("\nNext:")
+    console.print("  akomagni run cli          # chat in terminal")
+    console.print("  akomagni ide open         # open VS Code with Akomagni Chat")
+    if normalized == "azure":
+        console.print(
+            "  Or install Foundry Toolkit: ms-windows-ai-studio.windows-ai-studio"
+        )
+
+
 def _lang() -> str:
     return resolve_language(load_config())
 
@@ -1210,15 +1295,49 @@ def ide_setup(
     console.print(f"  Command     : {result.akomagni_command}")
     console.print("\nNext steps:")
     console.print("  1. akomagni config extras agent")
-    console.print("  2. Restart Cursor/VS Code and enable MCP server akomagni")
-    if prov == "rodium":
-        console.print("  3. akomagni config provider rodium  (set RODIUMAI_API_KEY)")
-    elif prov == "azure":
-        console.print("  3. Install Microsoft Foundry Toolkit extension in VS Code")
-        console.print("  4. akomagni config provider azure --base-url <foundry-endpoint>")
-    else:
-        console.print("  3. akomagni config provider local  OR  akomagni config provider rodium")
+    console.print("  2. akomagni connect rodium   # or: akomagni connect foundry <url>")
+    console.print("  3. akomagni ide open         # VS Code + Akomagni Chat sidebar")
+    console.print("  4. Restart Cursor/VS Code and enable MCP server akomagni")
     console.print(f"  See {IDE_GUIDE_FILENAME} in your project for full instructions.")
+
+
+@ide_app.command("open")
+def ide_open(
+    workspace: str | None = typer.Option(
+        None,
+        "--workspace",
+        "-w",
+        help="Project root to open (default: current directory).",
+    ),
+) -> None:
+    """Open VS Code with Akomagni Chat extension and current project."""
+    import shutil
+    import subprocess
+
+    from akomagni.inference.providers import AKOMAGNI_CHAT_EXTENSION, AKOMAGNI_CHAT_NAME
+
+    root = Path(workspace) if workspace else Path.cwd()
+    if not root.is_dir():
+        console.print(f"[red]Workspace not found:[/] {root}")
+        raise typer.Exit(code=1)
+
+    code_cmd = shutil.which("code") or shutil.which("code.cmd")
+    if not code_cmd:
+        console.print("[red]VS Code CLI not found.[/] Install VS Code and enable 'code' in PATH.")
+        console.print(f"Then install extension: [bold]{AKOMAGNI_CHAT_NAME}[/] ({AKOMAGNI_CHAT_EXTENSION})")
+        raise typer.Exit(code=1)
+
+    ext_dir = Path(__file__).resolve().parents[3] / "vscode-extension"
+    if (ext_dir / "package.json").is_file():
+        subprocess.run(  # nosec B603
+            [code_cmd, "--install-extension", str(ext_dir)],
+            check=False,
+        )
+
+    subprocess.run([code_cmd, str(root)], check=False)  # nosec B603
+    console.print(f"[green]Opened[/] {root} in VS Code")
+    console.print("Click the Akomagni icon in the sidebar → Chat")
+    console.print(f"If needed, install [bold]{AKOMAGNI_CHAT_NAME}[/] from Extensions ({AKOMAGNI_CHAT_EXTENSION})")
 
 
 @ide_app.command("status")

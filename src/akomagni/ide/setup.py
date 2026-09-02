@@ -59,9 +59,14 @@ def build_mcp_config(
 
 def build_vscode_extensions_recommendations(*, provider: str = "local") -> dict[str, list[str]]:
     """Recommend VS Code extensions for cloud AI workflows."""
-    recommendations = [FOUNDRY_TOOLKIT_EXTENSION]
-    if provider == "rodium":
-        recommendations.append("openai.chatgpt")
+    from akomagni.inference.providers import (
+        AKOMAGNI_CHAT_EXTENSION,
+        FOUNDRY_TOOLKIT_EXTENSION,
+    )
+
+    recommendations = [AKOMAGNI_CHAT_EXTENSION]
+    if provider in {"azure", "local"}:
+        recommendations.append(FOUNDRY_TOOLKIT_EXTENSION)
     return {"recommendations": recommendations, "unwantedRecommendations": []}
 
 
@@ -263,6 +268,8 @@ def ide_status(workspace: Path | None = None) -> dict[str, object]:
         agent_installed = False
 
     prov = provider_status()
+    from akomagni.inference.providers import AKOMAGNI_CHAT_EXTENSION, AKOMAGNI_CHAT_NAME
+
     return {
         "workspace": str(root),
         "cursor_config": cursor_config.exists(),
@@ -275,5 +282,7 @@ def ide_status(workspace: Path | None = None) -> dict[str, object]:
         "inference_api_key_set": prov["api_key_set"],
         "foundry_toolkit_extension": FOUNDRY_TOOLKIT_EXTENSION,
         "foundry_toolkit_name": FOUNDRY_TOOLKIT_NAME,
+        "chat_extension": AKOMAGNI_CHAT_EXTENSION,
+        "chat_extension_name": AKOMAGNI_CHAT_NAME,
         "native_ide": "planned-v1.0",
     }
