@@ -95,7 +95,7 @@ def pull_model(
                 revision="main",
                 local_dir=str(dest_dir),
             )
-    except Exception as exc:  # noqa: BLE001 — surface hub errors cleanly to CLI
+    except Exception as exc:
         raise ModelPullError(_format_hub_error(exc, entry)) from exc
 
     cached_path = Path(cached)
