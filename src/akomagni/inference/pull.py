@@ -17,6 +17,34 @@ class ModelPullError(RuntimeError):
     """Raised when a model cannot be downloaded."""
 
 
+def _format_hub_error(exc: Exception, entry: ModelCatalogEntry) -> str:
+    """Turn Hugging Face exceptions into a short actionable message."""
+    name = type(exc).__name__
+    text = str(exc)
+    lower = text.lower()
+    if "401" in text or "unauthorized" in lower or "invalid username" in lower:
+        return (
+            f"Download failed for {entry.repo_id}/{entry.filename} (401 Unauthorized).\n"
+            "If the repo is gated/private, login first:\n"
+            "  huggingface-cli login\n"
+            "Or set HF_TOKEN / HUGGING_FACE_HUB_TOKEN, then retry:\n"
+            f"  akomagni model pull {entry.name}"
+        )
+    if "404" in text or "repository not found" in lower or name == "RepositoryNotFoundError":
+        return (
+            f"Model repo not found: {entry.repo_id}\n"
+            f"File: {entry.filename}\n"
+            "Run: akomagni model catalog"
+        )
+    if "gated" in lower:
+        return (
+            f"Repo {entry.repo_id} is gated. Accept the license on Hugging Face, then:\n"
+            "  huggingface-cli login\n"
+            f"  akomagni model pull {entry.name}"
+        )
+    return f"Download failed: {text[:400]}"
+
+
 def pull_model(
     name: str,
     *,
@@ -53,21 +81,22 @@ def pull_model(
         f"  Dest : {dest_dir}"
     )
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        transient=True,
-        console=console,
-    ) as progress:
-        progress.add_task("Downloading from Hugging Face…", total=None)
-        cached = hf_hub_download(  # nosec B615 — catalog pins repo+filename; revision=main
-            repo_id=entry.repo_id,
-            filename=entry.filename,
-            revision="main",
-            local_dir=str(dest_dir),
-            local_dir_use_symlinks=False,
-            resume_download=True,
-        )
+    try:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            transient=True,
+            console=console,
+        ) as progress:
+            progress.add_task("Downloading from Hugging Face…", total=None)
+            cached = hf_hub_download(  # nosec B615 — catalog pins repo+filename; revision=main
+                repo_id=entry.repo_id,
+                filename=entry.filename,
+                revision="main",
+                local_dir=str(dest_dir),
+            )
+    except Exception as exc:  # noqa: BLE001 — surface hub errors cleanly to CLI
+        raise ModelPullError(_format_hub_error(exc, entry)) from exc
 
     cached_path = Path(cached)
     if cached_path.resolve() != dest_file.resolve():

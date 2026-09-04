@@ -19,10 +19,10 @@ class ModelCatalogEntry:
 CATALOG: dict[str, ModelCatalogEntry] = {
     "phi-3.5-mini": ModelCatalogEntry(
         name="phi-3.5-mini",
-        repo_id="microsoft/Phi-3.5-mini-instruct-gguf",
-        filename="Phi-3.5-mini-instruct-q4.gguf",
+        repo_id="bartowski/Phi-3.5-mini-instruct-GGUF",
+        filename="Phi-3.5-mini-instruct-Q4_K_M.gguf",
         profile="light",
-        description="Phi-3.5 Mini Instruct Q4 — léger, rapide CPU/GPU",
+        description="Phi-3.5 Mini Instruct Q4_K_M — léger, rapide CPU/GPU",
     ),
     "llama-3.2-3b": ModelCatalogEntry(
         name="llama-3.2-3b",

@@ -142,6 +142,8 @@ def test_pull_model_already_downloaded(tmp_path):
 def test_pull_model_downloads(tmp_path):
     entry = resolve_catalog_name("phi-3.5-mini")
     assert entry is not None
+    assert entry.repo_id == "bartowski/Phi-3.5-mini-instruct-GGUF"
+    assert entry.filename == "Phi-3.5-mini-instruct-Q4_K_M.gguf"
     dest = tmp_path / entry.name / entry.filename
 
     def fake_download(**_kwargs):
@@ -155,6 +157,22 @@ def test_pull_model_downloads(tmp_path):
         result = pull_model("phi-3.5-mini", models_dir=tmp_path)
     assert result == dest
     assert dest.is_file()
+
+
+def test_pull_model_hub_401(tmp_path):
+    entry = resolve_catalog_name("phi-3.5-mini")
+    assert entry is not None
+
+    def boom(**_kwargs):
+        raise RuntimeError("401 Unauthorized Invalid username or password")
+
+    mock_hub = MagicMock()
+    mock_hub.hf_hub_download = boom
+    with (
+        patch.dict("sys.modules", {"huggingface_hub": mock_hub}),
+        pytest.raises(ModelPullError, match="401 Unauthorized"),
+    ):
+        pull_model("phi-3.5-mini", models_dir=tmp_path)
 
 
 def test_list_local_models(tmp_path):
