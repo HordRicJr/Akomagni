@@ -224,7 +224,15 @@ def update() -> None:
         result = run_update()
     except UpdateError as exc:
         console.print(f"[red]{_t('error')}:[/] {exc}")
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(code=1) from None
+    except OSError as exc:
+        # Windows file locks should never crash the CLI with a raw traceback.
+        console.print(
+            f"[red]{_t('error')}:[/] Cannot refresh launcher ({exc}).\n"
+            "Close this window and reinstall:\n"
+            "  irm https://hordricjr.github.io/Akomagni/install/windows | iex"
+        )
+        raise typer.Exit(code=1) from None
     console.print(f"[green]{_t('update.success')}[/]")
     if result.previous_ref != result.current_ref:
         console.print(

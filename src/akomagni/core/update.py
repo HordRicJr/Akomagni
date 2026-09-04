@@ -91,11 +91,32 @@ def _install_cli_binary(source_bin: Path, dest_bin: Path) -> None:
         dest_bin.symlink_to(source_bin)
         return
 
-    # On Windows the running akomagni.exe locks itself. Rename it away first,
-    # then put the new binary in place (rename of a locked exe is allowed).
-    staging = dest_bin.with_name(dest_bin.name + ".new")
+    # Same path (shim already points at venv entrypoint) — nothing to do.
+    try:
+        if source_bin.resolve() == dest_bin.resolve():
+            return
+    except OSError:
+        pass
+
+    # On Windows the running akomagni.exe locks itself. Prefer rename-away,
+    # then put the new binary in place. Never let PermissionError bubble out.
+    staging = dest_bin.with_name(f"{dest_bin.name}.{os.getpid()}.new")
     backup = dest_bin.with_name(dest_bin.name + ".old")
-    shutil.copy2(source_bin, staging)
+    try:
+        if staging.exists():
+            staging.unlink()
+    except OSError:
+        pass
+
+    try:
+        shutil.copy2(source_bin, staging)
+    except OSError as exc:
+        raise UpdateError(
+            f"Cannot stage new CLI binary at {staging}: {exc}\n"
+            "Close other Akomagni terminals, then retry `akomagni update`, or reinstall:\n"
+            "  irm https://hordricjr.github.io/Akomagni/install/windows | iex"
+        ) from exc
+
     try:
         if backup.exists():
             backup.unlink()
@@ -104,22 +125,32 @@ def _install_cli_binary(source_bin: Path, dest_bin: Path) -> None:
 
     if dest_bin.exists():
         try:
-            dest_bin.replace(backup)
+            os.replace(str(dest_bin), str(backup))
         except OSError:
             try:
+                # Last resort overwrite (often fails while process holds the lock).
                 shutil.copy2(staging, dest_bin)
                 staging.unlink(missing_ok=True)
                 return
             except OSError as exc:
+                staging.unlink(missing_ok=True)
                 raise UpdateError(
-                    f"Cannot replace {dest_bin} while it is in use.\n"
-                    "Close other Akomagni terminals, then retry:\n"
-                    "  akomagni update\n"
-                    "Or reinstall:\n"
-                    "  irm https://hordricjr.github.io/Akomagni/install/windows | iex"
+                    f"Cannot replace {dest_bin} while it is in use (WinError 32).\n"
+                    "The package code was updated; only the launcher shim is locked.\n"
+                    "Close this window, open a new PowerShell, then run:\n"
+                    "  irm https://hordricjr.github.io/Akomagni/install/windows | iex\n"
+                    f"Detail: {exc}"
                 ) from exc
 
-    staging.replace(dest_bin)
+    try:
+        os.replace(str(staging), str(dest_bin))
+    except OSError as exc:
+        staging.unlink(missing_ok=True)
+        raise UpdateError(
+            f"Cannot finalize CLI binary at {dest_bin}: {exc}\n"
+            "Reinstall with: irm https://hordricjr.github.io/Akomagni/install/windows | iex"
+        ) from exc
+
     try:
         if backup.exists():
             backup.unlink()
@@ -204,15 +235,33 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         raise UpdateError(f"Missing CLI binary after update: {source_bin}")
 
     dest_bin = target_bin / ("akomagni.exe" if platform.system() == "Windows" else "akomagni")
+    # Package code is already updated; shim replace is best-effort on Windows.
     try:
         _install_cli_binary(source_bin, dest_bin)
-    except UpdateError:
-        raise
+    except UpdateError as exc:
+        if platform.system() == "Windows":
+            from rich.console import Console
+
+            Console().print(
+                f"[yellow]Warning:[/] launcher shim not refreshed ({exc}).\n"
+                "Code update succeeded. Open a [bold]new[/] PowerShell and run:\n"
+                "  irm https://hordricjr.github.io/Akomagni/install/windows | iex"
+            )
+        else:
+            raise
     except OSError as exc:
-        raise UpdateError(
-            f"Failed to install CLI binary to {dest_bin}: {exc}\n"
-            "Retry after closing other akomagni processes, or reinstall with the Windows one-liner."
-        ) from exc
+        if platform.system() == "Windows":
+            from rich.console import Console
+
+            Console().print(
+                f"[yellow]Warning:[/] launcher shim locked ({exc}). "
+                "Code update succeeded — reopen a new terminal or reinstall."
+            )
+        else:
+            raise UpdateError(
+                f"Failed to install CLI binary to {dest_bin}: {exc}\n"
+                "Retry after closing other akomagni processes, or reinstall with the Windows one-liner."
+            ) from exc
 
     current = _git_ref(root)
     return UpdateResult(
