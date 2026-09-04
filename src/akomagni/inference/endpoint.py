@@ -11,9 +11,9 @@ from akomagni.inference.client import api_base_url
 
 RODIUM_DEFAULT_BASE_URL = "https://api.rodiumai.io/v1"
 RODIUM_DEFAULT_MODELS = {
-    "code": "openai/gpt-4o",
-    "design": "anthropic/claude-sonnet-4-6",
-    "text": "google/gemini-3.1-flash-lite-preview",
+    "code": "rodium/pro",
+    "design": "rodium/pro",
+    "text": "rodium/fast",
 }
 AZURE_DEFAULT_MODELS = {
     "code": "gpt-4o",

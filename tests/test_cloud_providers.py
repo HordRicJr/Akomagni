@@ -34,7 +34,7 @@ def test_resolve_rodium_endpoint(monkeypatch):
 def test_cloud_model_for_domain_rodium():
     cfg = apply_provider_preset({"version": 1}, "rodium")
     model = cloud_model_for_domain("code", config=cfg)
-    assert model == "openai/gpt-4o"
+    assert model == "rodium/pro"
 
 
 def test_apply_azure_provider_requires_base_url():
@@ -54,7 +54,7 @@ def test_config_provider_rodium(akomagni_home, monkeypatch):
 
 def test_build_vscode_extensions_includes_akomagni_chat():
     payload = build_vscode_extensions_recommendations(provider="rodium")
-    assert "Akomagni.akomagni-chat" in payload["recommendations"]
+    assert "Akomagni.akomagni" in payload["recommendations"]
 
 
 def test_build_env_example_mentions_rodium_and_azure():

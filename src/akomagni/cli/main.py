@@ -303,7 +303,11 @@ def run_cli(
     capture_global = bool(mem_cfg.get("capture_global", False))
     host = inf_cfg.get("host", "127.0.0.1")
     port = int(inf_cfg.get("port", 8787))
-    model_override = inf_cfg.get("default_model")
+    from akomagni.inference.endpoint import resolve_inference_endpoint
+
+    endpoint = resolve_inference_endpoint(cfg)
+    # Local default_model must not override cloud domain models (breaks Rodium/Azure).
+    model_override = None if not endpoint.is_local else inf_cfg.get("default_model")
 
     console.print(f"[bold]{_t('run.cli_banner')}[/]")
     inference_online = False
@@ -375,15 +379,19 @@ def run_cli(
             console.print(f"[dim]Domain router:[/] {domain} → {catalog}")
             if chat_plan.swap_plan.needs_swap and not auto_swap:
                 console.print(f"[yellow]{chat_plan.swap_plan.hint}[/]")
-            reply = try_chat_with_inference(
-                message,
-                decision,
-                host=host,
-                port=port,
-                model=model_override,
-                auto_swap=auto_swap,
-                rag_context=rag_context,
-            )
+            try:
+                reply = try_chat_with_inference(
+                    message,
+                    decision,
+                    host=host,
+                    port=port,
+                    model=model_override,
+                    auto_swap=auto_swap,
+                    rag_context=rag_context,
+                )
+            except InferenceClientError as exc:
+                console.print(f"[yellow]{_t('run.inference_failed')}[/] {exc}")
+                continue
             if reply:
                 console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
                 if auto_capture:
