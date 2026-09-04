@@ -30,6 +30,7 @@ Utilisateur (CLI / Agent / IDE)
 | Flow | `src/akomagni/flow/` | Orchestration Akomagni Flow |
 | Memory | `src/akomagni/memory/` | Akomagni Memory |
 | Inference | `src/akomagni/inference/` | API llama.cpp |
+| Train | `src/akomagni/train/` | Memory → JSONL + QLoRA/LoRA natif (`akomagni[train]`) |
 
 ## Répertoires de données
 
@@ -39,6 +40,7 @@ Utilisateur (CLI / Agent / IDE)
 | `~/.akomagni/memory/` | Mémoire centrale |
 | `~/.akomagni/models/` | Modèles GGUF |
 | `./.akomagni/memory/` | Mémoire projet |
+| `./.akomagni/train/output/` | Dataset train, `train.yaml`, adapter LoRA |
 | `./.akomagni/workflow/` | État Flow, memlogs brainstorm |
 
 ## Principes

@@ -79,6 +79,7 @@ def test_ide_page_includes_setup_commands():
 def test_tools_page_includes_train_and_ide():
     tools = (SITE / "tools" / "index.html").read_text(encoding="utf-8")
     assert "akomagni train bundle" in tools
+    assert "akomagni train run" in tools
     assert "akomagni ide setup" in tools
 
 

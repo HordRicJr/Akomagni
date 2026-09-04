@@ -78,7 +78,8 @@ akomagni skill list                # Discover installed BMAD skills
 akomagni model pull qwen2.5-coder-7b  # Download GGUF model
 akomagni serve                     # Local OpenAI-compatible API (:8787)
 akomagni mcp serve                 # MCP agent tools (Cursor / VS Code)
-akomagni train plan                # Preview LoRA dataset from memory (scaffold)
+akomagni train plan                # Preview LoRA dataset from memory
+akomagni train run -m phi-3.5-mini # Native QLoRA/LoRA (needs: akomagni config extras train)
 ```
 
 ## Project structure
@@ -110,7 +111,7 @@ Akomagni/
 |---------|-------|
 | **v0.1** | CLI, doctor, config, Akomagni Flow (heuristic), memory scaffold ✅ |
 | **v0.2** | llama.cpp server, model pull, BMAD invoke, RAG, Memory epic, MCP agent ✅ |
-| **v0.3** | Akomagni Train (LoRA) — scaffold shipped; full training in progress |
+| **v0.3** | Akomagni Train (LoRA) — export/bundle + native `train run` |
 | **v1.0** | Akomagni IDE (VS Code fork) — MCP + roadmap page today |
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.

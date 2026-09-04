@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Train (LoRA)** — `akomagni train plan|export|bundle|run`; native QLoRA (CUDA) / LoRA fallback via `akomagni[train]`
 - **Site** — GitHub Pages hub: install, tools marketplace, IDE roadmap, module pages
 - **CLI i18n** — English/French (`akomagni config language fr`)
 - **ML flow router** — `heuristic` / `ml` / `auto` modes via local inference
-- **Train scaffold** — `akomagni train plan` previews LoRA dataset from memory
+- **Train scaffold** — `akomagni train plan` / `export` / `bundle` from memory
 - **Memory epic** — add, promote, auto-capture with approval queue
 - **MCP agent tools** — sandboxed fs/shell/git with approval queue
 - **RAG** — hybrid BM25 + vector ingest/query
