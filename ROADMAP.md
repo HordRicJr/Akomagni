@@ -26,7 +26,7 @@
 
 | Issue | Topic | Status |
 |-------|-------|--------|
-| [#15](https://github.com/HordRicJr/Akomagni/issues/15) | **EPIC** Akomagni Train (LoRA) | 🚧 export + bundle shipped; native QLoRA runner pending |
+| [#15](https://github.com/HordRicJr/Akomagni/issues/15) | **EPIC** Akomagni Train (LoRA) | ✅ native QLoRA/LoRA runner (`train run` + `[train]` extra) |
 | [#16](https://github.com/HordRicJr/Akomagni/issues/16) | ML intent router | ✅ inference-based router shipped |
 
 ## v1.0 — IDE & Platform

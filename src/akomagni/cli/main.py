@@ -1003,7 +1003,7 @@ def config_language(
 
 @config_app.command("extras")
 def config_extras(
-    pack: str = typer.Argument(..., help="Extra pack: inference, agent, or dev."),
+    pack: str = typer.Argument(..., help="Extra pack: inference, agent, train, or dev."),
 ) -> None:
     """Install optional dependency packs into the Akomagni Python environment."""
     _install_extras_pack(pack)
@@ -1011,7 +1011,7 @@ def config_extras(
 
 @app.command("extras")
 def extras_alias(
-    pack: str = typer.Argument(..., help="Extra pack: inference, agent, or dev."),
+    pack: str = typer.Argument(..., help="Extra pack: inference, agent, train, or dev."),
 ) -> None:
     """Alias for ``akomagni config extras``."""
     _install_extras_pack(pack)
@@ -1021,7 +1021,7 @@ def _install_extras_pack(pack: str) -> None:
     import subprocess
     import sys
 
-    allowed = {"inference", "agent", "dev"}
+    allowed = {"inference", "agent", "train", "dev"}
     name = pack.strip().lower()
     if name not in allowed:
         console.print(f"[red]Unknown pack:[/] {pack} (use: {', '.join(sorted(allowed))})")
@@ -1259,22 +1259,30 @@ def train_bundle(
     console.print(f"  Dataset  : {bundle.dataset_path}")
     console.print(f"  Config   : {bundle.config_path}")
     console.print(f"  Readme   : {bundle.readme_path}")
-    console.print("[dim]Point your QLoRA tool at train.yaml — native trainer tracked on #15.[/dim]")
+    console.print("[dim]Next: akomagni config extras train && akomagni train run[/dim]")
 
 
 @train_app.command("run")
 def train_run(
-    model: str = typer.Option("qwen2.5-coder-7b", "--model", "-m", help="Base GGUF catalog name."),
+    model: str = typer.Option("qwen2.5-coder-7b", "--model", "-m", help="Base catalog / HF model."),
 ) -> None:
-    """Prepare training bundle (native QLoRA runner ships in a later #15 milestone)."""
-    from akomagni.train.lora import TrainError, build_train_plan, run_train_stub
+    """Fine-tune with native QLoRA (CUDA) or LoRA fallback from Memory learnings."""
+    from akomagni.train.lora import TrainError, build_train_plan
+    from akomagni.train.runner import run_train
 
     try:
         plan = build_train_plan(base_model=model)
-        run_train_stub(plan)
+        console.print(f"[bold]Training[/] {plan.base_model} …")
+        result = run_train(plan)
     except TrainError as exc:
-        console.print(f"[yellow]{exc}[/]")
+        console.print(f"[red]{_t('error')}:[/] {exc}")
         raise typer.Exit(code=1) from exc
+    console.print("[green]Training complete[/]")
+    console.print(f"  Method   : {result.method}")
+    console.print(f"  HF model : {result.hf_model_id}")
+    console.print(f"  Examples : {result.example_count}")
+    console.print(f"  Adapter  : {result.adapter_dir}")
+    console.print(f"  Dataset  : {result.bundle.dataset_path}")
 
 
 @ide_app.command("setup")

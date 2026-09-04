@@ -240,10 +240,19 @@
           </article>
           <article class="tool-card" data-tool-category="extras">
             <div class="tool-card-top">
+              <h3>Train run (QLoRA)</h3>
+              <span class="tool-badge">Memory</span>
+            </div>
+            <p>Fine-tune from Memory learnings (QLoRA on CUDA, LoRA fallback). Needs <code>akomagni[train]</code>.</p>
+            <div class="tool-cmd" id="tool-train-run">akomagni config extras train &amp;&amp; akomagni train run -m phi-3.5-mini</div>
+            <button class="copy-btn" type="button" data-copy="tool-train-run">Copy command</button>
+          </article>
+          <article class="tool-card" data-tool-category="extras">
+            <div class="tool-card-top">
               <h3>Train bundle (LoRA)</h3>
               <span class="tool-badge">Memory</span>
             </div>
-            <p>Export Memory learnings to JSONL + QLoRA config for external trainers.</p>
+            <p>Export Memory learnings to JSONL + train.yaml for native or external trainers.</p>
             <div class="tool-cmd" id="tool-train-bundle">akomagni train bundle</div>
             <button class="copy-btn" type="button" data-copy="tool-train-bundle">Copy command</button>
           </article>
