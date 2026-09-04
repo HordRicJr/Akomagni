@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import shutil
-from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
@@ -198,14 +197,10 @@ def test_install_cli_binary_windows_fallback_copy(tmp_path, monkeypatch):
     backup = dest.with_name("akomagni.exe.old")
     backup.write_text("stale", encoding="utf-8")
 
-    original_replace = Path.replace
+    def boom_replace(_src, _dst):
+        raise OSError("locked")
 
-    def boom_replace(self, target):
-        if self == dest:
-            raise OSError("locked")
-        return original_replace(self, target)
-
-    monkeypatch.setattr(Path, "replace", boom_replace)
+    monkeypatch.setattr("akomagni.core.update.os.replace", boom_replace)
     _install_cli_binary(source, dest)
     assert dest.read_text(encoding="utf-8") == "v2"
 
@@ -220,12 +215,8 @@ def test_install_cli_binary_windows_locked_raises(tmp_path, monkeypatch):
     dest.parent.mkdir()
     dest.write_text("v1", encoding="utf-8")
 
-    def boom_replace(self, target):
+    def boom_replace(_src, _dst):
         raise OSError("locked")
-
-    def boom_copy2(*_args, **_kwargs):
-        # First copy2 (to staging) succeeds via real shutil; intercept only overwrite path
-        raise OSError("still locked")
 
     calls = {"n": 0}
     real_copy2 = shutil.copy2
@@ -236,10 +227,70 @@ def test_install_cli_binary_windows_locked_raises(tmp_path, monkeypatch):
             return real_copy2(src, dst, *args, **kwargs)
         raise OSError("still locked")
 
-    monkeypatch.setattr(Path, "replace", boom_replace)
+    monkeypatch.setattr("akomagni.core.update.os.replace", boom_replace)
     monkeypatch.setattr("akomagni.core.update.shutil.copy2", selective_copy2)
     with pytest.raises(UpdateError, match="Cannot replace"):
         _install_cli_binary(source, dest)
+
+
+def test_run_update_windows_shim_lock_is_soft(tmp_path, monkeypatch):
+    install = tmp_path / "akomagni"
+    install.mkdir()
+    (install / "pyproject.toml").write_text("[project]\nname='akomagni'\n", encoding="utf-8")
+    (install / ".git").mkdir()
+    scripts = install / ".venv" / "Scripts"
+    scripts.mkdir(parents=True)
+    (scripts / "python.exe").write_text("", encoding="utf-8")
+    (scripts / "akomagni.exe").write_text("x", encoding="utf-8")
+
+    def fake_run(cmd, **kwargs):
+        class Result:
+            returncode = 0
+            stdout = "abc\n"
+            stderr = ""
+
+        return Result()
+
+    monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
+    monkeypatch.setattr("akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None)
+    monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Windows")
+    monkeypatch.setattr(
+        "akomagni.core.update._install_cli_binary",
+        lambda *_a, **_k: (_ for _ in ()).throw(UpdateError("locked shim")),
+    )
+    result = run_update(install_dir=install, bin_dir=tmp_path / "bin")
+    assert result.current_ref == "abc"
+
+
+def test_run_update_oserror_on_binary_install(tmp_path, monkeypatch):
+    install = tmp_path / "akomagni"
+    install.mkdir()
+    (install / "pyproject.toml").write_text("[project]\nname='akomagni'\n", encoding="utf-8")
+    (install / ".git").mkdir()
+    venv_bin = install / ".venv" / "bin"
+    venv_bin.mkdir(parents=True)
+    (venv_bin / "python").write_text("", encoding="utf-8")
+    (venv_bin / "akomagni").write_text("x", encoding="utf-8")
+
+    def fake_run(cmd, **kwargs):
+        class Result:
+            returncode = 0
+            stdout = "abc\n"
+            stderr = ""
+
+        return Result()
+
+    monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
+    monkeypatch.setattr(
+        "akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None
+    )
+    monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Linux")
+    monkeypatch.setattr(
+        "akomagni.core.update._install_cli_binary",
+        lambda *_a, **_k: (_ for _ in ()).throw(OSError("disk full")),
+    )
+    with pytest.raises(UpdateError, match="Failed to install CLI binary"):
+        run_update(install_dir=install, bin_dir=tmp_path / "bin")
 
 
 def test_run_update_pip_upgrade_failure(tmp_path, monkeypatch):
@@ -318,34 +369,3 @@ def test_run_update_missing_root(monkeypatch):
     monkeypatch.setattr("akomagni.core.update.find_install_root", lambda: None)
     with pytest.raises(UpdateError, match="Cannot locate"):
         run_update()
-
-
-def test_run_update_oserror_on_binary_install(tmp_path, monkeypatch):
-    install = tmp_path / "akomagni"
-    install.mkdir()
-    (install / "pyproject.toml").write_text("[project]\nname='akomagni'\n", encoding="utf-8")
-    (install / ".git").mkdir()
-    scripts = install / ".venv" / "Scripts"
-    scripts.mkdir(parents=True)
-    (scripts / "python.exe").write_text("", encoding="utf-8")
-    (scripts / "akomagni.exe").write_text("x", encoding="utf-8")
-
-    def fake_run(cmd, **kwargs):
-        class Result:
-            returncode = 0
-            stdout = "abc\n"
-            stderr = ""
-
-        return Result()
-
-    monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
-    monkeypatch.setattr(
-        "akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None
-    )
-    monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Windows")
-    monkeypatch.setattr(
-        "akomagni.core.update._install_cli_binary",
-        lambda *_a, **_k: (_ for _ in ()).throw(OSError("disk full")),
-    )
-    with pytest.raises(UpdateError, match="Failed to install CLI binary"):
-        run_update(install_dir=install, bin_dir=tmp_path / "bin")
