@@ -123,7 +123,7 @@ def execute_training(
     method = "qlora" if use_qlora else "lora"
     adapter_dir.mkdir(parents=True, exist_ok=True)
 
-    tokenizer = AutoTokenizer.from_pretrained(  # nosec B615 — catalog/HF id + pinned revision
+    tokenizer = AutoTokenizer.from_pretrained(  # nosec B615
         hf_model_id,
         trust_remote_code=True,
         revision="main",
@@ -149,7 +149,7 @@ def execute_training(
     else:
         model_kwargs["torch_dtype"] = torch.float32
 
-    model = AutoModelForCausalLM.from_pretrained(  # nosec B615 — catalog/HF id + pinned revision
+    model = AutoModelForCausalLM.from_pretrained(  # nosec B615
         hf_model_id,
         **model_kwargs,
     )
@@ -167,7 +167,7 @@ def execute_training(
     )
     model = get_peft_model(model, lora)
 
-    dataset = load_dataset(  # nosec B615 — local JSONL path, not a Hub download
+    dataset = load_dataset(  # nosec B615
         "json",
         data_files=str(dataset_path),
         split="train",
