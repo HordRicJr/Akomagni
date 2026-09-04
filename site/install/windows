@@ -55,9 +55,12 @@ if ($SourceDir) {
 }
 elseif ((Test-Path "$InstallDir\.git") -and (Test-AkomagniSource $InstallDir)) {
     Write-Host "==> Updating existing install (branch: $Branch)" -ForegroundColor Cyan
+    # Shallow clones often lack other remote branches; write origin/$Branch explicitly.
     # Discard local tracked edits (e.g. leftover patches) then sync to release branch.
-    Invoke-Checked { git -C $InstallDir fetch origin $Branch }
-    Invoke-Checked { git -C $InstallDir checkout -B $Branch "origin/$Branch" }
+    Invoke-Checked {
+        git -C $InstallDir fetch --depth 1 origin "+refs/heads/${Branch}:refs/remotes/origin/${Branch}"
+    }
+    Invoke-Checked { git -C $InstallDir checkout -f -B $Branch "origin/$Branch" }
     Invoke-Checked { git -C $InstallDir reset --hard "origin/$Branch" }
 }
 else {

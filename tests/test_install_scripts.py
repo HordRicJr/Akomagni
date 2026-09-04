@@ -19,6 +19,7 @@ def test_install_sh_contains_path_and_smoke():
     assert "AKOMAGNI_SOURCE_DIR" in text
     assert "AKOMAGNI_BRANCH" in text
     assert '--branch "$AKOMAGNI_BRANCH"' in text or '--branch "$AKOMAGNI_BRANCH"' in text
+    assert "refs/remotes/origin/" in text
     assert "python3 -c" in text
 
 
@@ -29,6 +30,7 @@ def test_install_ps1_contains_path_and_smoke():
     assert "AKOMAGNI_SOURCE_DIR" in text
     assert "AKOMAGNI_BRANCH" in text
     assert "origin/$Branch" in text or "origin/$Branch" in text
+    assert "refs/remotes/origin/" in text
     assert "--branch $Branch" in text
 
 
