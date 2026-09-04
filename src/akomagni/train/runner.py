@@ -123,11 +123,18 @@ def execute_training(
     method = "qlora" if use_qlora else "lora"
     adapter_dir.mkdir(parents=True, exist_ok=True)
 
-    tokenizer = AutoTokenizer.from_pretrained(hf_model_id, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(  # nosec B615 — catalog/HF id + pinned revision
+        hf_model_id,
+        trust_remote_code=True,
+        revision="main",
+    )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    model_kwargs: dict[str, Any] = {"trust_remote_code": True}
+    model_kwargs: dict[str, Any] = {
+        "trust_remote_code": True,
+        "revision": "main",
+    }
     if use_qlora:
         model_kwargs["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -142,7 +149,10 @@ def execute_training(
     else:
         model_kwargs["torch_dtype"] = torch.float32
 
-    model = AutoModelForCausalLM.from_pretrained(hf_model_id, **model_kwargs)
+    model = AutoModelForCausalLM.from_pretrained(  # nosec B615 — catalog/HF id + pinned revision
+        hf_model_id,
+        **model_kwargs,
+    )
     if use_qlora:
         model = prepare_model_for_kbit_training(model)
 
@@ -157,7 +167,11 @@ def execute_training(
     )
     model = get_peft_model(model, lora)
 
-    dataset = load_dataset("json", data_files=str(dataset_path), split="train")
+    dataset = load_dataset(  # nosec B615 — local JSONL path, not a Hub download
+        "json",
+        data_files=str(dataset_path),
+        split="train",
+    )
 
     def _format_row(row: dict[str, Any]) -> dict[str, str]:
         messages = row.get("messages") or []
