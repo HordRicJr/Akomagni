@@ -30,7 +30,7 @@ def test_run_update_git_pull_and_pip(tmp_path, monkeypatch):
     scripts = install / ".venv" / "Scripts"
     scripts.mkdir(parents=True)
     (scripts / "python.exe").write_text("", encoding="utf-8")
-    (scripts / "akomagni.exe").write_text("", encoding="utf-8")
+    (scripts / "akomagni.exe").write_text("new", encoding="utf-8")
 
     calls: list[list[str]] = []
 
@@ -58,12 +58,32 @@ def test_run_update_git_pull_and_pip(tmp_path, monkeypatch):
     )
     monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Windows")
 
-    result = run_update(install_dir=install, bin_dir=tmp_path / "bin")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    existing = bin_dir / "akomagni.exe"
+    existing.write_text("old", encoding="utf-8")
+
+    result = run_update(install_dir=install, bin_dir=bin_dir)
     assert result.previous_ref == "abc123"
     assert result.current_ref == "def456"
     assert any("pull" in " ".join(c) for c in calls)
     assert any("pip" in " ".join(c) and "install" in " ".join(c) for c in calls)
-    assert (tmp_path / "bin" / "akomagni.exe").is_file()
+    assert (bin_dir / "akomagni.exe").read_text(encoding="utf-8") == "new"
+    assert not (bin_dir / "akomagni.exe.new").exists()
+
+
+def test_install_cli_binary_windows_rename_locked(tmp_path, monkeypatch):
+    from akomagni.core.update import _install_cli_binary
+
+    monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Windows")
+    source = tmp_path / "akomagni.exe"
+    source.write_text("v2", encoding="utf-8")
+    dest = tmp_path / "bin" / "akomagni.exe"
+    dest.parent.mkdir()
+    dest.write_text("v1", encoding="utf-8")
+
+    _install_cli_binary(source, dest)
+    assert dest.read_text(encoding="utf-8") == "v2"
 
 
 def test_run_update_requires_git(tmp_path):

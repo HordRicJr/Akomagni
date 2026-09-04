@@ -82,6 +82,51 @@ def _git_ref(root: Path) -> str:
     return result.stdout.strip()
 
 
+def _install_cli_binary(source_bin: Path, dest_bin: Path) -> None:
+    """Install CLI shim into the user bin dir (Windows-safe while running)."""
+    dest_bin.parent.mkdir(parents=True, exist_ok=True)
+    if platform.system() != "Windows":
+        if dest_bin.exists() or dest_bin.is_symlink():
+            dest_bin.unlink()
+        dest_bin.symlink_to(source_bin)
+        return
+
+    # On Windows the running akomagni.exe locks itself. Rename it away first,
+    # then put the new binary in place (rename of a locked exe is allowed).
+    staging = dest_bin.with_name(dest_bin.name + ".new")
+    backup = dest_bin.with_name(dest_bin.name + ".old")
+    shutil.copy2(source_bin, staging)
+    try:
+        if backup.exists():
+            backup.unlink()
+    except OSError:
+        pass
+
+    if dest_bin.exists():
+        try:
+            dest_bin.replace(backup)
+        except OSError:
+            try:
+                shutil.copy2(staging, dest_bin)
+                staging.unlink(missing_ok=True)
+                return
+            except OSError as exc:
+                raise UpdateError(
+                    f"Cannot replace {dest_bin} while it is in use.\n"
+                    "Close other Akomagni terminals, then retry:\n"
+                    "  akomagni update\n"
+                    "Or reinstall:\n"
+                    "  irm https://hordricjr.github.io/Akomagni/install/windows | iex"
+                ) from exc
+
+    staging.replace(dest_bin)
+    try:
+        if backup.exists():
+            backup.unlink()
+    except OSError:
+        pass  # leftover .old is removed on the next successful update
+
+
 def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) -> UpdateResult:
     """Pull latest main and reinstall the editable package."""
     root = install_dir or find_install_root()
@@ -159,12 +204,15 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         raise UpdateError(f"Missing CLI binary after update: {source_bin}")
 
     dest_bin = target_bin / ("akomagni.exe" if platform.system() == "Windows" else "akomagni")
-    if platform.system() == "Windows":
-        shutil.copy2(source_bin, dest_bin)
-    else:
-        if dest_bin.exists() or dest_bin.is_symlink():
-            dest_bin.unlink()
-        dest_bin.symlink_to(source_bin)
+    try:
+        _install_cli_binary(source_bin, dest_bin)
+    except UpdateError:
+        raise
+    except OSError as exc:
+        raise UpdateError(
+            f"Failed to install CLI binary to {dest_bin}: {exc}\n"
+            "Retry after closing other akomagni processes, or reinstall with the Windows one-liner."
+        ) from exc
 
     current = _git_ref(root)
     return UpdateResult(

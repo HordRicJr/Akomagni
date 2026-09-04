@@ -93,7 +93,25 @@ if (-not (Test-Path $AkomagniExe)) {
 }
 
 New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
-Copy-Item $AkomagniExe "$BinDir\akomagni.exe" -Force
+$DestExe = "$BinDir\akomagni.exe"
+$StagingExe = "$BinDir\akomagni.exe.new"
+$BackupExe = "$BinDir\akomagni.exe.old"
+Copy-Item $AkomagniExe $StagingExe -Force
+if (Test-Path $DestExe) {
+    Remove-Item $BackupExe -Force -ErrorAction SilentlyContinue
+    try {
+        Move-Item -Path $DestExe -Destination $BackupExe -Force
+    } catch {
+        # Fallback if rename fails — last resort overwrite
+        Copy-Item $StagingExe $DestExe -Force
+        Remove-Item $StagingExe -Force -ErrorAction SilentlyContinue
+        $StagingExe = $null
+    }
+}
+if ($StagingExe -and (Test-Path $StagingExe)) {
+    Move-Item -Path $StagingExe -Destination $DestExe -Force
+}
+Remove-Item $BackupExe -Force -ErrorAction SilentlyContinue
 
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($userPath -notlike "*$BinDir*") {
