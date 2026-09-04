@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Akomagni — local AI workstation</title>
+    <title>Akomagni: a new way to work with AI</title>
     <meta
       name="description"
-      content="Akomagni — offline local AI workstation. Install in one command, add models, BMAD skills, and agent tools."
+      content="Akomagni is an open-source hybrid AI workstation that turns intent into work: models, agents, skills, memory, and workflows in one environment."
     />
     <meta name="theme-color" content="#0B3D2E" />
     <link rel="icon" href="assets/logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="assets/logo.png" />
     <meta property="og:image" content="https://hordricjr.github.io/Akomagni/assets/logo.png" />
-    <meta property="og:title" content="Akomagni — local AI workstation" />
+    <meta property="og:title" content="Akomagni: a new way to work with AI" />
     <link rel="stylesheet" href="assets/style.css" />
   </head>
   <body>
@@ -46,12 +46,12 @@
           <img class="hero-logo" src="assets/logo.png" alt="Akomagni" width="72" height="72" />
           <div class="hero-badge">
             <span class="dot"></span>
-            100% offline · install &amp; extend locally
+            Local, cloud, or hybrid: one workspace
           </div>
-          <h1>Your <span>local AI</span> workstation</h1>
+          <h1>A new way to <span>work with AI</span></h1>
           <p class="hero-lead">
-            Install Akomagni in one command, then add GGUF models, BMAD skills, and agent tools —
-            fully offline. No cloud. No subscriptions.
+            Akomagni is an open-source hybrid AI workstation. It brings models, agents, skills,
+            memory, and workflows together so a simple request becomes a real work process.
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="install/">Install now</a>
@@ -83,7 +83,7 @@
             </div>
           </div>
           <p style="margin: 0.75rem 0 0; font-size: 0.85rem; opacity: 0.85">
-            Full guide with prerequisites &amp; troubleshooting → <a href="install/" style="color: var(--secondary)">Install page</a>
+            Then connect once: <code>akomagni connect</code> (local, Rodium, Foundry, Hugging Face)
           </p>
         </aside>
       </div>
@@ -91,17 +91,17 @@
 
     <section class="section">
       <div class="section-header">
-        <h2>Install tools, not subscriptions</h2>
+        <h2>Intent to workflow, not just a chatbot</h2>
         <p>
-          A marketplace-style hub for local models, BMAD workflows, MCP agent tools,
-          and optional packs — everything runs on your machine.
+          Skills give the model structured methods. Seventeen BMAD agents take specialized roles.
+          Akomagni Flow routes your words to the right agent, skill, and workflow without slash commands.
         </p>
       </div>
       <div class="card-grid">
         <a class="feature-card" href="tools/">
           <div class="feature-icon">⬇</div>
-          <h3>Tools hub</h3>
-          <p>Pull GGUF models, link BMAD skills, enable MCP agent mode, and optional packs.</p>
+          <h3>Connect &amp; tools</h3>
+          <p>One command for Rodium, Foundry, local, and Hugging Face. Pull any GGUF from the Hub.</p>
           <span class="arrow">Browse tools →</span>
         </a>
         <a class="feature-card" href="install/">
@@ -112,14 +112,14 @@
         </a>
         <a class="feature-card" href="code/">
           <div class="feature-icon">⌨</div>
-          <h3>Code</h3>
-          <p>Flow routing, BMAD skills, and developer workflows with MCP tools.</p>
+          <h3>Flow &amp; agents</h3>
+          <p>Describe a goal; Flow picks agent + skill. Start a project path and keep working in CLI.</p>
           <span class="arrow">Explore Code →</span>
         </a>
         <a class="feature-card" href="models/">
           <div class="feature-icon">⬡</div>
-          <h3>Models</h3>
-          <p>Local GGUF inference, model pull, and domain router.</p>
+          <h3>Auto Router</h3>
+          <p>Local GGUF or cloud APIs. Rodium models scale by task (basic, fast, pro) to save tokens.</p>
           <span class="arrow">Explore Models →</span>
         </a>
         <a class="feature-card" href="design/">
@@ -131,27 +131,30 @@
         <a class="feature-card" href="memory/">
           <div class="feature-icon">◉</div>
           <h3>Memory</h3>
-          <p>Central + project memory with approval-based capture.</p>
+          <p>Central and project memory so work keeps context instead of starting over.</p>
           <span class="arrow">Explore Memory →</span>
         </a>
         <a class="feature-card" href="ide/">
           <img class="feature-logo" src="assets/logo.png" alt="" width="48" height="48" />
           <h3>IDE &amp; VS Code</h3>
-          <p>Akomagni Chat on the Marketplace + MCP in Cursor/VS Code today.</p>
+          <p>Akomagni on the Marketplace plus MCP in Cursor or VS Code today.</p>
           <span class="arrow">IDE guide →</span>
         </a>
-        <a class="feature-card" href="https://marketplace.visualstudio.com/items?itemName=Akomagni.akomagni-chat" target="_blank" rel="noopener">
+        <a class="feature-card" href="https://marketplace.visualstudio.com/items?itemName=Akomagni.akomagni" target="_blank" rel="noopener">
           <img class="feature-logo" src="assets/logo.png" alt="" width="48" height="48" />
           <h3>VS Code extension</h3>
-          <p>Install Akomagni Chat from the Marketplace — graphical sidebar with BMAD routing.</p>
+          <p>Graphical sidebar with BMAD routing from the Marketplace.</p>
           <span class="arrow">Marketplace →</span>
         </a>
       </div>
     </section>
 
     <section class="cta-band">
-      <h2>Ready to build offline?</h2>
-      <p>Install Akomagni, pull a model, then run <code>akomagni flow route "your task"</code>.</p>
+      <h2>One workspace. Multiple models. Specialized agents.</h2>
+      <p>
+        Install Akomagni, run <code>akomagni connect</code>, then
+        <code>akomagni run cli --project ./my-app</code>.
+      </p>
       <a class="btn btn-primary" href="install/">Get started</a>
     </section>
 
@@ -162,7 +165,7 @@
             <img class="brand-logo" src="assets/logo.png" alt="" width="38" height="38" />
             Akomagni
           </a>
-          <p>Local AI workstation — install once, add tools as you need them.</p>
+          <p>Open-source AI workstation: models, agents, skills, memory, and workflows.</p>
         </div>
         <div class="footer-col">
           <h4>Get started</h4>

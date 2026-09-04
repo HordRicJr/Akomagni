@@ -216,7 +216,7 @@ def test_connect_cli_offline_warning(akomagni_home, tmp_path, monkeypatch):
         "akomagni.inference.connect.check_health_from_config",
         lambda _cfg: status,
     )
-    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "rd_sk_test"]):
+    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "rd_sk_test", ""]):
         result = runner.invoke(app, ["connect", "rodium"])
     assert result.exit_code == 0
     assert "Saved credentials" in result.stdout
@@ -429,7 +429,7 @@ def test_run_update_linux_symlink(tmp_path, monkeypatch):
 
 def test_connect_cli_empty_api_key(akomagni_home, monkeypatch):
     runner.invoke(app, ["config", "init"])
-    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "   "]):
+    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "   ", ""]):
         result = runner.invoke(app, ["connect", "rodium"])
     assert result.exit_code != 0
 
@@ -442,7 +442,7 @@ def test_connect_cli_no_sync(akomagni_home, tmp_path, monkeypatch):
         "akomagni.inference.connect.check_health_from_config",
         lambda _cfg: status,
     )
-    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "rd_sk_test"]):
+    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "rd_sk_test", ""]):
         result = runner.invoke(app, ["connect", "rodium", "--no-sync"])
     assert result.exit_code == 0
     assert not (tmp_path / ".vscode" / "settings.json").exists()
@@ -511,7 +511,7 @@ def test_connect_cli_connect_error(akomagni_home, monkeypatch):
         "akomagni.inference.connect.connect_provider",
         lambda *args, **kwargs: (_ for _ in ()).throw(ConnectError("boom")),
     )
-    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "rd_sk_test"]):
+    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "rd_sk_test", ""]):
         result = runner.invoke(app, ["connect", "rodium"])
     assert result.exit_code != 0
     assert "boom" in result.stdout

@@ -84,7 +84,7 @@ def test_connect_cli_interactive(akomagni_home, tmp_path, monkeypatch):
         lambda _cfg: status,
     )
 
-    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "rd_sk_interactive"]):
+    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "rd_sk_interactive", ""]):
         result = runner.invoke(app, ["connect", "rodium"])
     assert result.exit_code == 0
     assert "Connected" in result.stdout

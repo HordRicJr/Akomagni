@@ -40,8 +40,11 @@ def test_try_chat_with_inference_offline():
         assert try_chat_with_inference("hello", decision) is None
 
 
-def test_try_chat_with_inference_online():
+def test_try_chat_with_inference_online(tmp_path, monkeypatch):
     decision = classify_message("implement login API")
+    monkeypatch.setattr("akomagni.core.config.MODELS_DIR", tmp_path / "models")
+    monkeypatch.setattr("akomagni.inference.chat.MODELS_DIR", tmp_path / "models")
+    (tmp_path / "models").mkdir()
     local_endpoint = type(
         "E",
         (),
@@ -138,6 +141,6 @@ def test_try_chat_with_inference_client_error():
             "akomagni.inference.chat.chat_completion",
             side_effect=InferenceClientError("down"),
         ),
+        pytest.raises(InferenceClientError, match="down"),
     ):
-        with pytest.raises(InferenceClientError, match="down"):
-            try_chat_with_inference("implement login", decision)
+        try_chat_with_inference("implement login", decision)

@@ -195,7 +195,7 @@ def test_run_cli_auto_capture_save(akomagni_home, tmp_path, monkeypatch):
 
     result = runner.invoke(
         app,
-        ["run", "cli", "--no-invoke", "--inference"],
+        ["run", "cli", "--no-setup", "--no-invoke", "--inference"],
         input="How do I test?\ny\n",
     )
     assert result.exit_code == 0

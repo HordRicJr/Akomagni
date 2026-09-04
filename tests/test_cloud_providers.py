@@ -34,7 +34,7 @@ def test_resolve_rodium_endpoint(monkeypatch):
 def test_cloud_model_for_domain_rodium():
     cfg = apply_provider_preset({"version": 1}, "rodium")
     model = cloud_model_for_domain("code", config=cfg)
-    assert model == "rodium/pro"
+    assert model == "rodium/fast"
 
 
 def test_apply_azure_provider_requires_base_url():

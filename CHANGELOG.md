@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Connect wizard** — `akomagni connect` for local / Rodium / Foundry + Hugging Face token; `run cli --project` onboarding; pull any Hub GGUF via `owner/repo:file.gguf`
 - **Train (LoRA)** — `akomagni train plan|export|bundle|run`; native QLoRA (CUDA) / LoRA fallback via `akomagni[train]`
 - **Site** — GitHub Pages hub: install, tools marketplace, IDE roadmap, module pages
 - **CLI i18n** — English/French (`akomagni config language fr`)

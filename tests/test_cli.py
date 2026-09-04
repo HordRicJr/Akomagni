@@ -313,7 +313,7 @@ def test_run_cli_no_invoke(tmp_path, monkeypatch, akomagni_home):
         raise EOFError
 
     with patch("akomagni.cli.main.console.input", side_effect=fake_input):
-        result = runner.invoke(app, ["run", "cli", "--no-invoke"])
+        result = runner.invoke(app, ["run", "cli", "--no-setup", "--no-invoke"])
     assert result.exit_code == 0
 
 
@@ -329,7 +329,7 @@ def test_run_cli_invoke(tmp_path, monkeypatch, akomagni_home):
             raise EOFError
 
     with patch("akomagni.cli.main.console.input", side_effect=fake_input):
-        result = runner.invoke(app, ["run", "cli", "--no-inference"])
+        result = runner.invoke(app, ["run", "cli", "--no-setup", "--no-inference"])
     assert result.exit_code == 0
     assert "Session:" in result.stdout
 
@@ -355,7 +355,7 @@ def test_run_cli_with_inference(tmp_path, monkeypatch, akomagni_home):
             (),
             {"online": True, "base_url": "http://127.0.0.1:8787/v1"},
         )()
-        result = runner.invoke(app, ["run", "cli"])
+        result = runner.invoke(app, ["run", "cli", "--no-setup"])
     assert result.exit_code == 0
     assert "Use JWT." in result.stdout
     assert "Inference online" in result.stdout

@@ -6,7 +6,7 @@
 [![CI Test](https://github.com/HordRicJr/Akomagni/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/HordRicJr/Akomagni/actions/workflows/test.yml)
 [![CI Security](https://github.com/HordRicJr/Akomagni/actions/workflows/security.yml/badge.svg?branch=develop)](https://github.com/HordRicJr/Akomagni/actions/workflows/security.yml)
 
-**Local, open-source AI workstation** for creators — code, design, images, writing, research, and business workflows.
+**Akomagni: a new way to work with AI.** An open-source hybrid workstation that turns intent into workflows with models, agents, skills, memory, and tools.
 
 [Français](README.fr.md) · [Site](https://hordricjr.github.io/Akomagni/) · [Install](https://hordricjr.github.io/Akomagni/install/) · [Tools hub](https://hordricjr.github.io/Akomagni/tools/) · [Documentation](docs/README.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
 
@@ -18,13 +18,13 @@ Cloud AI tools are powerful but costly, privacy-invasive, and dev-centric. Local
 
 | Pillar | What it does |
 |--------|----------------|
-| **Local inference** | Hugging Face models (GGUF), offline, free |
-| **Akomagni Flow** | Auto-routes to 17 BMAD agents — no slash commands |
+| **Local + cloud** | Hugging Face GGUF offline, or Rodium / Microsoft Foundry APIs |
+| **Akomagni Flow** | Auto-routes to 17 BMAD agents: no slash commands |
 | **Akomagni Memory** | Central + per-project memory, Git-friendly |
-| **Auto Router** | Picks the right model per task (code, design, image…) |
-| **Three modes** | CLI, Agent, IDE (VS Code fork, planned) |
+| **Auto Router** | Picks the right model per task (code, design, text) and saves tokens on Rodium |
+| **Three modes** | CLI, Agent, IDE (VS Code extension + MCP today) |
 
-> Not a Cursor clone. A **multi-domain local workstation** with structured BMAD workflows.
+> Not a chatbot wrap. A **multi-domain workstation** with structured BMAD workflows.
 
 ## Quick start
 
@@ -68,6 +68,8 @@ Full guide: [hordricjr.github.io/Akomagni/install/](https://hordricjr.github.io/
 
 ```bash
 akomagni doctor                    # Scan hardware + recommend profile
+akomagni connect                   # One wizard: local / Rodium / Foundry + Hugging Face token
+akomagni run cli --project ./app   # Chat + Flow; pick provider on first session
 akomagni config init               # Create ~/.akomagni/config.yaml
 akomagni update                    # Pull latest + reinstall CLI
 akomagni config language fr        # French CLI (en/fr)
@@ -75,8 +77,9 @@ akomagni memory status             # Central + project memory
 akomagni flow route "your message" # Route to BMAD agent/skill
 akomagni flow router-mode auto     # ML router when inference is online
 akomagni skill list                # Discover installed BMAD skills
-akomagni model pull qwen2.5-coder-7b  # Download GGUF model
-akomagni serve                     # Local OpenAI-compatible API (:8787)
+akomagni model pull qwen2.5-coder-7b
+akomagni model pull owner/repo:file.gguf   # Any Hugging Face GGUF
+akomagni serve --model phi-3.5-mini        # Local OpenAI-compatible API (:8787)
 akomagni mcp serve                 # MCP agent tools (Cursor / VS Code)
 akomagni train plan                # Preview LoRA dataset from memory
 akomagni train run -m phi-3.5-mini # Native QLoRA/LoRA (needs: akomagni config extras train)

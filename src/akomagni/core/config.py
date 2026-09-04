@@ -42,9 +42,9 @@ DEFAULT_CONFIG: dict[str, Any] = {
             "base_url": "https://api.rodiumai.io/v1",
             "api_key_env": "RODIUMAI_API_KEY",
             "models": {
-                "code": "rodium/pro",
+                "code": "rodium/fast",
                 "design": "rodium/pro",
-                "text": "rodium/fast",
+                "text": "rodium/basic",
             },
         },
         "azure": {
@@ -82,6 +82,13 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "workspace": None,
         "auto_approve": False,
         "shell_timeout": 30,
+    },
+    "onboarding": {
+        "provider_ready": False,
+    },
+    "huggingface": {
+        "token_env": "HF_TOKEN",
+        "api_key": None,
     },
     "models": {
         "profiles": {

@@ -84,7 +84,10 @@ app.add_typer(ide_app, name="ide")
 
 @app.command("connect")
 def connect_cmd(
-    provider: str = typer.Argument(..., help="Cloud provider: rodium, foundry, or local."),
+    provider: str | None = typer.Argument(
+        None,
+        help="Provider: rodium, foundry, local, hf, or omit for the setup wizard.",
+    ),
     url: str | None = typer.Argument(
         None,
         help="API base URL (optional for Rodium; required for Foundry).",
@@ -97,7 +100,8 @@ def connect_cmd(
     ),
     no_sync: bool = typer.Option(False, "--no-sync", help="Skip writing .vscode/settings.json."),
 ) -> None:
-    """Connect a cloud AI provider — prompts for API key interactively."""
+    """Connect AI providers in one step (Rodium, Foundry, local, Hugging Face)."""
+    from akomagni.core.onboarding import run_connect_wizard, save_hf_token
     from akomagni.inference.connect import (
         FOUNDRY_URL_HINT,
         RODIUM_DEFAULT_URL,
@@ -106,16 +110,45 @@ def connect_cmd(
         normalize_provider,
     )
 
+    target = (provider or "setup").strip().lower()
+    if target in {"setup", "all", "init"}:
+        def _prompt(msg: str) -> str:
+            if "optional" in msg.lower() or "skip" in msg.lower():
+                return typer.prompt(msg, default="")
+            return typer.prompt(msg)
+
+        try:
+            result = run_connect_wizard(prompt=_prompt, include_hf=True)
+        except ConnectError as exc:
+            console.print(f"[red]{exc}[/]")
+            raise typer.Exit(code=1) from exc
+        console.print(f"[green]Connected[/] provider={result['provider']}")
+        if result.get("hf_saved"):
+            console.print("[green]Hugging Face token saved[/]")
+        console.print("Next: akomagni run cli --project <path>")
+        return
+
+    if target in {"hf", "huggingface", "hub"}:
+        token = typer.prompt("Hugging Face token (hf_…)", hide_input=True)
+        try:
+            save_hf_token(token)
+        except ConnectError as exc:
+            console.print(f"[red]{exc}[/]")
+            raise typer.Exit(code=1) from exc
+        console.print("[green]Hugging Face token saved[/] for model pull")
+        return
+
     try:
-        normalized = normalize_provider(provider)
+        normalized = normalize_provider(target)
     except ConnectError as exc:
         console.print(f"[red]{exc}[/]")
         raise typer.Exit(code=1) from exc
 
     if normalized == "local":
-        result = connect_provider("local", sync_ide=False)
+        connect_provider("local", sync_ide=False)
         console.print("[green]Connected to local inference[/] (offline mode)")
         console.print("Run: akomagni serve --model <name>")
+        console.print("Tip: akomagni connect  # also save a Hugging Face token for gated models")
         return
 
     base_url = url
@@ -158,9 +191,18 @@ def connect_cmd(
         console.print(f"[yellow]Saved credentials for {label}[/] but API check failed.")
         if result.error:
             console.print(f"[dim]{result.error}[/]")
+
+    hf = typer.prompt("Hugging Face token (optional, Enter to skip)", default="")
+    if hf.strip():
+        try:
+            save_hf_token(hf)
+            console.print("[green]Hugging Face token saved[/]")
+        except ConnectError as exc:
+            console.print(f"[yellow]HF token skipped:[/] {exc}")
+
     console.print("\nNext:")
-    console.print("  akomagni run cli          # chat in terminal")
-    console.print("  akomagni ide open         # open VS Code with Akomagni Chat")
+    console.print("  akomagni run cli --project <path>")
+    console.print("  akomagni ide open")
     if normalized == "azure":
         console.print("  Or install Foundry Toolkit: ms-windows-ai-studio.windows-ai-studio")
 
@@ -291,10 +333,62 @@ def run_cli(
         "--rag/--no-rag",
         help="Inject RAG retrieval into inference and skill subprocess.",
     ),
+    project: str | None = typer.Option(
+        None,
+        "--project",
+        "-p",
+        help="Project folder (created if missing).",
+    ),
+    provider: str | None = typer.Option(
+        None,
+        "--provider",
+        help="Inference provider: local, rodium, or foundry.",
+    ),
+    setup: bool = typer.Option(
+        True,
+        "--setup/--no-setup",
+        help="Ask for provider + project path on first session.",
+    ),
 ) -> None:
     """Interactive CLI — routes messages and optionally creates skill sessions."""
+    import os
+
     ensure_default_config()
     cfg = load_config()
+    auto_exec = execute
+
+    from akomagni.core.onboarding import needs_provider_onboarding, run_session_setup
+    from akomagni.inference.connect import ConnectError
+
+    if setup and (project or provider or needs_provider_onboarding(cfg)):
+        try:
+            session = run_session_setup(
+                prompt=lambda msg: typer.prompt(msg),
+                project=project,
+                provider=provider,
+                skip_provider=(
+                    provider is None
+                    and not needs_provider_onboarding(cfg)
+                    and project is not None
+                ),
+            )
+        except ConnectError as exc:
+            console.print(f"[red]{exc}[/]")
+            raise typer.Exit(code=1) from exc
+        os.chdir(session.project_root)
+        console.print(f"[dim]Project:[/] {session.project_root}")
+        console.print(f"[dim]Provider:[/] {session.provider}")
+        if session.created_project and not execute:
+            auto_exec = True
+            console.print("[dim]New project: agent exec enabled after BMAD framing.[/dim]")
+        cfg = load_config()
+    elif project:
+        from akomagni.core.onboarding import scaffold_project
+
+        root = scaffold_project(Path(project))
+        os.chdir(root)
+        console.print(f"[dim]Project:[/] {root}")
+
     inf_cfg = cfg.get("inference", {})
     mem_cfg = cfg.get("memory", {})
     rag_cfg = cfg.get("rag", {})
@@ -317,12 +411,16 @@ def run_cli(
         if inference_online:
             console.print(f"[dim]{_t('run.inference_online', url=status.base_url)}[/]")
         else:
-            provider = str(inf_cfg.get("provider", "local"))
-            if provider == "local":
+            provider_name = str(inf_cfg.get("provider", "local"))
+            if provider_name == "local":
                 console.print(f"[dim]{_t('run.inference_offline')}[/]")
+                console.print(
+                    "[dim]Start local chat: akomagni serve --model phi-3.5-mini[/dim]"
+                )
             else:
                 console.print(
-                    f"[dim]Cloud inference ({provider}) offline — check API key and base URL[/]"
+                    f"[dim]Cloud inference ({provider_name}) offline — "
+                    "run: akomagni connect[/dim]"
                 )
 
     while True:
@@ -346,7 +444,7 @@ def run_cli(
         if invoke:
             result = invoke_skill(
                 message,
-                execute=execute,
+                execute=auto_exec,
                 rag_context=rag_context,
             )
             decision = result.decision
@@ -360,7 +458,7 @@ def run_cli(
                 console.print(
                     "[yellow]Skill not found on disk — run from a BMAD project or link skills.[/]"
                 )
-            if execute and result.run_result is not None:
+            if auto_exec and result.run_result is not None:
                 if result.run_result.success:
                     console.print(f"[green]Workflow rendered:[/] {result.run_result.workflow_path}")
                 else:
@@ -391,6 +489,11 @@ def run_cli(
                 )
             except InferenceClientError as exc:
                 console.print(f"[yellow]{_t('run.inference_failed')}[/] {exc}")
+                if endpoint.is_local:
+                    console.print(
+                        "[dim]If the local server crashed, restart: "
+                        "akomagni serve --model phi-3.5-mini[/dim]"
+                    )
                 continue
             if reply:
                 console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
@@ -422,6 +525,10 @@ def run_cli(
                         )
             else:
                 console.print(f"[yellow]{_t('run.inference_failed')}[/]")
+                if endpoint.is_local:
+                    console.print(
+                        "[dim]Start or restart: akomagni serve --model phi-3.5-mini[/dim]"
+                    )
 
 
 @run_app.command("agent")
@@ -740,10 +847,13 @@ def model_catalog() -> None:
 
 @model_app.command("pull")
 def model_pull(
-    name: str = typer.Argument(..., help="Catalog model name, e.g. qwen2.5-coder-7b"),
+    name: str = typer.Argument(
+        ...,
+        help="Catalog name or Hugging Face spec: owner/repo:file.gguf",
+    ),
     force: bool = typer.Option(False, "--force", help="Re-download even if cached."),
 ) -> None:
-    """Download a GGUF model from Hugging Face."""
+    """Download a GGUF model from Hugging Face (catalog or any repo)."""
     from akomagni.core.config import MODELS_DIR
 
     try:
