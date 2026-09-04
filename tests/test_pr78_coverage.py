@@ -331,12 +331,62 @@ def test_run_update_git_pull_failure(tmp_path, monkeypatch):
         class Result:
             returncode = 1
             stdout = ""
-            stderr = "pull failed"
+            stderr = "fetch failed"
 
         return Result()
 
     monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
-    with pytest.raises(UpdateError, match="git pull failed"):
+    with pytest.raises(UpdateError, match="git fetch failed"):
+        run_update(install_dir=install)
+
+
+def test_run_update_checkout_failure(tmp_path, monkeypatch):
+    install = tmp_path / "akomagni"
+    install.mkdir()
+    (install / "pyproject.toml").write_text("[project]\nname='akomagni'\n", encoding="utf-8")
+    (install / ".git").mkdir()
+    monkeypatch.setattr("akomagni.core.update.shutil.which", lambda _name: "git")
+
+    def fake_run(cmd, **kwargs):
+        class Result:
+            returncode = 0
+            stdout = "abc\n"
+            stderr = ""
+
+        if "fetch" in cmd:
+            return Result()
+        if "checkout" in cmd:
+            Result.returncode = 1
+            Result.stderr = "checkout failed"
+            return Result()
+        return Result()
+
+    monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
+    with pytest.raises(UpdateError, match="git checkout"):
+        run_update(install_dir=install)
+
+
+def test_run_update_reset_failure(tmp_path, monkeypatch):
+    install = tmp_path / "akomagni"
+    install.mkdir()
+    (install / "pyproject.toml").write_text("[project]\nname='akomagni'\n", encoding="utf-8")
+    (install / ".git").mkdir()
+    monkeypatch.setattr("akomagni.core.update.shutil.which", lambda _name: "git")
+
+    def fake_run(cmd, **kwargs):
+        class Result:
+            returncode = 0
+            stdout = "abc\n"
+            stderr = ""
+
+        if "reset" in cmd:
+            Result.returncode = 1
+            Result.stderr = "reset failed"
+            return Result()
+        return Result()
+
+    monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
+    with pytest.raises(UpdateError, match="git reset failed"):
         run_update(install_dir=install)
 
 

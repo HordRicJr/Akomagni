@@ -175,15 +175,36 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
 
     git = _git_exe()
     previous = _git_ref(root)
-    pull = subprocess.run(  # nosec B603
-        [git, "-C", str(root), "pull", "--ff-only"],
+    branch = os.environ.get("AKOMAGNI_BRANCH", "main").strip() or "main"
+    fetch = subprocess.run(  # nosec B603
+        [git, "-C", str(root), "fetch", "origin", branch],
         capture_output=True,
         text=True,
         check=False,
     )
-    if pull.returncode != 0:
-        detail = (pull.stderr or pull.stdout or "").strip()
-        raise UpdateError(f"git pull failed: {detail}")
+    if fetch.returncode != 0:
+        detail = (fetch.stderr or fetch.stdout or "").strip()
+        raise UpdateError(f"git fetch failed: {detail}")
+
+    checkout = subprocess.run(  # nosec B603
+        [git, "-C", str(root), "checkout", "-B", branch, f"origin/{branch}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if checkout.returncode != 0:
+        detail = (checkout.stderr or checkout.stdout or "").strip()
+        raise UpdateError(f"git checkout {branch} failed: {detail}")
+
+    reset = subprocess.run(  # nosec B603
+        [git, "-C", str(root), "reset", "--hard", f"origin/{branch}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if reset.returncode != 0:
+        detail = (reset.stderr or reset.stdout or "").strip()
+        raise UpdateError(f"git reset failed: {detail}")
 
     python_exe = sys.executable
     venv_python = (
