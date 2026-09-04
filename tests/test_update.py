@@ -252,7 +252,9 @@ def test_run_update_windows_shim_lock_is_soft(tmp_path, monkeypatch):
         return Result()
 
     monkeypatch.setattr("akomagni.core.update.subprocess.run", fake_run)
-    monkeypatch.setattr("akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None)
+    monkeypatch.setattr(
+        "akomagni.core.update.shutil.which", lambda name: "git" if name == "git" else None
+    )
     monkeypatch.setattr("akomagni.core.update.platform.system", lambda: "Windows")
     monkeypatch.setattr(
         "akomagni.core.update._install_cli_binary",
