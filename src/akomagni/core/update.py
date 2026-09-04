@@ -176,8 +176,18 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
     git = _git_exe()
     previous = _git_ref(root)
     branch = os.environ.get("AKOMAGNI_BRANCH", "main").strip() or "main"
+    # Shallow clones often lack other remote branches; write origin/<branch> explicitly.
     fetch = subprocess.run(  # nosec B603
-        [git, "-C", str(root), "fetch", "origin", branch],
+        [
+            git,
+            "-C",
+            str(root),
+            "fetch",
+            "--depth",
+            "1",
+            "origin",
+            f"+refs/heads/{branch}:refs/remotes/origin/{branch}",
+        ],
         capture_output=True,
         text=True,
         check=False,
@@ -187,7 +197,7 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         raise UpdateError(f"git fetch failed: {detail}")
 
     checkout = subprocess.run(  # nosec B603
-        [git, "-C", str(root), "checkout", "-B", branch, f"origin/{branch}"],
+        [git, "-C", str(root), "checkout", "-f", "-B", branch, f"origin/{branch}"],
         capture_output=True,
         text=True,
         check=False,

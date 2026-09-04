@@ -25,8 +25,10 @@ if [ -n "$AKOMAGNI_SOURCE_DIR" ]; then
   rm -rf "$INSTALL_DIR/.venv"
 elif [ -d "$INSTALL_DIR/.git" ]; then
   echo "==> Updating existing install (branch: $AKOMAGNI_BRANCH)"
-  git -C "$INSTALL_DIR" fetch origin "$AKOMAGNI_BRANCH"
-  git -C "$INSTALL_DIR" checkout -B "$AKOMAGNI_BRANCH" "origin/$AKOMAGNI_BRANCH"
+  # Shallow clones often lack other remote branches; write origin/$branch explicitly.
+  git -C "$INSTALL_DIR" fetch --depth 1 origin \
+    "+refs/heads/${AKOMAGNI_BRANCH}:refs/remotes/origin/${AKOMAGNI_BRANCH}"
+  git -C "$INSTALL_DIR" checkout -f -B "$AKOMAGNI_BRANCH" "origin/$AKOMAGNI_BRANCH"
   git -C "$INSTALL_DIR" reset --hard "origin/$AKOMAGNI_BRANCH"
 else
   if [ -d "$INSTALL_DIR" ]; then
