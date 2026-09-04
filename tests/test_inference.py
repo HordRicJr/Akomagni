@@ -175,6 +175,45 @@ def test_pull_model_hub_401(tmp_path):
         pull_model("phi-3.5-mini", models_dir=tmp_path)
 
 
+def test_format_hub_error_variants():
+    from akomagni.inference.pull import _format_hub_error
+
+    entry = resolve_catalog_name("phi-3.5-mini")
+    assert entry is not None
+    assert "not found" in _format_hub_error(RuntimeError("Repository Not Found 404"), entry).lower()
+    assert "gated" in _format_hub_error(RuntimeError("repo is gated"), entry).lower()
+    assert "Download failed" in _format_hub_error(RuntimeError("network down"), entry)
+
+
+def test_format_catalog_entry():
+    from akomagni.inference.pull import format_catalog_entry
+
+    entry = resolve_catalog_name("phi-3.5-mini")
+    assert entry is not None
+    text = format_catalog_entry(entry)
+    assert entry.name in text
+    assert entry.profile in text
+
+
+def test_pull_model_copies_when_cache_path_differs(tmp_path):
+    entry = resolve_catalog_name("phi-3.5-mini")
+    assert entry is not None
+    dest = tmp_path / entry.name / entry.filename
+    cache = tmp_path / entry.name / "cache" / entry.filename
+
+    def fake_download(**_kwargs):
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_text("gguf", encoding="utf-8")
+        return str(cache)
+
+    mock_hub = MagicMock()
+    mock_hub.hf_hub_download = fake_download
+    with patch.dict("sys.modules", {"huggingface_hub": mock_hub}):
+        result = pull_model("phi-3.5-mini", models_dir=tmp_path)
+    assert result == dest
+    assert dest.read_text(encoding="utf-8") == "gguf"
+
+
 def test_list_local_models(tmp_path):
     models = tmp_path / "models"
     models.mkdir()
