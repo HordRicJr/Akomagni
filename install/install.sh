@@ -5,6 +5,7 @@ set -euo pipefail
 # curl -fsSL https://akomagni.dev/install/linux | bash
 
 AKOMAGNI_REPO="${AKOMAGNI_REPO:-https://github.com/HordRicJr/Akomagni.git}"
+AKOMAGNI_BRANCH="${AKOMAGNI_BRANCH:-main}"
 INSTALL_DIR="${AKOMAGNI_INSTALL_DIR:-$HOME/.local/share/akomagni}"
 BIN_DIR="${AKOMAGNI_BIN_DIR:-$HOME/.local/bin}"
 AKOMAGNI_SOURCE_DIR="${AKOMAGNI_SOURCE_DIR:-}"
@@ -23,14 +24,16 @@ if [ -n "$AKOMAGNI_SOURCE_DIR" ]; then
   cp -a "$AKOMAGNI_SOURCE_DIR/." "$INSTALL_DIR/"
   rm -rf "$INSTALL_DIR/.venv"
 elif [ -d "$INSTALL_DIR/.git" ]; then
-  echo "==> Updating existing install"
-  git -C "$INSTALL_DIR" pull --ff-only
+  echo "==> Updating existing install (branch: $AKOMAGNI_BRANCH)"
+  git -C "$INSTALL_DIR" fetch origin "$AKOMAGNI_BRANCH"
+  git -C "$INSTALL_DIR" checkout -B "$AKOMAGNI_BRANCH" "origin/$AKOMAGNI_BRANCH"
+  git -C "$INSTALL_DIR" reset --hard "origin/$AKOMAGNI_BRANCH"
 else
   if [ -d "$INSTALL_DIR" ]; then
     echo "==> Removing incomplete install at $INSTALL_DIR"
     rm -rf "$INSTALL_DIR"
   fi
-  git clone --depth 1 "$AKOMAGNI_REPO" "$INSTALL_DIR"
+  git clone --depth 1 --branch "$AKOMAGNI_BRANCH" "$AKOMAGNI_REPO" "$INSTALL_DIR"
 fi
 
 if [ ! -d "$INSTALL_DIR/.venv" ]; then

@@ -68,7 +68,9 @@ def test_run_update_git_pull_and_pip(tmp_path, monkeypatch):
     result = run_update(install_dir=install, bin_dir=bin_dir)
     assert result.previous_ref == "abc123"
     assert result.current_ref == "def456"
-    assert any("pull" in " ".join(c) for c in calls)
+    assert any("fetch" in " ".join(c) for c in calls)
+    assert any("checkout" in " ".join(c) for c in calls)
+    assert any("reset" in " ".join(c) for c in calls)
     assert any("pip" in " ".join(c) and "install" in " ".join(c) for c in calls)
     assert (bin_dir / "akomagni.exe").read_text(encoding="utf-8") == "new"
     assert not (bin_dir / "akomagni.exe.new").exists()

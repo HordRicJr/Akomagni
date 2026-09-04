@@ -5,6 +5,7 @@ $ErrorActionPreference = "Stop"
 
 $InstallDir = if ($env:AKOMAGNI_INSTALL_DIR) { $env:AKOMAGNI_INSTALL_DIR } else { "$env:LOCALAPPDATA\akomagni" }
 $Repo = if ($env:AKOMAGNI_REPO) { $env:AKOMAGNI_REPO } else { "https://github.com/HordRicJr/Akomagni.git" }
+$Branch = if ($env:AKOMAGNI_BRANCH) { $env:AKOMAGNI_BRANCH } else { "main" }
 $SourceDir = $env:AKOMAGNI_SOURCE_DIR
 $BinDir = if ($env:AKOMAGNI_BIN_DIR) { $env:AKOMAGNI_BIN_DIR } else { "$env:USERPROFILE\.local\bin" }
 $PythonExe = "$InstallDir\.venv\Scripts\python.exe"
@@ -53,15 +54,18 @@ if ($SourceDir) {
     Copy-Item -Path (Join-Path $SourceDir "*") -Destination $InstallDir -Recurse -Force
 }
 elseif ((Test-Path "$InstallDir\.git") -and (Test-AkomagniSource $InstallDir)) {
-    Write-Host "==> Updating existing install" -ForegroundColor Cyan
-    Invoke-Checked { git -C $InstallDir pull --ff-only }
+    Write-Host "==> Updating existing install (branch: $Branch)" -ForegroundColor Cyan
+    # Discard local tracked edits (e.g. leftover patches) then sync to release branch.
+    Invoke-Checked { git -C $InstallDir fetch origin $Branch }
+    Invoke-Checked { git -C $InstallDir checkout -B $Branch "origin/$Branch" }
+    Invoke-Checked { git -C $InstallDir reset --hard "origin/$Branch" }
 }
 else {
     if (Test-Path $InstallDir) {
         Reset-InstallDir -Path $InstallDir -Reason "incomplete or broken install"
     }
-    Write-Host "==> Cloning $Repo"
-    Invoke-Checked { git clone --depth 1 $Repo $InstallDir }
+    Write-Host "==> Cloning $Repo ($Branch)"
+    Invoke-Checked { git clone --depth 1 --branch $Branch $Repo $InstallDir }
 }
 
 if (-not (Test-AkomagniSource $InstallDir)) {
