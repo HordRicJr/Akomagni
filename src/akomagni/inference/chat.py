@@ -14,7 +14,6 @@ from akomagni.core.router.swap import (
 )
 from akomagni.flow.intent import RouteDecision
 from akomagni.inference.client import (
-    InferenceClientError,
     InferenceStatus,
     chat_completion,
     check_health,
@@ -131,15 +130,12 @@ def try_chat_with_inference(
         else:
             model_id = plan.model_id or model
 
-    try:
-        return chat_completion(
-            message,
-            host=host,
-            port=port,
-            base_url=None if endpoint.is_local else endpoint.base_url,
-            api_key=endpoint.api_key,
-            model=model_id,
-            system_prompt=build_flow_system_prompt(decision, rag_context=rag_context),
-        )
-    except InferenceClientError:
-        raise
+    return chat_completion(
+        message,
+        host=host,
+        port=port,
+        base_url=None if endpoint.is_local else endpoint.base_url,
+        api_key=endpoint.api_key,
+        model=model_id,
+        system_prompt=build_flow_system_prompt(decision, rag_context=rag_context),
+    )

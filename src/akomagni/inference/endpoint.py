@@ -10,10 +10,11 @@ from akomagni.core.config import load_config
 from akomagni.inference.client import api_base_url
 
 RODIUM_DEFAULT_BASE_URL = "https://api.rodiumai.io/v1"
+# Prefer cheaper tiers for light work; escalate for code/design.
 RODIUM_DEFAULT_MODELS = {
-    "code": "rodium/pro",
+    "code": "rodium/fast",
     "design": "rodium/pro",
-    "text": "rodium/fast",
+    "text": "rodium/basic",
 }
 AZURE_DEFAULT_MODELS = {
     "code": "gpt-4o",

@@ -80,6 +80,8 @@ def test_tools_page_includes_train_and_ide():
     tools = (SITE / "tools" / "index.html").read_text(encoding="utf-8")
     assert "akomagni train bundle" in tools
     assert "akomagni train run" in tools
+    assert "akomagni connect" in tools
+    assert "akomagni run cli --project" in tools
     assert "akomagni ide setup" in tools
 
 

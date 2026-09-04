@@ -9,7 +9,7 @@ from typing import Any
 
 import yaml
 
-from akomagni.core.config import CONFIG_PATH, load_config
+from akomagni.core.config import load_config
 from akomagni.inference.client import check_health_from_config
 from akomagni.inference.endpoint import RODIUM_DEFAULT_BASE_URL
 from akomagni.inference.providers import apply_provider_preset
@@ -69,7 +69,9 @@ def _merge_provider_credentials(
 
 
 def save_config(cfg: dict[str, Any]) -> None:
-    CONFIG_PATH.write_text(
+    from akomagni.core import config as config_mod
+
+    config_mod.CONFIG_PATH.write_text(
         yaml.dump(cfg, allow_unicode=True, default_flow_style=False),
         encoding="utf-8",
     )
