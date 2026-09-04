@@ -119,6 +119,18 @@ def try_chat_with_inference(
         plan = plan_inference_chat(message, host=host, port=port, status=status, config=cfg)
 
     model_id = model or plan.model_id or (status.models[0] if status.models else None)
+    # Cloud: never send a local GGUF catalog name; prefer mapped id or first live model.
+    if not endpoint.is_local:
+        available = set(status.models or [])
+        if model and model in available:
+            model_id = model
+        elif plan.model_id and plan.model_id in available:
+            model_id = plan.model_id
+        elif status.models:
+            model_id = status.models[0]
+        else:
+            model_id = plan.model_id or model
+
     try:
         return chat_completion(
             message,
@@ -130,4 +142,4 @@ def try_chat_with_inference(
             system_prompt=build_flow_system_prompt(decision, rag_context=rag_context),
         )
     except InferenceClientError:
-        return None
+        raise

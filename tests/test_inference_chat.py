@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
+import pytest
+
 from akomagni.flow.intent import classify_message
 from akomagni.inference.chat import build_flow_system_prompt, try_chat_with_inference
 from akomagni.inference.client import InferenceClientError, InferenceStatus
@@ -137,4 +139,5 @@ def test_try_chat_with_inference_client_error():
             side_effect=InferenceClientError("down"),
         ),
     ):
-        assert try_chat_with_inference("implement login", decision) is None
+        with pytest.raises(InferenceClientError, match="down"):
+            try_chat_with_inference("implement login", decision)
