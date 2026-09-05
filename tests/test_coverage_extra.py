@@ -75,6 +75,44 @@ def test_find_project_root(tmp_path):
     assert find_project_root(tmp_path) == tmp_path
 
 
+def test_resolve_bmad_root_from_nested_skill(tmp_path):
+    from akomagni.core.project import resolve_bmad_project_root
+
+    (tmp_path / "_bmad").mkdir()
+    skill = tmp_path / ".agents" / "skills" / "bmad-brainstorming"
+    skill.mkdir(parents=True)
+    assert resolve_bmad_project_root(skill_path=skill) == tmp_path.resolve()
+
+
+def test_resolve_bmad_root_uses_configured(tmp_path, monkeypatch):
+    from akomagni.core import project as proj
+
+    money = tmp_path / "Money"
+    (money / "_bmad").mkdir(parents=True)
+    monkeypatch.setattr(proj, "configured_bmad_root", lambda: money.resolve())
+    monkeypatch.setattr(proj, "find_project_root", lambda start=None: None)
+    monkeypatch.chdir(tmp_path)
+    assert proj.resolve_bmad_project_root() == money.resolve()
+
+
+def test_render_skill_script_and_configured_root(tmp_path, monkeypatch):
+    from akomagni.core import project as proj
+
+    assert proj.render_skill_script(None) is None
+    root = tmp_path / "ws"
+    script_dir = root / "_bmad" / "scripts"
+    script_dir.mkdir(parents=True)
+    render = script_dir / "render_skill.py"
+    render.write_text("#", encoding="utf-8")
+    assert proj.render_skill_script(root) == render
+
+    monkeypatch.setattr(
+        "akomagni.core.config.load_config",
+        lambda: {"skills": {"bmad_project_root": str(root)}},
+    )
+    assert proj.configured_bmad_root() == root.resolve()
+
+
 def test_workflow_dir_uses_central_when_no_project(tmp_path, monkeypatch):
     home = tmp_path / "akomagni-home"
     home.mkdir()

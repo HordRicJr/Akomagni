@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from akomagni.core.config import load_config
-from akomagni.core.project import find_project_root
+from akomagni.core.project import find_project_root, resolve_bmad_project_root
 from akomagni.flow.intent import RouteDecision
 from akomagni.flow.orchestrator import route_message
 from akomagni.flow.state import record_invocation, workflow_dir
@@ -15,6 +15,36 @@ from akomagni.memory.inject import load_central_context, load_project_context
 from akomagni.rag.context import retrieve_rag_context
 from akomagni.skills.discovery import SkillInfo, find_skill
 from akomagni.skills.runner import SkillRunResult, run_skill_subprocess
+
+# Skills that must not fall back to free-chat code dumps in the CLI.
+_IMPLEMENTATION_SKILLS = frozenset(
+    {
+        "bmad-build",
+        "bmad-build-auto",
+        "bmad-quick-dev",
+        "bmad-dev-story",
+        "bmad-dev-auto",
+        "gds-quick-dev",
+        "gds-dev-story",
+        "bmad-create-story",
+    }
+)
+
+
+def is_implementation_skill(skill_id: str) -> bool:
+    """True when the skill is meant to write/edit a real codebase."""
+    sid = (skill_id or "").lower()
+    if sid in _IMPLEMENTATION_SKILLS:
+        return True
+    return any(tok in sid for tok in ("-build", "dev-story", "quick-dev", "implement"))
+
+
+def prefers_session_over_free_chat(skill_id: str) -> bool:
+    """BMAD workflow skills should activate in Cursor, not dump snippets in CLI chat."""
+    sid = (skill_id or "").lower()
+    if sid in {"chat", "image-pipeline", ""}:
+        return False
+    return sid.startswith(("bmad-", "gds-")) or is_implementation_skill(sid)
 
 
 @dataclass(frozen=True)
@@ -126,10 +156,18 @@ def invoke_skill(
     rag_context: str | None = None,
 ) -> InvokeResult:
     """Route *message*, resolve skill paths, write session bundle."""
-    bmad_root = project_root or find_project_root()
-    decision = route_message(message, project_root=bmad_root)
+    preliminary_root = project_root or find_project_root()
+    decision = route_message(message, project_root=preliminary_root)
     skill_id = skill_override or decision.skill
-    skill = find_skill(skill_id, bmad_root) if skill_id not in ("chat", "image-pipeline") else None
+    skill = (
+        find_skill(skill_id, preliminary_root) if skill_id not in ("chat", "image-pipeline") else None
+    )
+    bmad_root = resolve_bmad_project_root(
+        project_root,
+        skill_path=skill.path if skill else None,
+    )
+    if skill is None and skill_id not in ("chat", "image-pipeline"):
+        skill = find_skill(skill_id, bmad_root)
     agent_path = _agent_skill_path(decision.agent_id, bmad_root)
     central = load_central_context()
     project = load_project_context(bmad_root)
@@ -152,8 +190,9 @@ def invoke_skill(
 
     run_result: SkillRunResult | None = None
     if execute and skill is not None:
+        exec_root = bmad_root or resolve_bmad_project_root(skill_path=skill.path)
         run_result = run_skill_subprocess(
-            project_root=bmad_root or Path.cwd(),
+            project_root=exec_root or Path.cwd(),
             skill_path=skill.path,
             message=message,
             central_context=central,

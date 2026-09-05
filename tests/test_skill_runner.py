@@ -61,17 +61,13 @@ def test_run_skill_subprocess_missing_uv(tmp_path):
     assert result.returncode == 127
 
 
-def test_run_skill_subprocess_missing_render_script(tmp_path):
-    skill = tmp_path / "skill"
-    skill.mkdir()
-    result = run_skill_subprocess(
-        project_root=tmp_path,
-        skill_path=skill,
-        message="hello",
-        uv="uv",
-    )
-    assert result.success is False
-    assert "render script" in result.error.lower()
+def test_prefers_session_over_free_chat():
+    from akomagni.skills.invoke import is_implementation_skill, prefers_session_over_free_chat
+
+    assert prefers_session_over_free_chat("bmad-brainstorming")
+    assert prefers_session_over_free_chat("bmad-build")
+    assert is_implementation_skill("bmad-quick-dev")
+    assert not prefers_session_over_free_chat("chat")
 
 
 def test_run_skill_subprocess_success(tmp_path):

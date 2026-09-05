@@ -10,7 +10,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 _WORKFLOW_LINE = re.compile(r"^read and follow (.+)$", re.IGNORECASE | re.MULTILINE)
-_RENDER_SCRIPT = Path("_bmad") / "scripts" / "render_skill.py"
 
 
 @dataclass(frozen=True)
@@ -31,8 +30,9 @@ def find_uv() -> str | None:
 
 def render_script_path(project_root: Path) -> Path | None:
     """Return BMAD render script when the project has one installed."""
-    path = project_root / _RENDER_SCRIPT
-    return path if path.is_file() else None
+    from akomagni.core.project import render_skill_script
+
+    return render_skill_script(project_root)
 
 
 def parse_workflow_path(stdout: str) -> Path | None:

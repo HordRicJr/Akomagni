@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BMAD skill exec**: resolve `_bmad/scripts/render_skill.py` from the skill path / linked workspace (not only cwd); persist `skills.bmad_project_root` on `skill link`; skip free-chat code dumps for BMAD skills
 - **Site design**: high-contrast readable UI (Syne + Source Sans 3, teal accent, cool mist background); brand-first hero and clearer section rhythm on GitHub Pages
 - **Site copy**: features aligned with product (Skills, 17 agents, Flow pipeline, Auto Router + Space/`/model` picker, hybrid, memory, CLI/IDE)
 - **Install guide**: shorter path — install → connect → skill link → run
