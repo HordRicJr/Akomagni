@@ -22,6 +22,8 @@ def akomagni_home(tmp_path, monkeypatch):
     monkeypatch.setattr("akomagni.core.config.MEMORY_DIR", home / "memory")
     monkeypatch.setattr("akomagni.core.config.MODELS_DIR", home / "models")
     monkeypatch.setattr("akomagni.core.config.SKILLS_DIR", home / "skills")
+    monkeypatch.setattr("akomagni.core.bmad_kernel.find_shipped_bmad_core", lambda: None)
+    monkeypatch.setattr("akomagni.core.bmad_kernel.ensure_bmad_kernel", lambda **_: None)
     return home
 
 

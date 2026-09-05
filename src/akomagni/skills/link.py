@@ -114,7 +114,7 @@ def ensure_skills_linked(start: Path | None = None) -> list[Path]:
         from akomagni.core.bmad_kernel import ensure_bmad_kernel
 
         ensure_bmad_kernel(persist=True)
-    except Exception:  # pragma: no cover
+    except (OSError, ValueError, TypeError, KeyError, ImportError):  # pragma: no cover
         pass
     current = extra_skill_roots()
     if current:

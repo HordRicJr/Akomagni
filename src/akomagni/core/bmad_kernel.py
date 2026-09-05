@@ -43,7 +43,7 @@ def _candidate_roots() -> list[Path]:
 
         install = find_install_root() or default_install_dir()
         candidates.append(install / KERNEL_DIRNAME)
-    except Exception:  # pragma: no cover - defensive
+    except ImportError:  # pragma: no cover - defensive
         pass
     candidates.append(DATA_DIR / KERNEL_DIRNAME)
     here = Path(__file__).resolve()
@@ -165,5 +165,5 @@ def read_package_version(root: Path | None = None) -> str:
         from akomagni import __version__
 
         return __version__
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         return "unknown"

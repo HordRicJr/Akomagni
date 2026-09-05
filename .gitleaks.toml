@@ -1,0 +1,11 @@
+# Gitleaks config — allow documented example secrets inside the BMAD kernel.
+title = "Akomagni"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "BMAD kernel docs / templates contain example tokens for teaching"
+paths = [
+  '''bmad-core/''',
+]

@@ -89,5 +89,5 @@ target-version = "py311"
 quote-style = "double"
 
 [tool.bandit]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "bmad-core"]
 skips = ["B101", "B603", "B404"]

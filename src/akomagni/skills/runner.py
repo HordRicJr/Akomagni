@@ -28,11 +28,16 @@ def find_uv() -> str | None:
     return shutil.which("uv")
 
 
-def render_script_path(project_root: Path) -> Path | None:
-    """Return BMAD render script when the project has one installed."""
-    from akomagni.core.project import render_skill_script
+def render_script_path(project_root: Path, skill_path: Path | None = None) -> Path | None:
+    """Return BMAD render script from the project or the skill's kernel tree."""
+    from akomagni.core.project import find_bmad_root_from_skill, render_skill_script
 
-    return render_skill_script(project_root)
+    script = render_skill_script(project_root)
+    if script is not None:
+        return script
+    if skill_path is not None:
+        return render_skill_script(find_bmad_root_from_skill(skill_path))
+    return None
 
 
 def parse_workflow_path(stdout: str) -> Path | None:
@@ -75,16 +80,18 @@ def build_render_command(
     skill_path: Path,
 ) -> list[str]:
     """Build argv for ``uv run render_skill.py``."""
-    script = render_script_path(project_root)
+    script = render_script_path(project_root, skill_path)
     if script is None:
         raise FileNotFoundError(f"BMAD render script not found under {project_root}")
+    # Prefer the tree that actually owns render_skill.py for --project-root.
+    render_root = script.parent.parent.parent
     return [
         uv,
         "run",
         "--no-cache",
         str(script),
         "--project-root",
-        str(project_root),
+        str(render_root if (render_root / "_bmad").is_dir() else project_root),
         "--skill",
         str(skill_path),
     ]
