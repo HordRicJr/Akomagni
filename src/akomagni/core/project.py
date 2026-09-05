@@ -46,9 +46,9 @@ def find_project_root(start: Path | None = None) -> Path | None:
             fallback is None
             and (directory / ".bmad").is_dir()
             and (directory / _RENDER_REL).is_file()
+            and (isolated_workspace is None or isolated_workspace == directory)
         ):
-            if isolated_workspace is None or isolated_workspace == directory:
-                fallback = directory
+            fallback = directory
     return fallback
 
 

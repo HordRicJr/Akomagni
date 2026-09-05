@@ -26,9 +26,7 @@ def test_isolated_project_does_not_inherit_parent_bmad(tmp_path, monkeypatch):
     assert is_project is True
 
 
-def test_resolve_bmad_ignores_isolated_project_and_configured_parent(
-    tmp_path, monkeypatch
-):
+def test_resolve_bmad_ignores_isolated_project_and_configured_parent(tmp_path, monkeypatch):
     money = tmp_path / "Money"
     (money / "_bmad").mkdir(parents=True)
     app = money / "app_test"
@@ -36,9 +34,7 @@ def test_resolve_bmad_ignores_isolated_project_and_configured_parent(
     kernel = tmp_path / "kernel"
     (kernel / "_bmad").mkdir(parents=True)
 
-    monkeypatch.setattr(
-        "akomagni.core.project.configured_bmad_root", lambda: money.resolve()
-    )
+    monkeypatch.setattr("akomagni.core.project.configured_bmad_root", lambda: money.resolve())
     monkeypatch.setattr(
         "akomagni.core.bmad_kernel.find_shipped_bmad_core", lambda: kernel.resolve()
     )
