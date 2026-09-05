@@ -112,9 +112,13 @@ def ensure_bmad_kernel(*, persist: bool = True) -> BmadKernelInfo | None:
     if skills is not None:
         roots = [str(Path(r).expanduser().resolve()) for r in (block.get("extra_roots") or [])]
         key = str(skills)
-        if key not in roots:
-            roots.insert(0, key)
-            block["extra_roots"] = roots
+        # Kernel first so discovery order matches skill_search_roots priority.
+        ordered = [key]
+        for item in roots:
+            if item != key and item not in ordered:
+                ordered.append(item)
+        if ordered != roots:
+            block["extra_roots"] = ordered
             changed = True
 
     if changed:

@@ -366,21 +366,22 @@ def test_run_cli_with_inference(tmp_path, monkeypatch, akomagni_home):
     assert "Inference online" in result.stdout
 
 
-def test_run_cli_skips_free_chat_for_build_skill(tmp_path, monkeypatch, akomagni_home):
+def test_run_cli_runs_bmad_skill_in_chat(tmp_path, monkeypatch, akomagni_home):
+    """BMAD skills stay in the CLI — model reply with skill guidance, no IDE handoff."""
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
-    messages = iter(["implement auth", ""])
+    messages = iter(["help me brainstorm a budget app", ""])
 
     def fake_input(_):
         try:
             return next(messages)
-        except StopIteration:
-            raise EOFError
+        except StopIteration as exc:
+            raise EOFError from exc
 
     with (
         patch("akomagni.cli.main.check_health_from_config") as mock_health,
         patch(
-            "akomagni.cli.main.try_chat_with_inference", return_value="should not appear"
+            "akomagni.cli.main.try_chat_with_inference", return_value="Let's explore ideas."
         ) as mock_chat,
         patch("akomagni.cli.main.console.input", side_effect=fake_input),
     ):
@@ -391,9 +392,12 @@ def test_run_cli_skips_free_chat_for_build_skill(tmp_path, monkeypatch, akomagni
         )()
         result = runner.invoke(app, ["run", "cli", "--no-setup"])
     assert result.exit_code == 0
-    assert "should not appear" not in result.stdout
-    assert "does not invent" in result.stdout
-    mock_chat.assert_not_called()
+    assert "Let's explore ideas." in result.stdout
+    assert "Open the session in Cursor" not in result.stdout
+    assert "Running skill in CLI" in result.stdout or "bmad-brainstorming" in result.stdout
+    mock_chat.assert_called()
+    kwargs = mock_chat.call_args.kwargs
+    assert "skill_guidance" in kwargs
 
 
 def test_main_module():

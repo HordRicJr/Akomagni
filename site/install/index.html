@@ -6,7 +6,7 @@
     <title>Install — Akomagni</title>
     <meta
       name="description"
-      content="Install Akomagni in one command. Connect local GGUF, Rodium, or Foundry. Link skills and run the CLI."
+      content="Install Akomagni in one command. BMAD skills ship automatically. Connect local GGUF, Rodium, or Foundry, then run the CLI."
     />
     <meta name="theme-color" content="#f3f6fa" />
     <link rel="icon" href="../assets/logo.png" type="image/png" />
@@ -39,7 +39,8 @@
         <p class="breadcrumb"><a href="../">Home</a> / Install</p>
         <h1>Get up and running</h1>
         <p class="lead">
-          One command. Then connect a provider and start the CLI. Python 3.11+, git, 8 GB RAM.
+          One command installs Akomagni <strong>and</strong> the BMAD skill kernel (~110 skills).
+          Then connect a provider and run. Python 3.11+, git, 8&nbsp;GB RAM.
         </p>
       </div>
     </section>
@@ -138,9 +139,26 @@ akomagni skill list</pre>
           <div class="step-num">3</div>
           <h3>Run</h3>
           <p>
-            BMAD skills ship in the install kernel automatically.
+            Skills are already there — <code>akomagni skill list</code>, then
             <code>akomagni run cli --project ./app</code>
           </p>
+        </div>
+      </div>
+
+      <div class="tools-category" style="margin-top: 3rem">
+        <h2>BMAD kernel (v0.3)</h2>
+        <p class="cat-desc">
+          No path setup. Install and <code>akomagni update</code> sync the shipped kernel.
+          <code>akomagni doctor</code> shows the skill count. Optional
+          <code>akomagni skill link</code> only for an extra custom folder.
+        </p>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Verify skills</span>
+            <button class="copy-btn" type="button" data-copy="cmd-kernel">Copy</button>
+          </div>
+          <pre id="cmd-kernel">akomagni doctor
+akomagni skill list</pre>
         </div>
       </div>
 
@@ -172,13 +190,16 @@ akomagni serve --model qwen2.5-coder-7b</pre>
 
       <div class="tools-category">
         <h2>Update</h2>
+        <p class="cat-desc">
+          Pulls the latest release, refreshes the BMAD kernel, and prints version + changelog
+          highlights.
+        </p>
         <div class="copy-block">
           <div class="copy-block-header">
             <span>Update</span>
             <button class="copy-btn" type="button" data-copy="cmd-update">Copy</button>
           </div>
-          <pre id="cmd-update">akomagni update
-akomagni connect</pre>
+          <pre id="cmd-update">akomagni update</pre>
         </div>
       </div>
 

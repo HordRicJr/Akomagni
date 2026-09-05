@@ -40,11 +40,41 @@ def is_implementation_skill(skill_id: str) -> bool:
 
 
 def prefers_session_over_free_chat(skill_id: str) -> bool:
-    """BMAD workflow skills should activate in Cursor, not dump snippets in CLI chat."""
+    """True when the skill should drive the turn (not unstructured free chat).
+
+    In the CLI this means: load skill guidance and continue the conversation
+    with the model — do not hand off to an IDE.
+    """
     sid = (skill_id or "").lower()
     if sid in {"chat", "image-pipeline", ""}:
         return False
     return sid.startswith(("bmad-", "gds-")) or is_implementation_skill(sid)
+
+
+def build_skill_cli_guidance(
+    skill: SkillInfo | None,
+    run_result: SkillRunResult | None = None,
+    *,
+    max_chars: int = 12000,
+) -> str:
+    """Load SKILL.md (+ optional rendered workflow) for CLI-guided inference."""
+    if skill is None:
+        return ""
+    parts: list[str] = []
+    skill_md = skill.path / "SKILL.md"
+    if skill_md.is_file():
+        text = skill_md.read_text(encoding="utf-8").strip()
+        if len(text) > max_chars:
+            text = text[:max_chars] + "\n\n[…truncated for CLI context…]"
+        parts.append(f"### Skill `{skill.skill_id}` (SKILL.md)\n\n{text}")
+    if run_result and run_result.workflow_path and run_result.workflow_path.is_file():
+        wf = run_result.workflow_path.read_text(encoding="utf-8").strip()
+        if len(wf) > max_chars:
+            wf = wf[:max_chars] + "\n\n[…truncated for CLI context…]"
+        parts.append(f"### Rendered workflow\n\n{wf}")
+    elif run_result and run_result.stdout.strip():
+        parts.append(f"### Skill render output\n\n{run_result.stdout.strip()[:max_chars]}")
+    return "\n\n".join(parts)
 
 
 @dataclass(frozen=True)
@@ -131,14 +161,15 @@ def _build_session_markdown(
         [
             "## Activation instructions",
             "",
-            "1. Open this project in Cursor (or your BMAD-capable agent).",
-            f"2. Activate agent `{decision.agent_id}` and skill `{decision.skill}`.",
-            "3. Paste the user message above as the first turn.",
+            "1. Continue in the Akomagni CLI (or your agent) as this skill.",
+            f"2. Follow skill `{decision.skill}` / agent `{decision.agent_id}`.",
+            "3. Use the user message above as the first turn.",
             (
                 "4. Read and follow the rendered workflow file above."
                 if run_result and run_result.workflow_path
                 else "4. Follow the skill's SKILL.md workflow to completion."
             ),
+            "5. Do not invent a full project dump in one shot — collaborate step by step.",
             "",
             decision.hint,
             "",

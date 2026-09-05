@@ -6,7 +6,7 @@
     <title>Tools — Akomagni</title>
     <meta
       name="description"
-      content="Install GGUF models, BMAD skills, MCP agent tools, and optional packs for your Akomagni workstation."
+      content="GGUF models, BMAD skill kernel (ships with install), MCP tools, Train, and IDE setup for Akomagni."
     />
     <meta name="theme-color" content="#f3f6fa" />
     <link rel="icon" href="../assets/logo.png" type="image/png" />
@@ -39,8 +39,7 @@
         <p class="breadcrumb"><a href="../">Home</a> / Tools</p>
         <h1>Tools hub</h1>
         <p class="lead">
-          Models, BMAD skills, MCP agent tools, Train, and IDE setup — add what you need to the
-          workstation.
+          Models, a full BMAD skill kernel (included on install), MCP tools, Train, and IDE setup.
         </p>
       </div>
     </section>
@@ -104,8 +103,8 @@
       <div class="tools-category" data-tools-section>
         <h2>BMAD skills</h2>
         <p class="cat-desc">
-          17 agents and 80+ skills — discovered from your project or <code>~/.akomagni/skills/</code>.
-          Install BMAD in your repo or symlink skills.
+          17 agents and ~110 skills ship in the <strong>install kernel</strong> (v0.3).
+          <code>akomagni skill list</code> works immediately — no path setup.
         </p>
         <div class="tool-grid">
           <article class="tool-card" data-tool-category="skills">
@@ -114,7 +113,7 @@
               <span class="tool-badge">Core</span>
             </div>
             <p>PRD, architecture, dev stories, code review, sprint planning.</p>
-            <div class="tool-cmd" id="tool-bmad">akomagni skill list | grep bmad-</div>
+            <div class="tool-cmd" id="tool-bmad">akomagni skill list</div>
             <button class="copy-btn" type="button" data-copy="tool-bmad">Copy command</button>
             <a class="module-link" href="../code/">Code module →</a>
           </article>
@@ -134,16 +133,16 @@
               <span class="tool-badge">Games</span>
             </div>
             <p>GDD, narrative, playtest plans, game architecture workflows.</p>
-            <div class="tool-cmd" id="tool-gds">akomagni skill list | grep gds-</div>
+            <div class="tool-cmd" id="tool-gds">akomagni skill list</div>
             <button class="copy-btn" type="button" data-copy="tool-gds">Copy command</button>
           </article>
           <article class="tool-card" data-tool-category="skills">
             <div class="tool-card-top">
-              <h3>Link skills directory</h3>
+              <h3>Update + kernel sync</h3>
               <span class="tool-badge">Setup</span>
             </div>
-            <p>Register BMAD skill folders so Flow finds agents outside the install tree.</p>
-            <div class="tool-cmd" id="tool-skills-dir">akomagni skill link</div>
+            <p>Pull latest Akomagni, refresh BMAD skills, see version and changelog highlights.</p>
+            <div class="tool-cmd" id="tool-skills-dir">akomagni update</div>
             <button class="copy-btn" type="button" data-copy="tool-skills-dir">Copy command</button>
           </article>
         </div>
@@ -247,11 +246,11 @@
           </article>
           <article class="tool-card" data-tool-category="core">
             <div class="tool-card-top">
-              <h3>Link BMAD skills</h3>
+              <h3>List BMAD skills</h3>
               <span class="tool-badge">Setup</span>
             </div>
-            <p>Register your BMAD skill folder so Flow finds agents outside the install tree.</p>
-            <div class="tool-cmd" id="tool-skill-link">akomagni skill link</div>
+            <p>Shipped with install. Optional <code>skill link</code> only for an extra custom folder.</p>
+            <div class="tool-cmd" id="tool-skill-link">akomagni skill list</div>
             <button class="copy-btn" type="button" data-copy="tool-skill-link">Copy command</button>
           </article>
           <article class="tool-card" data-tool-category="core">
