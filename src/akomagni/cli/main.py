@@ -126,7 +126,7 @@ def connect_cmd(
         console.print(f"[green]Connected[/] provider={result['provider']}")
         if result.get("hf_saved"):
             console.print("[green]Hugging Face token saved[/]")
-        console.print("Next: akomagni run cli --project <path>")
+        console.print("Next: akomagni chat --project <path>")
         return
 
     if target in {"hf", "huggingface", "hub"}:
@@ -202,7 +202,7 @@ def connect_cmd(
             console.print(f"[yellow]HF token skipped:[/] {exc}")
 
     console.print("\nNext:")
-    console.print("  akomagni run cli --project <path>")
+    console.print("  akomagni chat --project <path>")
     console.print("  akomagni ide open")
     if normalized == "azure":
         console.print("  Or install Foundry Toolkit: ms-windows-ai-studio.windows-ai-studio")
@@ -320,8 +320,8 @@ def serve(
     )
 
 
-@run_app.command("cli")
-def run_cli(
+@app.command("chat")
+def chat(
     invoke: bool = typer.Option(
         True,
         "--invoke/--no-invoke",
@@ -364,12 +364,13 @@ def run_cli(
         help="Ask for provider + project path on first session.",
     ),
 ) -> None:
-    """Interactive CLI — routes messages and optionally creates skill sessions."""
+    """Interactive chat in a project — Flow + BMAD skills in the terminal."""
     import os
 
     ensure_default_config()
     cfg = load_config()
     auto_exec = execute
+    active_project: Path | None = None
 
     from akomagni.core.onboarding import needs_provider_onboarding, run_session_setup
     from akomagni.inference.connect import ConnectError
@@ -388,17 +389,17 @@ def run_cli(
             console.print(f"[red]{exc}[/]")
             raise typer.Exit(code=1) from exc
         os.chdir(session.project_root)
+        active_project = session.project_root
         console.print(f"[dim]Project:[/] {session.project_root}")
         console.print(f"[dim]Provider:[/] {session.provider}")
-        if session.created_project and not execute:
-            auto_exec = True
-            console.print("[dim]New project: agent exec enabled after BMAD framing.[/dim]")
+        # Never auto-enable --exec: it runs render_skill and can pollute the project.
         cfg = load_config()
     elif project:
         from akomagni.core.onboarding import scaffold_project
 
         root = scaffold_project(Path(project))
         os.chdir(root)
+        active_project = root
         console.print(f"[dim]Project:[/] {root}")
 
     inf_cfg = cfg.get("inference", {})
@@ -437,6 +438,11 @@ def run_cli(
                     f"[dim]Cloud inference ({provider_name}) offline — run: akomagni connect[/dim]"
                 )
 
+    sticky_skill: str | None = None
+    skill_guidance_cache = ""
+    chat_history: list[dict[str, str]] = []
+    max_history_messages = 24
+
     while True:
         try:
             message = console.input("[cyan]›[/] ")
@@ -473,6 +479,7 @@ def run_cli(
             rag_context = retrieve_rag_context(
                 message,
                 project=bool(rag_cfg.get("inject_project", True)),
+                project_root=active_project,
                 limit=int(rag_cfg.get("inject_limit", 3)),
                 rrf_k=int(rag_cfg.get("rrf_k", 60)),
             )
@@ -485,9 +492,11 @@ def run_cli(
             )
             from akomagni.skills.link import ensure_skills_linked
 
-            ensure_skills_linked()
+            ensure_skills_linked(active_project)
             result = invoke_skill(
                 message,
+                project_root=active_project,
+                skill_override=sticky_skill,
                 execute=auto_exec,
                 rag_context=rag_context,
             )
@@ -501,7 +510,7 @@ def run_cli(
             elif decision.skill in {"chat", "image-pipeline"}:
                 console.print(
                     "[dim]Free chat mode (no BMAD skill). "
-                    "Try: brainstorm, build an app, PRD, or implement …[/dim]"
+                    "Try: brainstorm · prd · ux · archi · code · tests[/dim]"
                 )
             else:
                 console.print(
@@ -513,11 +522,20 @@ def run_cli(
                     console.print(f"[green]Workflow rendered:[/] {result.run_result.workflow_path}")
                 else:
                     console.print(f"[yellow]Skill exec failed:[/] {result.run_result.error}")
-            skill_guidance = build_skill_cli_guidance(result.skill, result.run_result)
             if prefers_session_over_free_chat(decision.skill) and result.skill:
+                sticky_skill = decision.skill
+                skill_guidance = build_skill_cli_guidance(result.skill, result.run_result)
+                skill_guidance_cache = skill_guidance
                 console.print("[dim]Running skill in CLI…[/]")
+            elif decision.skill == "chat" and sticky_skill and skill_guidance_cache:
+                skill_guidance = skill_guidance_cache
+            else:
+                if decision.skill not in {"chat", "image-pipeline"}:
+                    sticky_skill = decision.skill
+                skill_guidance = build_skill_cli_guidance(result.skill, result.run_result)
+                skill_guidance_cache = skill_guidance
         else:
-            decision = route_message(message)
+            decision = route_message(message, project_root=active_project)
             console.print(
                 f"[dim]{decision.badge}[/] → `{decision.skill}` ({decision.confidence:.0%})"
             )
@@ -527,6 +545,24 @@ def run_cli(
         # CLI always continues with the model (BMAD skills included — no IDE handoff).
         allow_free_chat = True
         if inference and inference_online and allow_free_chat:
+            from akomagni.flow.gates import agent_for_skill
+            from akomagni.flow.intent import RouteDecision, _badge
+            from akomagni.inference.agent_loop import run_agent_tool_turn, wants_project_tools
+
+            use_tools = bool(active_project) and wants_project_tools(message, decision)
+            if use_tools and decision.skill in {"chat", "bmad-brainstorming"}:
+                # Promote to build so tools create files instead of dumping code in chat.
+                agent_id = agent_for_skill("bmad-build")
+                decision = RouteDecision(
+                    agent_id=agent_id,
+                    skill="bmad-build",
+                    confidence=0.9,
+                    badge=_badge(agent_id, "Build"),
+                    hint="Création de fichiers dans le projet via outils agent.",
+                )
+                sticky_skill = "bmad-build"
+                console.print(f"[dim]{decision.badge}[/] → outils projet (écriture fichiers)")
+
             chat_plan = plan_inference_chat(message, host=host, port=port)
             domain = chat_plan.domain_plan.classification.domain
             catalog = chat_plan.domain_plan.catalog_name or "n/a"
@@ -534,16 +570,36 @@ def run_cli(
             if chat_plan.swap_plan.needs_swap and not auto_swap:
                 console.print(f"[yellow]{chat_plan.swap_plan.hint}[/]")
             try:
-                reply = try_chat_with_inference(
-                    message,
-                    decision,
-                    host=host,
-                    port=port,
-                    model=model_override,
-                    auto_swap=auto_swap,
-                    rag_context=rag_context,
-                    skill_guidance=skill_guidance if invoke else "",
-                )
+                if use_tools:
+                    agent_turn = run_agent_tool_turn(
+                        message,
+                        decision,
+                        workspace=active_project or Path.cwd(),
+                        history=chat_history,
+                        skill_guidance=skill_guidance if invoke else "",
+                        rag_context=rag_context,
+                        host=host,
+                        port=port,
+                        base_url=None if endpoint.is_local else endpoint.base_url,
+                        api_key=endpoint.api_key,
+                        model=model_override or chat_plan.model_id,
+                        on_action=lambda label: console.print(f"[dim]→ {label}[/]"),
+                    )
+                    reply = agent_turn.user_reply
+                    for action in agent_turn.actions:
+                        console.print(f"[green]✓[/] {action}")
+                else:
+                    reply = try_chat_with_inference(
+                        message,
+                        decision,
+                        host=host,
+                        port=port,
+                        model=model_override,
+                        auto_swap=auto_swap,
+                        rag_context=rag_context,
+                        skill_guidance=skill_guidance if invoke else "",
+                        history=chat_history,
+                    )
             except InferenceClientError as exc:
                 console.print(f"[yellow]{_t('run.inference_failed')}[/] {exc}")
                 if endpoint.is_local:
@@ -563,7 +619,9 @@ def run_cli(
                     console.print(f"\n[bold]Akomagni[/] {_t('image.generated', model=reply.model)}")
                     if reply.url:
                         console.print(f"[dim]URL:[/] {reply.url}")
-                    default_path = default_image_save_path(project_root=Path.cwd())
+                    default_path = default_image_save_path(
+                        project_root=active_project or Path.cwd()
+                    )
                     try:
                         chosen = console.input(
                             f"{_t('image.save_prompt', default=default_path)} "
@@ -582,7 +640,28 @@ def run_cli(
                         console.print(f"[yellow]{_t('image.save_failed', error=exc)}[/]\n")
                     continue
 
-                console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
+                display = str(reply)
+                if (
+                    isinstance(reply, str)
+                    and decision.skill in {"bmad-brainstorming", "gds-brainstorm-game", "chat"}
+                    and "```" in reply
+                    and not use_tools
+                ):
+                    from akomagni.inference.agent_loop import strip_tool_markup
+
+                    cleaned = strip_tool_markup(reply)
+                    if cleaned and cleaned != reply.strip():
+                        display = cleaned
+                        console.print(
+                            "[dim](Code masqué — dis « crée les fichiers » "
+                            "pour écrire dans le projet via les outils.)[/]"
+                        )
+                        reply = cleaned
+                console.print(f"\n[bold]Akomagni[/]\n{display}\n")
+                chat_history.append({"role": "user", "content": message})
+                chat_history.append({"role": "assistant", "content": str(reply)})
+                if len(chat_history) > max_history_messages:
+                    chat_history[:] = chat_history[-max_history_messages:]
                 if auto_capture:
                     preview = build_capture_text(message, reply)
                     console.print(f"[dim]{_t('memory.capture_preview')}[/]")
@@ -598,6 +677,7 @@ def run_cli(
                             reply,
                             global_=capture_global,
                             approved=True,
+                            project_root=None if capture_global else active_project,
                         )
                         console.print(f"[green]{_t('memory.saved_to')}:[/] {saved}")
                     elif answer in {"l", "later", "pending", "p", "plus tard"}:
@@ -605,6 +685,7 @@ def run_cli(
                             message,
                             reply,
                             global_=capture_global,
+                            project_root=None if capture_global else active_project,
                         )
                         console.print(
                             f"[yellow]{_t('memory.queued_capture', capture_id=proposal.capture_id)}[/]"
@@ -617,10 +698,34 @@ def run_cli(
                     )
 
 
+@run_app.command("cli")
+def run_cli(
+    invoke: bool = typer.Option(True, "--invoke/--no-invoke"),
+    execute: bool = typer.Option(False, "--exec/--no-exec"),
+    inference: bool = typer.Option(True, "--inference/--no-inference"),
+    auto_swap: bool = typer.Option(False, "--auto-swap/--no-auto-swap"),
+    rag: bool | None = typer.Option(None, "--rag/--no-rag"),
+    project: str | None = typer.Option(None, "--project", "-p"),
+    provider: str | None = typer.Option(None, "--provider"),
+    setup: bool = typer.Option(True, "--setup/--no-setup"),
+) -> None:
+    """Alias for ``akomagni chat`` (kept for compatibility)."""
+    chat(
+        invoke=invoke,
+        execute=execute,
+        inference=inference,
+        auto_swap=auto_swap,
+        rag=rag,
+        project=project,
+        provider=provider,
+        setup=setup,
+    )
+
+
 @run_app.command("agent")
 def run_agent() -> None:
-    """Mode agent (stub — même routeur qu'en CLI pour v0.1)."""
-    run_cli()
+    """Mode agent (stub — same chat router for v0.1)."""
+    chat()
 
 
 @run_app.command("ide")
@@ -629,7 +734,7 @@ def run_ide() -> None:
     console.print(
         "[yellow]Akomagni IDE[/] (v1.0 fork) is not bundled yet.\n"
         "Today: [bold]akomagni ide setup[/] then use Cursor or VS Code with MCP.\n"
-        "Or: [bold]akomagni run cli[/] · [bold]akomagni serve[/]"
+        "Or: [bold]akomagni chat[/] · [bold]akomagni serve[/]"
     )
     raise typer.Exit(code=1)
 

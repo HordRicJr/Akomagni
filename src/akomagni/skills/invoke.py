@@ -187,9 +187,32 @@ def invoke_skill(
     rag_context: str | None = None,
 ) -> InvokeResult:
     """Route *message*, resolve skill paths, write session bundle."""
+    from akomagni.flow.gates import agent_for_skill
+    from akomagni.flow.intent import RouteDecision, _badge, classify_message
+
     preliminary_root = project_root or find_project_root()
     decision = route_message(message, project_root=preliminary_root)
-    skill_id = skill_override or decision.skill
+    # Keep an active BMAD skill across short follow-ups ("je valide", "1. …").
+    if (
+        skill_override
+        and skill_override not in {"chat", "image-pipeline", ""}
+        and (decision.skill == "chat" or decision.confidence < 0.8)
+    ):
+        if skill_override in {"bmad-brainstorming", "gds-brainstorm-game"}:
+            decision = classify_message(
+                message if skill_override == "bmad-brainstorming" else f"jeu {message}",
+                greenfield=True,
+            )
+        else:
+            agent_id = agent_for_skill(skill_override)
+            decision = RouteDecision(
+                agent_id=agent_id,
+                skill=skill_override,
+                confidence=0.9,
+                badge=_badge(agent_id, skill_override),
+                hint=f"Continuing active skill `{skill_override}`.",
+            )
+    skill_id = decision.skill
     skill = (
         find_skill(skill_id, preliminary_root)
         if skill_id not in ("chat", "image-pipeline")
@@ -203,11 +226,17 @@ def invoke_skill(
         skill = find_skill(skill_id, bmad_root)
     agent_path = _agent_skill_path(decision.agent_id, bmad_root)
     central = load_central_context()
-    # Workflow/session storage: ambient user project or central DATA_DIR — never
-    # the shipped kernel alone (skills come from the kernel; state stays local).
-    storage_root = find_project_root()
-    if storage_root is None and project_root is not None:
+    # Workflow/session storage: explicit --project / .akomagni workspace first.
+    # Never inherit a parent BMAD checkout (Money) just because cwd is nested.
+    from akomagni.core.project import find_akomagni_workspace
+
+    storage_root = None
+    if project_root is not None:
         storage_root = project_root.resolve()
+    else:
+        storage_root = find_akomagni_workspace()
+    if storage_root is None:
+        storage_root = find_project_root()
     project = load_project_context(storage_root or bmad_root)
     rag = rag_context
     if rag is None:

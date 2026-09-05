@@ -20,32 +20,73 @@ GAME_PATTERNS = re.compile(
     r"\b(jeu|game|gdd|gameplay|unity|godot|unreal|niveau|level design)\b",
     re.IGNORECASE,
 )
-TEST_PATTERNS = re.compile(r"\b(test|qa|e2e|ci|couverture|flaky|pytest)\b", re.IGNORECASE)
-PITCH_PATTERNS = re.compile(r"\b(pitch|deck|slides|présentation|youtube|keynote)\b", re.IGNORECASE)
-STORY_PATTERNS = re.compile(r"\b(post|article|linkedin|histoire|narration|rédige)\b", re.IGNORECASE)
-DESIGN_PATTERNS = re.compile(
-    r"\b(design|ux|ui|maquette|figma|wireframe|css|tailwind)\b", re.IGNORECASE
-)
-ARCH_PATTERNS = re.compile(r"\b(architect|architecture|infra|scalabilité)\b", re.IGNORECASE)
-PRD_PATTERNS = re.compile(r"\b(prd|spec|epic|story|backlog|requirements)\b", re.IGNORECASE)
-DEV_PATTERNS = re.compile(
-    r"\b(implémente|implement|code|bug|fix|refactor|api|commit)\b",
+TEST_PATTERNS = re.compile(
+    r"\b(test|tests|qa|e2e|ci|couverture|flaky|pytest|murat)\b",
     re.IGNORECASE,
 )
-BRAINSTORM_PATTERNS = re.compile(
+PITCH_PATTERNS = re.compile(
+    r"\b(pitch|deck|slides|présentation|presentation|youtube|keynote|caravaggio)\b",
+    re.IGNORECASE,
+)
+STORY_PATTERNS = re.compile(
+    r"\b(post|article|linkedin|histoire|narration|rédige|redige|storytelling|sophia)\b",
+    re.IGNORECASE,
+)
+DESIGN_PATTERNS = re.compile(
     r"\b("
-    r"idée|idee|brainstorm(?:ing)?|brainstorms|"
-    r"créer un|creer un|create a|build a|build an|"
-    r"nouveau projet|new project|pivot|comment faire|how (?:do|can|should) i"
+    r"design|ux|ui|maquette|figma|wireframe|css|tailwind|"
+    r"interface|écran|ecran|sally"
     r")\b",
     re.IGNORECASE,
 )
-INNOVATION_PATTERNS = re.compile(
-    r"\b(innovation|disruption|business model|blue ocean)\b", re.IGNORECASE
+ARCH_PATTERNS = re.compile(
+    r"\b(architect(?:e|ure)?|archi|infra|scalabilit[eé]|stack|winston)\b",
+    re.IGNORECASE,
 )
-PROBLEM_PATTERNS = re.compile(r"\b(problème complexe|root cause|triz|bloqué)\b", re.IGNORECASE)
+PRD_PATTERNS = re.compile(
+    r"(?:"
+    r"\b(?:prd|spec|specs|epic|story|backlog|requirements|"
+    r"spécification|specification|john|pm)\b|"
+    r"cahier des charges|product brief"
+    r")",
+    re.IGNORECASE,
+)
+DEV_PATTERNS = re.compile(
+    r"\b("
+    r"implémente|implemente|implement|code|bug|fix|refactor|api|commit|"
+    r"développe|developpe|develop|build|amelia"
+    r")\b",
+    re.IGNORECASE,
+)
+BRAINSTORM_PATTERNS = re.compile(
+    r"("
+    r"\bidée\b|\bidee\b|\bidées\b|\bidees\b|"
+    r"\bbrainstorm(?:ing)?\b|\bbrainstorms\b|\bidéation\b|\bideation\b|"
+    r"\bcréer (?:un|une|moi)\b|\bcreer (?:un|une|moi)\b|\bcrée[- ]moi\b|\bcree[- ]moi\b|"
+    r"\bcreate (?:a|an|me)\b|\bbuild (?:a|an|me)\b|\bmake (?:a|an|me)\b|"
+    r"\bnouveau projet\b|\bnouvelle (?:app|idée|idee)\b|"
+    r"\bnew (?:project|app|idea)\b|"
+    r"\bpivot\b|"
+    r"\bcomment (?:faire|démarrer|demarrer)\b|"
+    r"\bhow (?:do|can|should) i\b|"
+    r"\bje veux\b|\bj'aimerais\b|\bj aimerais\b|\bi want\b|\bi'?d like\b|"
+    r"\baide[- ]moi\b|\bhelp me\b|"
+    r"\bune app\b|\ban app\b|\ba saas\b|\bun saas\b|"
+    r"\blance (?:le )?brainstorm\b|\bstart (?:a )?brainstorm\b|"
+    r"\bmary\b|\bcarson\b|\banalyst\b"
+    r")",
+    re.IGNORECASE,
+)
+INNOVATION_PATTERNS = re.compile(
+    r"\b(innovation|disruption|business model|blue ocean|victor)\b",
+    re.IGNORECASE,
+)
+PROBLEM_PATTERNS = re.compile(
+    r"\b(problème complexe|probleme complexe|root cause|triz|bloqué|bloque|quinn)\b",
+    re.IGNORECASE,
+)
 IMAGE_PATTERNS = re.compile(
-    r"\b(logo|image|illustration|génère.*visuel|affiche|poster|banner|sdxl|flux)\b",
+    r"\b(logo|image|illustration|génère.*visuel|genere.*visuel|affiche|poster|banner|sdxl|flux)\b",
     re.IGNORECASE,
 )
 
@@ -146,7 +187,7 @@ def classify_message(message: str, *, greenfield: bool = False) -> RouteDecision
     if BRAINSTORM_PATTERNS.search(lower) or greenfield:
         host = (
             "bmad-cis-agent-brainstorming-coach"
-            if "créatif" in lower or "wild" in lower
+            if any(tok in lower for tok in ("créatif", "creatif", "wild", "carson"))
             else "bmad-agent-analyst"
         )
         skill_label = "Brainstorming"
@@ -200,5 +241,8 @@ def classify_message(message: str, *, greenfield: bool = False) -> RouteDecision
         skill="chat",
         confidence=0.5,
         badge="✨ Akomagni · Général",
-        hint="Aucun agent BMAD spécifique — chat libre ou précise ton intent.",
+        hint=(
+            "Chat libre. Phrases simples : brainstorm · prd · ux · archi · code · "
+            "tests · pitch — ou un prénom d'agent (Mary, John, Sally…)."
+        ),
     )

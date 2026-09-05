@@ -147,12 +147,19 @@ def chat_completion(
     api_key: str | None = None,
     model: str | None = None,
     system_prompt: str | None = None,
+    history: list[dict[str, str]] | None = None,
     timeout: float = 120.0,
 ) -> str:
     """Send a chat completion request to /v1/chat/completions."""
     messages: list[dict[str, str]] = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
+    if history:
+        for turn in history:
+            role = str(turn.get("role", "")).strip()
+            content = str(turn.get("content", "")).strip()
+            if role in {"user", "assistant"} and content:
+                messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": message})
 
     payload: dict[str, Any] = {

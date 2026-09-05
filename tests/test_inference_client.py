@@ -76,17 +76,25 @@ def test_chat_completion_success():
     assert reply == "Hello from Akomagni"
 
 
-def test_chat_completion_with_system_prompt():
+def test_chat_completion_with_history():
     payload = json.dumps({"choices": [{"message": {"content": "OK"}}]}).encode()
     mock_response = MagicMock()
     mock_response.read.return_value = payload
     mock_response.__enter__ = MagicMock(return_value=mock_response)
     mock_response.__exit__ = MagicMock(return_value=False)
     with patch("urllib.request.urlopen", return_value=mock_response) as mock_open:
-        reply = chat_completion("Hi", system_prompt="You are helpful.")
+        reply = chat_completion(
+            "et mon site ?",
+            system_prompt="You are helpful.",
+            history=[
+                {"role": "user", "content": "crée une app react"},
+                {"role": "assistant", "content": "Ok, brainstormons."},
+            ],
+        )
     assert reply == "OK"
     sent = json.loads(mock_open.call_args[0][0].data.decode())
-    assert sent["messages"][0]["role"] == "system"
+    roles = [m["role"] for m in sent["messages"]]
+    assert roles == ["system", "user", "assistant", "user"]
 
 
 def test_request_json_http_error():

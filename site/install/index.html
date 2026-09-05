@@ -66,7 +66,6 @@
             <button class="copy-btn" type="button" data-copy="cmd-linux-after">Copy</button>
           </div>
           <pre id="cmd-linux-after">akomagni connect
-akomagni skill list
 akomagni run cli --project ./my-app</pre>
         </div>
       </div>
@@ -97,7 +96,6 @@ winget install Git.Git</pre>
             <button class="copy-btn" type="button" data-copy="cmd-win-verify">Copy</button>
           </div>
           <pre id="cmd-win-verify">akomagni connect
-akomagni skill list
 akomagni run cli --project ./my-app</pre>
         </div>
         <ul class="req-list">
@@ -120,7 +118,7 @@ python -m venv .venv
 # macOS/Linux: source .venv/bin/activate
 pip install -e ".[dev]"
 akomagni connect
-akomagni skill list</pre>
+akomagni run cli --project ./my-app</pre>
         </div>
       </div>
 
@@ -139,8 +137,8 @@ akomagni skill list</pre>
           <div class="step-num">3</div>
           <h3>Run</h3>
           <p>
-            Skills are already there — <code>akomagni skill list</code>, then
-            <code>akomagni run cli --project ./app</code>
+            <code>akomagni run cli --project ./app</code> — BMAD skills answer in the
+            terminal. Sessions stay inside that folder (even if a parent BMAD tree exists).
           </p>
         </div>
       </div>
@@ -148,17 +146,19 @@ akomagni skill list</pre>
       <div class="tools-category" style="margin-top: 3rem">
         <h2>BMAD kernel (v0.3)</h2>
         <p class="cat-desc">
-          No path setup. Install and <code>akomagni update</code> sync the shipped kernel.
-          <code>akomagni doctor</code> shows the skill count. Optional
-          <code>akomagni skill link</code> only for an extra custom folder.
+          Skills ship with install. No path setup. In the CLI they stay in chat — no IDE handoff.
+          <code>akomagni update</code> refreshes the kernel;
+          <code>akomagni skill list</code> verifies what is installed.
         </p>
         <div class="copy-block">
           <div class="copy-block-header">
-            <span>Verify skills</span>
+            <span>CLI + skills</span>
             <button class="copy-btn" type="button" data-copy="cmd-kernel">Copy</button>
           </div>
-          <pre id="cmd-kernel">akomagni doctor
-akomagni skill list</pre>
+          <pre id="cmd-kernel">akomagni run cli --project ./my-app
+# try: help me brainstorm a budget app
+akomagni skill list
+akomagni doctor</pre>
         </div>
       </div>
 
