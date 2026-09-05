@@ -22,10 +22,12 @@ def find_project_root(start: Path | None = None) -> Path | None:
         bmad_dir = directory / "_bmad"
         if bmad_dir.is_dir():
             return directory
-        if fallback is None and (directory / ".bmad").is_dir():
-            # Only accept .bmad when the render script is also present.
-            if (directory / _RENDER_REL).is_file():
-                fallback = directory
+        if (
+            fallback is None
+            and (directory / ".bmad").is_dir()
+            and (directory / _RENDER_REL).is_file()
+        ):
+            fallback = directory
     return fallback
 
 
