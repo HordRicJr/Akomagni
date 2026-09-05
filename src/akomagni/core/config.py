@@ -87,7 +87,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "provider_ready": False,
     },
     "huggingface": {
-        "token_env": "HF_TOKEN",
+        "token_env": "HF_TOKEN",  # nosec B105 — env var name, not a secret
         "api_key": None,
     },
     "models": {

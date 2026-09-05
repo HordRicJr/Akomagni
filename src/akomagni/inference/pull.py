@@ -60,7 +60,11 @@ def _pick_gguf_filename(repo_id: str, *, token: str | None) -> str:
             "Install with: pip install 'akomagni[inference]'"
         ) from exc
 
-    files = [f for f in list_repo_files(repo_id, repo_type="model", token=token) if f.lower().endswith(".gguf")]
+    files = [
+        f
+        for f in list_repo_files(repo_id, repo_type="model", token=token)
+        if f.lower().endswith(".gguf")
+    ]
     if not files:
         raise ModelPullError(f"No .gguf files found in {repo_id}")
     preferred = [f for f in files if "q4_k_m" in f.lower() or "Q4_K_M" in f]

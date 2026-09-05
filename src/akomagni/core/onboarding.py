@@ -68,7 +68,7 @@ def save_hf_token(token: str) -> None:
         raise ConnectError("Hugging Face token cannot be empty.")
     cfg = load_config()
     block = dict(cfg.get("huggingface") or {})
-    block["token_env"] = "HF_TOKEN"
+    block["token_env"] = "HF_TOKEN"  # nosec B105 — env var name, not a secret
     block["api_key"] = cleaned
     cfg["huggingface"] = block
     save_config(cfg)

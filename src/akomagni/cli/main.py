@@ -112,6 +112,7 @@ def connect_cmd(
 
     target = (provider or "setup").strip().lower()
     if target in {"setup", "all", "init"}:
+
         def _prompt(msg: str) -> str:
             if "optional" in msg.lower() or "skip" in msg.lower():
                 return typer.prompt(msg, default="")
@@ -367,9 +368,7 @@ def run_cli(
                 project=project,
                 provider=provider,
                 skip_provider=(
-                    provider is None
-                    and not needs_provider_onboarding(cfg)
-                    and project is not None
+                    provider is None and not needs_provider_onboarding(cfg) and project is not None
                 ),
             )
         except ConnectError as exc:
@@ -414,13 +413,10 @@ def run_cli(
             provider_name = str(inf_cfg.get("provider", "local"))
             if provider_name == "local":
                 console.print(f"[dim]{_t('run.inference_offline')}[/]")
-                console.print(
-                    "[dim]Start local chat: akomagni serve --model phi-3.5-mini[/dim]"
-                )
+                console.print("[dim]Start local chat: akomagni serve --model phi-3.5-mini[/dim]")
             else:
                 console.print(
-                    f"[dim]Cloud inference ({provider_name}) offline — "
-                    "run: akomagni connect[/dim]"
+                    f"[dim]Cloud inference ({provider_name}) offline — run: akomagni connect[/dim]"
                 )
 
     while True:
