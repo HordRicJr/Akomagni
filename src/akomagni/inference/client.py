@@ -224,9 +224,29 @@ def image_generation(
     raise InferenceClientError(f"Unexpected image payload: {first!r}")
 
 
+def _normalize_image_b64(raw: str) -> str:
+    """Strip data-URL prefix / whitespace from provider ``b64_json`` payloads."""
+    text = (raw or "").strip()
+    if text.lower().startswith("data:") and "," in text:
+        text = text.split(",", 1)[1]
+    return "".join(text.split())
+
+
+def _write_bytes_chunked(dest: Path, data: bytes, *, chunk_size: int = 8 * 1024 * 1024) -> None:
+    """Write *data* in chunks — Windows can raise Errno 22 on huge single writes."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with dest.open("wb") as handle:
+        if len(data) <= chunk_size:
+            handle.write(data)
+            return
+        for offset in range(0, len(data), chunk_size):
+            handle.write(data[offset : offset + chunk_size])
+
+
 def save_image_artifact(artifact: ImageArtifact, destination: Path) -> Path:
     """Write *artifact* to *destination* (file or directory). Returns final file path."""
     import base64
+    import binascii
     from datetime import datetime
 
     dest = destination.expanduser()
@@ -240,12 +260,23 @@ def save_image_artifact(artifact: ImageArtifact, destination: Path) -> Path:
     else:
         dest.parent.mkdir(parents=True, exist_ok=True)
 
-    if artifact.b64_json:
-        try:
-            dest.write_bytes(base64.b64decode(artifact.b64_json, validate=False))
-        except Exception as exc:
-            raise InferenceClientError(f"Could not decode image base64: {exc}") from exc
-        return dest.resolve()
+    if artifact.b64_json is not None:
+        payload = _normalize_image_b64(artifact.b64_json)
+        # Some gateways put a temporary HTTPS URL in the b64 field.
+        if payload.lower().startswith(("http://", "https://")):
+            artifact = ImageArtifact(model=artifact.model, url=payload)
+        else:
+            try:
+                pixels = base64.b64decode(payload, validate=False)
+            except (binascii.Error, ValueError) as exc:
+                raise InferenceClientError(f"Could not decode image base64: {exc}") from exc
+            if not pixels:
+                raise InferenceClientError("Could not decode image base64: empty payload")
+            try:
+                _write_bytes_chunked(dest, pixels)
+            except OSError as exc:
+                raise InferenceClientError(f"Could not write image file: {exc}") from exc
+            return dest.resolve()
 
     if artifact.url:
         request = urllib.request.Request(
@@ -255,13 +286,13 @@ def save_image_artifact(artifact: ImageArtifact, destination: Path) -> Path:
         )
         try:
             with urllib.request.urlopen(request, timeout=120) as response:  # nosec B310
-                dest.write_bytes(response.read())
+                _write_bytes_chunked(dest, response.read())
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             raise InferenceClientError(f"Could not download image URL: {exc}") from exc
         return dest.resolve()
 
     if artifact.local_path and artifact.local_path.is_file():
-        dest.write_bytes(artifact.local_path.read_bytes())
+        _write_bytes_chunked(dest, artifact.local_path.read_bytes())
         return dest.resolve()
 
     raise InferenceClientError("Image has no URL or pixel data to save")
