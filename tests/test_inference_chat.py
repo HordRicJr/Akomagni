@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -176,39 +176,123 @@ def test_try_chat_with_inference_client_error():
 
 
 def test_image_generation_url_and_b64(tmp_path):
-    from akomagni.inference.client import image_generation
+    from akomagni.inference.client import (
+        ImageArtifact,
+        default_image_save_path,
+        image_generation,
+        save_image_artifact,
+    )
 
     with patch(
         "akomagni.inference.client._request_json",
         return_value={"data": [{"url": "https://cdn.example/img.png"}]},
     ):
-        out = image_generation(
+        art = image_generation(
             "poster",
             base_url="https://api.rodiumai.io/v1",
             api_key="rd_sk_x",
-            model="openai/gpt-image-1-mini",
+            model="openai/gpt-image-1.5",
         )
-        assert "cdn.example" in out
+        assert art.url and "cdn.example" in art.url
+        assert "URL:" in art.summary()
 
-    # minimal valid base64 ("aa")
     with patch(
         "akomagni.inference.client._request_json",
         return_value={"data": [{"b64_json": "aaaa"}]},
     ):
-        out = image_generation(
+        art = image_generation(
             "poster",
             base_url="https://api.rodiumai.io/v1",
-            model="google/gemini-3.1-flash-lite-image",
-            save_dir=tmp_path,
+            model="google/gemini-3.1-flash-image",
         )
-        assert "saved locally" in out
-        assert str(tmp_path) in out
-        saved = list(tmp_path.glob("akomagni-*.png"))
-        assert len(saved) == 1
-        assert saved[0].stat().st_size > 0
+        assert art.b64_json
+        saved = save_image_artifact(art, tmp_path / "poster.png")
+        assert saved.exists()
+        assert saved.stat().st_size > 0
+        assert "Saved:" in ImageArtifact(model="x", local_path=saved).summary()
+
+    # URL download into a directory
+    art_url = ImageArtifact(model="m", url="https://cdn.example/a.png")
+    mock_resp = MagicMock()
+    mock_resp.read.return_value = b"png-bytes"
+    mock_resp.__enter__.return_value = mock_resp
+    mock_resp.__exit__.return_value = False
+    with patch("urllib.request.urlopen", return_value=mock_resp):
+        out = save_image_artifact(art_url, tmp_path)
+        assert out.exists()
+        assert out.read_bytes() == b"png-bytes"
+
+    default = default_image_save_path(project_root=tmp_path)
+    assert default.parent == tmp_path
+    assert default.name.startswith("akomagni-affiche-")
+
+    # Copy from an existing local file
+    src = tmp_path / "src.png"
+    src.write_bytes(b"abc")
+    copied = save_image_artifact(
+        ImageArtifact(model="m", local_path=src),
+        tmp_path / "out.png",
+    )
+    assert copied.read_bytes() == b"abc"
+
+    with pytest.raises(InferenceClientError):
+        save_image_artifact(ImageArtifact(model="m"), tmp_path / "empty.png")
 
     with (
         patch("akomagni.inference.client._request_json", return_value={"data": [{}]}),
         pytest.raises(InferenceClientError),
     ):
         image_generation("poster", base_url="https://api.rodiumai.io/v1")
+
+
+def test_try_chat_cloud_image_returns_artifact():
+    from akomagni.core.router.domain import DomainClassification, ModelDomain
+    from akomagni.core.router.swap import DomainModelPlan, ModelSwapPlan
+    from akomagni.inference.chat import InferenceChatPlan
+    from akomagni.inference.client import ImageArtifact
+    from akomagni.inference.endpoint import InferenceEndpoint
+
+    decision = classify_message("génère une affiche")
+    plan = InferenceChatPlan(
+        domain_plan=DomainModelPlan(
+            classification=DomainClassification(ModelDomain.IMAGE, 0.9, "image"),
+            catalog_name="google/gemini-3.1-flash-image",
+            model_path=None,
+            model_id="google/gemini-3.1-flash-image",
+            skip_inference=False,
+            reason="cloud image",
+        ),
+        swap_plan=ModelSwapPlan(
+            needs_swap=False, current_model=None, target_model=None, target_path=None
+        ),
+        model_id="google/gemini-3.1-flash-image",
+    )
+    artifact = ImageArtifact(model="google/gemini-3.1-flash-image", b64_json="aaaa")
+    with (
+        patch(
+            "akomagni.inference.chat.resolve_inference_endpoint",
+            return_value=InferenceEndpoint(
+                provider="rodium",
+                base_url="https://api.rodiumai.io/v1",
+                api_key="rd_sk_x",
+                is_local=False,
+            ),
+        ),
+        patch("akomagni.inference.chat.plan_inference_chat", return_value=plan),
+        patch(
+            "akomagni.inference.chat.check_health_from_config",
+            return_value=InferenceStatus(
+                online=True,
+                base_url="https://api.rodiumai.io/v1",
+                models=["google/gemini-3.1-flash-image"],
+                provider="rodium",
+            ),
+        ),
+        patch(
+            "akomagni.inference.client.image_generation",
+            return_value=artifact,
+        ),
+    ):
+        out = try_chat_with_inference("génère une affiche", decision)
+    assert isinstance(out, ImageArtifact)
+    assert out.model.startswith("google/")

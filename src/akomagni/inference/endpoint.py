@@ -112,13 +112,14 @@ def cloud_model_for_domain(
 
     if provider == "rodium":
         endpoint = resolve_inference_endpoint(cfg)
-        return resolve_rodium_model(
+        from akomagni.inference.model_picker import resolve_session_cloud_model
+
+        return resolve_session_cloud_model(
             domain,
             message=message,
-            config_models=models if isinstance(models, dict) else None,
+            config=cfg,
             base_url=endpoint.base_url,
             api_key=endpoint.api_key,
-            use_live_catalogue=True,
         )
 
     if provider == "azure" and not models:

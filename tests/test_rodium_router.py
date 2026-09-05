@@ -281,16 +281,37 @@ def test_default_rodium_models_map_keys():
 
 
 def test_image_empty_catalogue_uses_static():
-    assert pick_tier_model("image", catalogue=[]).startswith("openai/")
+    assert pick_tier_model("image", catalogue=[]).startswith("google/")
 
 
-def test_image_model_candidates_dedupe_primary():
+def test_image_model_candidates_quality_first():
     from akomagni.inference.rodium_router import image_model_candidates
 
-    rows = image_model_candidates("openai/gpt-image-1.5")
-    assert rows[0] == "openai/gpt-image-1.5"
-    assert rows.count("openai/gpt-image-1.5") == 1
+    rows = image_model_candidates()
+    assert rows[0].startswith("google/")
+    assert "openai/gpt-image-1.5" in rows
     assert "openai/gpt-image-1-mini" in rows
+    # mini is a fallback, not first
+    assert rows.index("openai/gpt-image-1-mini") > rows.index("google/gemini-3.1-flash-image")
+
+
+def test_live_catalogue_prefers_quality_image_ids():
+    catalogue = [
+        {
+            "id": "openai/gpt-image-1-mini",
+            "rodiumai_status": "available",
+            "rodiumai_pricing": {"per_image": "1"},
+            "rodiumai_capabilities": {"output_modalities": ["image"]},
+        },
+        {
+            "id": "google/gemini-3.1-flash-image",
+            "rodiumai_status": "available",
+            "rodiumai_pricing": {"per_image": "50"},
+            "rodiumai_capabilities": {"output_modalities": ["image"]},
+        },
+    ]
+    # Quality order beats cheapest-first for image tier.
+    assert pick_tier_model("image", catalogue=catalogue) == "google/gemini-3.1-flash-image"
 
 
 def test_pick_cheapest_none_when_unavailable():

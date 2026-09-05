@@ -403,6 +403,11 @@ def run_cli(
     model_override = None if not endpoint.is_local else inf_cfg.get("default_model")
 
     console.print(f"[bold]{_t('run.cli_banner')}[/]")
+    if not endpoint.is_local and endpoint.provider == "rodium":
+        from akomagni.inference.model_picker import describe_model_selection
+
+        console.print(f"[dim]{_t('model.picker_hint', selection=describe_model_selection(cfg))}[/]")
+
     inference_online = False
     if inference:
         status = check_health_from_config(cfg)
@@ -425,6 +430,29 @@ def run_cli(
         except (KeyboardInterrupt, EOFError):
             console.print()
             break
+        # Space alone or /model → reopen Rodium model dropdown.
+        if (
+            not endpoint.is_local
+            and endpoint.provider == "rodium"
+            and (
+                message == " "
+                or message.strip().lower() in {"/model", "model", "/m", "modèle", "modele"}
+            )
+        ):
+            from akomagni.inference.model_picker import (
+                describe_model_selection,
+                interactive_pick_model,
+            )
+
+            try:
+                interactive_pick_model(prompt=lambda msg: typer.prompt(msg))
+                cfg = load_config()
+                console.print(
+                    f"[dim]{_t('model.picker_hint', selection=describe_model_selection(cfg))}[/]"
+                )
+            except (KeyboardInterrupt, EOFError, OSError):
+                pass
+            continue
         if not message.strip():
             continue
         rag_context = ""
@@ -501,6 +529,35 @@ def run_cli(
                     )
                 continue
             if reply:
+                from akomagni.inference.client import (
+                    ImageArtifact,
+                    default_image_save_path,
+                    save_image_artifact,
+                )
+
+                if isinstance(reply, ImageArtifact):
+                    console.print(f"\n[bold]Akomagni[/] {_t('image.generated', model=reply.model)}")
+                    if reply.url:
+                        console.print(f"[dim]URL:[/] {reply.url}")
+                    default_path = default_image_save_path(project_root=Path.cwd())
+                    try:
+                        chosen = console.input(
+                            f"{_t('image.save_prompt', default=default_path)} "
+                        ).strip()
+                    except (KeyboardInterrupt, EOFError):
+                        console.print()
+                        break
+                    if chosen.lower() in {"n", "no", "non", "skip", "-"}:
+                        console.print(f"[dim]{_t('image.skipped_save')}[/]\n")
+                        continue
+                    target = Path(chosen) if chosen else default_path
+                    try:
+                        saved = save_image_artifact(reply, target)
+                        console.print(f"[green]{_t('image.saved', path=saved)}[/]\n")
+                    except InferenceClientError as exc:
+                        console.print(f"[yellow]{_t('image.save_failed', error=exc)}[/]\n")
+                    continue
+
                 console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
                 if auto_capture:
                     preview = build_capture_text(message, reply)

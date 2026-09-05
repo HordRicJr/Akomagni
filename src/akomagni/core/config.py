@@ -34,6 +34,8 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "port": 8787,
         "binary": None,
         "default_model": None,
+        "cloud_model_mode": "auto",
+        "pinned_model": None,
         "ctx_size": 4096,
         "n_gpu_layers": -1,
     },
@@ -45,7 +47,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
                 "code": "rodiumai/smart",
                 "design": "anthropic/claude-haiku-4-5-20251001",
                 "text": "google/gemini-3.1-flash-lite-preview",
-                "image": "openai/gpt-image-1-mini",
+                "image": "google/gemini-3.1-flash-image",
             },
         },
         "azure": {
