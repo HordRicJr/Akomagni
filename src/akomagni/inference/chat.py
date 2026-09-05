@@ -94,6 +94,7 @@ def try_chat_with_inference(
     auto_swap: bool = False,
     rag_context: str = "",
     skill_guidance: str = "",
+    history: list[dict[str, str]] | None = None,
 ) -> str | ImageArtifact | None:
     """Call inference when the configured provider is online.
 
@@ -179,6 +180,7 @@ def try_chat_with_inference(
         base_url=None if endpoint.is_local else endpoint.base_url,
         api_key=endpoint.api_key,
         model=model_id,
+        history=history,
         system_prompt=build_flow_system_prompt(
             decision,
             rag_context=rag_context,

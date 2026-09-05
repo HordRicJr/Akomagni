@@ -438,6 +438,11 @@ def chat(
                     f"[dim]Cloud inference ({provider_name}) offline — run: akomagni connect[/dim]"
                 )
 
+    sticky_skill: str | None = None
+    skill_guidance_cache = ""
+    chat_history: list[dict[str, str]] = []
+    max_history_messages = 24
+
     while True:
         try:
             message = console.input("[cyan]›[/] ")
@@ -491,6 +496,7 @@ def chat(
             result = invoke_skill(
                 message,
                 project_root=active_project,
+                skill_override=sticky_skill,
                 execute=auto_exec,
                 rag_context=rag_context,
             )
@@ -504,7 +510,7 @@ def chat(
             elif decision.skill in {"chat", "image-pipeline"}:
                 console.print(
                     "[dim]Free chat mode (no BMAD skill). "
-                    "Try: brainstorm, build an app, PRD, or implement …[/dim]"
+                    "Try: brainstorm · prd · ux · archi · code · tests[/dim]"
                 )
             else:
                 console.print(
@@ -516,9 +522,18 @@ def chat(
                     console.print(f"[green]Workflow rendered:[/] {result.run_result.workflow_path}")
                 else:
                     console.print(f"[yellow]Skill exec failed:[/] {result.run_result.error}")
-            skill_guidance = build_skill_cli_guidance(result.skill, result.run_result)
             if prefers_session_over_free_chat(decision.skill) and result.skill:
+                sticky_skill = decision.skill
+                skill_guidance = build_skill_cli_guidance(result.skill, result.run_result)
+                skill_guidance_cache = skill_guidance
                 console.print("[dim]Running skill in CLI…[/]")
+            elif decision.skill == "chat" and sticky_skill and skill_guidance_cache:
+                skill_guidance = skill_guidance_cache
+            else:
+                if decision.skill not in {"chat", "image-pipeline"}:
+                    sticky_skill = decision.skill
+                skill_guidance = build_skill_cli_guidance(result.skill, result.run_result)
+                skill_guidance_cache = skill_guidance
         else:
             decision = route_message(message, project_root=active_project)
             console.print(
@@ -546,6 +561,7 @@ def chat(
                     auto_swap=auto_swap,
                     rag_context=rag_context,
                     skill_guidance=skill_guidance if invoke else "",
+                    history=chat_history,
                 )
             except InferenceClientError as exc:
                 console.print(f"[yellow]{_t('run.inference_failed')}[/] {exc}")
@@ -588,6 +604,10 @@ def chat(
                     continue
 
                 console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
+                chat_history.append({"role": "user", "content": message})
+                chat_history.append({"role": "assistant", "content": str(reply)})
+                if len(chat_history) > max_history_messages:
+                    chat_history[:] = chat_history[-max_history_messages:]
                 if auto_capture:
                     preview = build_capture_text(message, reply)
                     console.print(f"[dim]{_t('memory.capture_preview')}[/]")

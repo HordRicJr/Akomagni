@@ -9,9 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **CLI conversation memory**: multi-turn history is sent to the model (no more amnesia after the first reply)
+- **Sticky BMAD skills**: follow-ups like \"je valide\" / \"commence\" stay on brainstorm while the gate is open
 - **`--project` isolation**: a folder with `.akomagni` (e.g. `./app_test` under a parent BMAD checkout) keeps sessions/workflow/RAG/memory there — no longer inherits the parent `_bmad` tree
 - **CLI chat**: do not auto-enable `--exec` on new projects; isolated projects are not treated as BMAD exec roots; system prompt stays step-by-step (no codebase dumps)
 
+### Changed
+
+- **Simple skill phrases** (FR/EN): `brainstorm`, `créer moi une app`, `prd`, `ux`, `archi`, `code`, agent names (Mary, John, Sally…)
+- **First prompt on a fresh project** auto-activates brainstorm
 ## [0.3.0] - 2026-09-05
 
 ### Added
