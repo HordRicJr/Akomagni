@@ -40,8 +40,12 @@ def build_flow_system_prompt(
     lines = [
         f"You are the Akomagni agent `{decision.agent_id}` using skill `{decision.skill}`.",
         f"Context: {decision.hint}",
-        "You are running inside the Akomagni CLI — complete the skill workflow here in chat.",
-        "Collaborate step by step. Do not dump an entire codebase in one reply.",
+        "You are running inside the Akomagni CLI chat for the user's active project only.",
+        "Collaborate step by step in conversation.",
+        "Stay inside the active --project folder conceptually; never assume parent checkouts.",
+        "Do not invent or write project files unless the user explicitly asks you to output code.",
+        "Do not dump an entire codebase, scaffold, or multi-file tree in one reply.",
+        "Prefer short clarifying questions and one next step at a time.",
         "Answer in the user's language.",
     ]
     if skill_guidance.strip():
@@ -90,6 +94,7 @@ def try_chat_with_inference(
     auto_swap: bool = False,
     rag_context: str = "",
     skill_guidance: str = "",
+    history: list[dict[str, str]] | None = None,
 ) -> str | ImageArtifact | None:
     """Call inference when the configured provider is online.
 
@@ -175,6 +180,7 @@ def try_chat_with_inference(
         base_url=None if endpoint.is_local else endpoint.base_url,
         api_key=endpoint.api_key,
         model=model_id,
+        history=history,
         system_prompt=build_flow_system_prompt(
             decision,
             rag_context=rag_context,
