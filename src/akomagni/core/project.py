@@ -80,6 +80,14 @@ def resolve_bmad_project_root(
     if configured is not None:
         return configured
     try:
+        from akomagni.core.bmad_kernel import find_shipped_bmad_core
+
+        kernel = find_shipped_bmad_core()
+        if kernel is not None:
+            return kernel
+    except ImportError:  # pragma: no cover
+        pass
+    try:
         from akomagni.skills.link import extra_skill_roots
     except ImportError:  # pragma: no cover
         return None
@@ -121,6 +129,7 @@ def resolve_workspace_root(
 
 def skill_search_roots(project_root: Path | None = None) -> list[Path]:
     """Directories to scan for installed BMAD skill folders."""
+    from akomagni.core.bmad_kernel import ensure_bmad_kernel, find_shipped_bmad_core
     from akomagni.core.config import SKILLS_DIR
     from akomagni.skills.link import extra_skill_roots
 
@@ -132,6 +141,18 @@ def skill_search_roots(project_root: Path | None = None) -> list[Path]:
         if resolved.is_dir() and resolved not in seen:
             seen.add(resolved)
             roots.append(resolved)
+
+    # Shipped kernel first — install/update place skills here; no skill link needed.
+    try:
+        ensure_bmad_kernel(persist=True)
+    except Exception:  # pragma: no cover - never block discovery on config IO
+        pass
+    kernel = find_shipped_bmad_core()
+    if kernel is not None:
+        for rel in SKILL_DIR_NAMES:
+            candidate = kernel / rel
+            if candidate.is_dir():
+                _add(candidate)
 
     if SKILLS_DIR.is_dir():
         _add(SKILLS_DIR)

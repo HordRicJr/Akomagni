@@ -110,6 +110,12 @@ def register_skill_root(source: Path) -> Path:
 
 def ensure_skills_linked(start: Path | None = None) -> list[Path]:
     """Auto-register nearby BMAD skill folders when none are configured yet."""
+    try:
+        from akomagni.core.bmad_kernel import ensure_bmad_kernel
+
+        ensure_bmad_kernel(persist=True)
+    except Exception:  # pragma: no cover
+        pass
     current = extra_skill_roots()
     if current:
         return current

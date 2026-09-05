@@ -105,6 +105,22 @@ def run_doctor(*, lang: str | None = None) -> dict[str, Any]:
         )
     else:
         lines.append(translate("doctor.gpu_none", language))
+
+    from akomagni.core.bmad_kernel import ensure_bmad_kernel
+
+    kernel = ensure_bmad_kernel(persist=True)
+    if kernel is not None:
+        lines.append(
+            translate(
+                "doctor.bmad_kernel",
+                language,
+                count=kernel.skill_count,
+                path=kernel.root,
+            )
+        )
+    else:
+        lines.append(translate("doctor.bmad_missing", language))
+
     lines.extend(
         [
             "",
@@ -118,6 +134,14 @@ def run_doctor(*, lang: str | None = None) -> dict[str, Any]:
 
     return {
         "os": platform.system(),
+        "bmad_kernel": (
+            {
+                "path": str(kernel.root),
+                "skill_count": kernel.skill_count,
+            }
+            if kernel
+            else None
+        ),
         "arch": platform.machine(),
         "ram_total_gb": ram_total_gb,
         "ram_available_gb": ram_available_gb,

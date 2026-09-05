@@ -65,7 +65,7 @@
             <button class="copy-btn" type="button" data-copy="cmd-linux-after">Copy</button>
           </div>
           <pre id="cmd-linux-after">akomagni connect
-akomagni skill link
+akomagni skill list
 akomagni run cli --project ./my-app</pre>
         </div>
       </div>
@@ -96,7 +96,7 @@ winget install Git.Git</pre>
             <button class="copy-btn" type="button" data-copy="cmd-win-verify">Copy</button>
           </div>
           <pre id="cmd-win-verify">akomagni connect
-akomagni skill link
+akomagni skill list
 akomagni run cli --project ./my-app</pre>
         </div>
         <ul class="req-list">
@@ -119,7 +119,7 @@ python -m venv .venv
 # macOS/Linux: source .venv/bin/activate
 pip install -e ".[dev]"
 akomagni connect
-akomagni skill link</pre>
+akomagni skill list</pre>
         </div>
       </div>
 
@@ -136,13 +136,11 @@ akomagni skill link</pre>
         </div>
         <div class="step-card">
           <div class="step-num">3</div>
-          <h3>Skills</h3>
-          <p><code>akomagni skill link</code> registers BMAD skills.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-num">4</div>
           <h3>Run</h3>
-          <p><code>akomagni run cli --project ./app</code></p>
+          <p>
+            BMAD skills ship in the install kernel automatically.
+            <code>akomagni run cli --project ./app</code>
+          </p>
         </div>
       </div>
 
@@ -189,7 +187,7 @@ akomagni connect</pre>
         <ul class="req-list">
           <li><strong>Command not found</strong> — restart the terminal; check PATH includes <code>~/.local/bin</code>.</li>
           <li><strong>Windows execution policy</strong> — <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></li>
-          <li><strong>No skills</strong> — <code>akomagni skill link</code></li>
+          <li><strong>No skills</strong> — run <code>akomagni update</code> (kernel ships with install); optional <code>akomagni skill link</code> for a custom folder</li>
           <li><strong>Image / poster</strong> — cloud uses URL-first image models; base64 is saved under <code>generated-images/</code></li>
           <li><strong>Rodium 403/404</strong> — update, reconnect; catalogue ids only (not <code>rodium/basic</code>)</li>
         </ul>

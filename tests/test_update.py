@@ -109,11 +109,18 @@ def test_update_cli_success(tmp_path, monkeypatch):
             bin_path=install / "bin" / "akomagni.exe",
             previous_ref="aaa",
             current_ref="bbb",
+            previous_version="0.1.0",
+            current_version="0.3.0",
+            highlights=("**BMAD kernel**: shipped",),
+            bmad_skill_count=110,
         ),
     )
     result = runner.invoke(app, ["update"])
     assert result.exit_code == 0
     assert "updated" in result.stdout.lower() or "mis à jour" in result.stdout.lower()
+    assert "0.1.0" in result.stdout
+    assert "0.3.0" in result.stdout
+    assert "BMAD" in result.stdout or "bmad" in result.stdout.lower()
 
 
 def test_default_install_dir_unix(monkeypatch):

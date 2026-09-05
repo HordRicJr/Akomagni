@@ -62,7 +62,7 @@ def test_install_page_includes_windows_guide():
     assert "winget install Python" in install
     assert "cmd-win-verify" in install
     assert "akomagni connect" in install
-    assert "akomagni skill link" in install
+    assert "akomagni skill list" in install
     assert "config language fr" in install
 
 
@@ -74,7 +74,8 @@ def test_homepage_product_capabilities():
     assert "Auto Router" in root
     assert "/model" in root
     assert "Intent" in root and "Workflow" in root
-    assert "akomagni skill link" in root
+    assert "akomagni skill list" in root
+    assert "install kernel" in root.lower() or "shipped" in root.lower()
 
 
 def test_models_page_mentions_picker_and_rodium():

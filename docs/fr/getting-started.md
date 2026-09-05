@@ -1,6 +1,6 @@
 # Démarrage rapide
 
-Installer Akomagni, connecter un provider, lier les skills, lancer la CLI.
+Installer Akomagni, connecter un provider, et lancer la CLI. Les skills BMAD sont installés automatiquement avec le noyau.
 
 ## Prérequis
 
@@ -26,7 +26,7 @@ La CLI est en **anglais** par défaut.
 
 ```bash
 akomagni connect
-akomagni skill link
+akomagni skill list
 akomagni run cli --project ./mon-app
 
 # optionnel

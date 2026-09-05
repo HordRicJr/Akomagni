@@ -18,7 +18,7 @@ An open-source hybrid AI workstation, built to go beyond a chatbot or coding ass
 
 A **Skill** is a specialized capability or working method the AI can use for a precise task. Instead of asking one model to invent every process alone, Akomagni lets it lean on structured competencies: development, design, research, writing, analysis, product, business, and more.
 
-The model supplies intelligence. Skills supply a structured way to work. Register them with `akomagni skill link`.
+The model supplies intelligence. Skills supply a structured way to work. They ship in the BMAD kernel on install / `akomagni update` — no path setup required.
 
 ## Specialized agents
 
@@ -109,7 +109,7 @@ Then:
 
 ```bash
 akomagni connect
-akomagni skill link
+akomagni skill list
 akomagni run cli --project ./my-app
 ```
 
@@ -132,19 +132,20 @@ pip install -e ".[dev]"
 akomagni config init
 akomagni doctor
 akomagni connect
-akomagni skill link
+akomagni skill list
 ```
 
 ## Commands
 
 ```bash
-akomagni doctor                    # Hardware scan + profile
+akomagni doctor                    # Hardware scan + profile + BMAD kernel
 akomagni connect                   # Local / Rodium / Foundry + optional HF token
-akomagni skill link                # Register BMAD skills
+akomagni skill list                # List shipped BMAD skills
+akomagni skill link                # Optional: register an extra custom skill folder
 akomagni run cli --project ./app   # Chat + Flow on a project
 akomagni config init               # Create ~/.akomagni/config.yaml (language: en)
 akomagni config language fr        # Optional: French CLI
-akomagni update                    # Pull latest + reinstall CLI
+akomagni update                    # Pull latest, sync BMAD kernel, show what's new
 akomagni memory status             # Central + project memory
 akomagni flow route "your message" # Route to BMAD agent/skill
 akomagni flow router-mode auto     # ML router when inference is online

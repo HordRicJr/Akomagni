@@ -1,0 +1,9 @@
+active_agent: bmad-agent-dev
+active_skill: bmad-build
+completed:
+- bmad-build
+- chat
+gates: {}
+last_session: D:\Money\akomagni\bmad-core\.akomagni\workflow\sessions\20260905-080048-bmad-build.md
+phase: anytime
+updated_at: '2026-09-05T08:00:49.003267+00:00'

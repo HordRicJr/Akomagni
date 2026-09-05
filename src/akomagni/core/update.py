@@ -23,6 +23,10 @@ class UpdateResult:
     bin_path: Path
     previous_ref: str
     current_ref: str
+    previous_version: str = "unknown"
+    current_version: str = "unknown"
+    highlights: tuple[str, ...] = ()
+    bmad_skill_count: int = 0
 
 
 def default_install_dir() -> Path:
@@ -174,7 +178,14 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
         raise UpdateError("git is required for akomagni update.")
 
     git = _git_exe()
+    from akomagni.core.bmad_kernel import (
+        changelog_highlights,
+        ensure_bmad_kernel,
+        read_package_version,
+    )
+
     previous = _git_ref(root)
+    previous_version = read_package_version(root)
     branch = os.environ.get("AKOMAGNI_BRANCH", "main").strip() or "main"
     # Shallow clones often lack other remote branches; write origin/<branch> explicitly.
     fetch = subprocess.run(  # nosec B603
@@ -295,9 +306,16 @@ def run_update(*, install_dir: Path | None = None, bin_dir: Path | None = None) 
             ) from exc
 
     current = _git_ref(root)
+    current_version = read_package_version(root)
+    kernel = ensure_bmad_kernel(persist=True)
+    highlights = tuple(changelog_highlights(root))
     return UpdateResult(
         install_dir=root,
         bin_path=dest_bin,
         previous_ref=previous,
         current_ref=current,
+        previous_version=previous_version,
+        current_version=current_version,
+        highlights=highlights,
+        bmad_skill_count=kernel.skill_count if kernel else 0,
     )

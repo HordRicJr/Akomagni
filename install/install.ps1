@@ -131,6 +131,7 @@ $env:Path = "$env:Path;$BinDir"
 Write-Host "==> Smoke test"
 $env:PYTHONUTF8 = "1"
 Invoke-Checked { & "$BinDir\akomagni.exe" --version }
+Write-Host "==> Syncing BMAD kernel (skills)"
 Invoke-Checked { & "$BinDir\akomagni.exe" doctor --json *> $null }
 
 Write-Host ""
@@ -140,3 +141,4 @@ Write-Host "  akomagni config init"
 Write-Host "  akomagni config extras inference"
 Write-Host "  akomagni update"
 Write-Host "  akomagni run cli"
+Write-Host "  akomagni skill list   # BMAD skills are installed automatically"

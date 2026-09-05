@@ -7,21 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- **BMAD skill discovery**: portable only (cwd / home skill folders / `skill link` config) — no hardcoded developer machine paths
-- **BMAD skill exec**: resolve `_bmad/scripts/render_skill.py` from the skill path / linked workspace (not only cwd); persist `skills.bmad_project_root` on `skill link`; skip free-chat code dumps for BMAD skills
-- **Site design**: high-contrast readable UI (Syne + Source Sans 3, teal accent, cool mist background); brand-first hero and clearer section rhythm on GitHub Pages
-- **Site copy**: features aligned with product (Skills, 17 agents, Flow pipeline, Auto Router + Space/`/model` picker, hybrid, memory, CLI/IDE)
-- **Install guide**: shorter path — install → connect → skill link → run
-- **Image routing**: quality-first multi-vendor models (Gemini Pro/Flash Image + OpenAI gpt-image); CLI asks where to save the PNG after generation
-- **Image save on Windows**: chunked writes + data-URL base64 cleanup so large Gemini PNGs no longer fail with Errno 22
-- **Rodium model picker**: Auto (by task) or pin any catalogue model — Space / `/model` opens the list in CLI; asked during `akomagni connect`
-- **Rodium catalogue defaults**: align economy/balanced/coding/strong static candidates with current multi-provider model ids
-- **Docs / README / site**: product vision (skills, agents, Flow, Auto Router, hybrid, memory); CLI language English by default
+## [0.3.0] - 2026-09-05
 
 ### Added
 
+- **BMAD kernel**: shipped under `bmad-core/` — install and `akomagni update` register skills automatically (no `skill link` / path knowledge required)
+- **Update report**: `akomagni update` shows version bump, changelog highlights, and BMAD skill count
 - **Skill link**: `akomagni skill link` registers BMAD skill folders so Flow works outside the install tree; English greenfield intents (`build a`, `brainstorming`) route to brainstorming
 - **Rodium routing**: multi-provider catalogue (Google / Anthropic / OpenAI / `rodiumai/smart`); picks economical models by task using `GET /v1/models` pricing; remaps legacy `rodium/basic|fast|pro`
 - **Connect wizard**: `akomagni connect` for local / Rodium / Foundry + Hugging Face token; `run cli --project` onboarding; pull any Hub GGUF via `owner/repo:file.gguf`
@@ -35,6 +26,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **RAG** — hybrid BM25 + vector ingest/query
 - **Inference** — llama.cpp server, model pull, OpenAI-compatible API on :8787
 - Install one-liners published at `hordricjr.github.io/Akomagni/install/`
+
+### Changed
+
+- **BMAD skill discovery**: portable only (cwd / home skill folders / shipped kernel / `skill link` config) — no hardcoded developer machine paths
+- **BMAD skill exec**: resolve `_bmad/scripts/render_skill.py` from the skill path / linked workspace (not only cwd); persist `skills.bmad_project_root` on `skill link`; skip free-chat code dumps for BMAD skills
+- **Site design**: high-contrast readable UI (Syne + Source Sans 3, teal accent, cool mist background); brand-first hero and clearer section rhythm on GitHub Pages
+- **Site copy**: features aligned with product (Skills, 17 agents, Flow pipeline, Auto Router + Space/`/model` picker, hybrid, memory, CLI/IDE)
+- **Install guide**: install → connect → run (skills come with the kernel)
+- **Image routing**: quality-first multi-vendor models (Gemini Pro/Flash Image + OpenAI gpt-image); CLI asks where to save the PNG after generation
+- **Image save on Windows**: chunked writes + data-URL base64 cleanup so large Gemini PNGs no longer fail with Errno 22
+- **Rodium model picker**: Auto (by task) or pin any catalogue model — Space / `/model` opens the list in CLI; asked during `akomagni connect`
+- **Rodium catalogue defaults**: align economy/balanced/coding/strong static candidates with current multi-provider model ids
+- **Docs / README / site**: product vision (skills, agents, Flow, Auto Router, hybrid, memory); CLI language English by default
 
 ### Added (v0.1.1)
 
@@ -63,5 +67,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hardware scan via `akomagni doctor`
 - Apache-2.0 license
 
-[Unreleased]: https://github.com/HordRicJr/Akomagni/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/HordRicJr/Akomagni/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/HordRicJr/Akomagni/compare/v0.1.0...v0.3.0
 [0.1.0]: https://github.com/HordRicJr/Akomagni/releases/tag/v0.1.0

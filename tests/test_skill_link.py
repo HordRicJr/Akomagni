@@ -33,6 +33,9 @@ def akomagni_home(tmp_path, monkeypatch):
     monkeypatch.setattr("akomagni.core.config.MODELS_DIR", home / "models")
     monkeypatch.setattr("akomagni.core.config.SKILLS_DIR", home / "skills")
     monkeypatch.setattr("akomagni.skills.link.SKILLS_DIR", home / "skills")
+    # Isolate from the real repo bmad-core so link/empty tests stay deterministic.
+    monkeypatch.setattr("akomagni.core.bmad_kernel.find_shipped_bmad_core", lambda: None)
+    monkeypatch.setattr("akomagni.core.bmad_kernel.ensure_bmad_kernel", lambda **_: None)
     from akomagni.core.config import ensure_default_config
 
     ensure_default_config()
