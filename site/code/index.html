@@ -54,8 +54,8 @@
             across 17 BMAD agents
           </li>
           <li>
-            <strong>Skills</strong> — <code>akomagni skill link</code>, <code>skill list</code>,
-            discover from <code>~/.akomagni/skills</code> and project trees
+            <strong>Skills</strong> — shipped in the install kernel;
+            <code>akomagni skill list</code> (optional <code>skill link</code> for custom folders)
           </li>
           <li>
             <strong>Sessions</strong> — <code>flow invoke</code> / interactive CLI writes BMAD
@@ -71,11 +71,10 @@
       </div>
       <div class="code-panel">
         <div class="code-panel-header">Quick start</div>
-        <pre>akomagni skill link
+        <pre>akomagni skill list
 akomagni run cli --project ./my-app
 akomagni flow route "Add JWT auth to the API"
 akomagni flow invoke "Add JWT auth to the API"
-akomagni skill list
 akomagni rag ingest docs/ --recursive
 akomagni mcp serve</pre>
       </div>

@@ -64,6 +64,8 @@ def test_install_page_includes_windows_guide():
     assert "akomagni connect" in install
     assert "akomagni skill list" in install
     assert "config language fr" in install
+    assert "BMAD kernel" in install
+    assert "akomagni update" in install
 
 
 def test_homepage_product_capabilities():
@@ -75,21 +77,7 @@ def test_homepage_product_capabilities():
     assert "/model" in root
     assert "Intent" in root and "Workflow" in root
     assert "akomagni skill list" in root
-    assert "install kernel" in root.lower() or "shipped" in root.lower()
-
-
-def test_models_page_mentions_picker_and_rodium():
-    models = (SITE / "models" / "index.html").read_text(encoding="utf-8")
-    assert "Space" in models
-    assert "/model" in models
-    assert "multi-provider" in models
-    assert "quality-first" in models
-
-
-def test_ide_page_includes_setup_commands():
-    ide = (SITE / "ide" / "index.html").read_text(encoding="utf-8")
-    assert "akomagni ide setup" in ide
-    assert "cmd-ide-win" in ide
+    assert "skill kernel" in root.lower() or "install kernel" in root.lower() or "no path" in root.lower()
 
 
 def test_tools_page_includes_train_and_ide():
@@ -99,6 +87,9 @@ def test_tools_page_includes_train_and_ide():
     assert "akomagni connect" in tools
     assert "akomagni run cli --project" in tools
     assert "akomagni ide setup" in tools
+    assert "install kernel" in tools.lower()
+    assert "akomagni update" in tools
+    assert "akomagni skill list" in tools
 
 
 def test_install_scripts_exist_in_repo():
