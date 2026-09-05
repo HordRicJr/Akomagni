@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`--project` isolation**: a folder with `.akomagni` (e.g. `./app_test` under a parent BMAD checkout) keeps sessions/workflow/RAG/memory there — no longer inherits the parent `_bmad` tree
+- **CLI chat**: do not auto-enable `--exec` on new projects; isolated projects are not treated as BMAD exec roots; system prompt stays step-by-step (no codebase dumps)
+
 ## [0.3.0] - 2026-09-05
 
 ### Added

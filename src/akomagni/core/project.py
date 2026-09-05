@@ -7,27 +7,48 @@ from pathlib import Path
 BMAD_MARKERS = ("_bmad", ".bmad")
 SKILL_DIR_NAMES = (".claude/skills", ".agents/skills", ".agent/skills")
 _RENDER_REL = Path("_bmad") / "scripts" / "render_skill.py"
+_WORKSPACE_MARKER = ".akomagni"
+
+
+def find_akomagni_workspace(start: Path | None = None) -> Path | None:
+    """Nearest folder with ``.akomagni/`` (user project / session storage).
+
+    Used so ``--project ./app_test`` keeps workflow files inside app_test even
+    when a parent BMAD checkout (e.g. Money) exists higher in the tree.
+    """
+    current = (start or Path.cwd()).resolve()
+    for directory in (current, *current.parents):
+        if (directory / _WORKSPACE_MARKER).is_dir():
+            return directory
+    return None
 
 
 def find_project_root(start: Path | None = None) -> Path | None:
-    """Walk up from *start* (or cwd) looking for a BMAD project root.
+    """Walk up from *start* (or cwd) looking for a BMAD project root (``_bmad``).
 
-    Prefer trees that contain ``_bmad/`` (where ``render_skill.py`` lives). A lone
-    ``.bmad`` marker without ``_bmad`` is ignored so a home-folder stub cannot
-    shadow the real workspace.
+    If a closer ``.akomagni`` workspace without ``_bmad`` is found first, return
+    ``None`` instead of a parent BMAD tree — that parent must not steal the
+    active ``--project`` folder.
     """
     current = (start or Path.cwd()).resolve()
+    isolated_workspace: Path | None = None
     fallback: Path | None = None
     for directory in (current, *current.parents):
-        bmad_dir = directory / "_bmad"
-        if bmad_dir.is_dir():
+        has_workspace = (directory / _WORKSPACE_MARKER).is_dir()
+        has_bmad = (directory / "_bmad").is_dir()
+        if isolated_workspace is None and has_workspace and not has_bmad:
+            isolated_workspace = directory
+        if has_bmad:
+            if isolated_workspace is not None and isolated_workspace != directory:
+                return None
             return directory
         if (
             fallback is None
             and (directory / ".bmad").is_dir()
             and (directory / _RENDER_REL).is_file()
         ):
-            fallback = directory
+            if isolated_workspace is None or isolated_workspace == directory:
+                fallback = directory
     return fallback
 
 
@@ -55,6 +76,10 @@ def configured_bmad_root() -> Path | None:
     return None
 
 
+def _is_bmad_tree(path: Path) -> bool:
+    return (path / "_bmad").is_dir() or (path / ".bmad").is_dir()
+
+
 def resolve_bmad_project_root(
     project_root: Path | None = None,
     *,
@@ -63,12 +88,31 @@ def resolve_bmad_project_root(
 ) -> Path | None:
     """Best BMAD root for skill execution / render_skill.py.
 
-    Prefer an explicit root, then an ambient project under *start*/cwd, then the
-    skill's ancestor tree (unless that tree is only the shipped kernel and a
+    Prefer an explicit BMAD tree, then an ambient project under *start*/cwd, then
+    the skill's ancestor tree (unless that tree is only the shipped kernel and a
     real project is open), then config / kernel / linked roots.
+
+    An explicit ``--project`` folder without ``_bmad`` is storage-only: never
+    treat it (or a configured parent checkout) as the BMAD exec root.
     """
-    if project_root is not None:
-        return project_root.resolve()
+    explicit = project_root.resolve() if project_root is not None else None
+    if explicit is not None and _is_bmad_tree(explicit):
+        return explicit
+
+    # Isolated user project (e.g. ./app_test under a parent Money tree).
+    if explicit is not None:
+        from_skill = find_bmad_root_from_skill(skill_path)
+        if from_skill is not None:
+            return from_skill
+        try:
+            from akomagni.core.bmad_kernel import find_shipped_bmad_core
+
+            kernel = find_shipped_bmad_core()
+            if kernel is not None:
+                return kernel
+        except ImportError:  # pragma: no cover
+            pass
+        return None
 
     found = find_project_root(start)
     from_skill = find_bmad_root_from_skill(skill_path)
@@ -126,15 +170,16 @@ def resolve_workspace_root(
     *,
     start: Path | None = None,
 ) -> tuple[Path, bool]:
-    """Return ``(storage_root, is_bmad_project)`` for workflow/session data.
+    """Return ``(storage_root, is_project_workspace)`` for workflow/session data.
 
-    In a BMAD workspace, data lives under ``<project>/.akomagni/``. Outside a
-    project, use the central Akomagni data directory (``platformdirs``) instead
-    of the current working directory — so running from ``System32`` still works.
-    The shipped BMAD kernel is never used as workflow storage (skills only).
+    Prefer an explicit root, then the nearest ``.akomagni`` folder, then a BMAD
+    ``_bmad`` tree. Never use the shipped BMAD kernel as workflow storage.
     """
     if project_root is not None:
         return project_root.resolve(), True
+    workspace = find_akomagni_workspace(start)
+    if workspace is not None:
+        return workspace, True
     found = find_project_root(start)
     if found is not None:
         return found, True

@@ -203,11 +203,17 @@ def invoke_skill(
         skill = find_skill(skill_id, bmad_root)
     agent_path = _agent_skill_path(decision.agent_id, bmad_root)
     central = load_central_context()
-    # Workflow/session storage: ambient user project or central DATA_DIR — never
-    # the shipped kernel alone (skills come from the kernel; state stays local).
-    storage_root = find_project_root()
-    if storage_root is None and project_root is not None:
+    # Workflow/session storage: explicit --project / .akomagni workspace first.
+    # Never inherit a parent BMAD checkout (Money) just because cwd is nested.
+    from akomagni.core.project import find_akomagni_workspace
+
+    storage_root = None
+    if project_root is not None:
         storage_root = project_root.resolve()
+    else:
+        storage_root = find_akomagni_workspace()
+    if storage_root is None:
+        storage_root = find_project_root()
     project = load_project_context(storage_root or bmad_root)
     rag = rag_context
     if rag is None:
