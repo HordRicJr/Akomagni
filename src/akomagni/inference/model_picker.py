@@ -223,7 +223,7 @@ def interactive_pick_model(
                 qmark="✦",
                 pointer="›",
             ).ask()
-        except Exception:
+        except (KeyboardInterrupt, EOFError, OSError, RuntimeError):
             result = None
         if result:
             apply_model_choice(str(result), config=cfg)
