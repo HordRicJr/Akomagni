@@ -49,7 +49,9 @@ def resolve_domain_model(
 ) -> DomainModelPlan:
     """Classify message and resolve a model for inference (local GGUF or cloud)."""
     classification = classify_domain(message)
-    if classification.domain is ModelDomain.IMAGE:
+    provider = str((config.get("inference") or {}).get("provider", "local")).lower()
+
+    if classification.domain is ModelDomain.IMAGE and provider == "local":
         return DomainModelPlan(
             classification=classification,
             catalog_name=None,
@@ -59,9 +61,12 @@ def resolve_domain_model(
             reason="image domain uses a separate pipeline (not text GGUF)",
         )
 
-    provider = str((config.get("inference") or {}).get("provider", "local")).lower()
     if provider in {"rodium", "azure"}:
-        model_id = cloud_model_for_domain(classification.domain.value, config=config)
+        model_id = cloud_model_for_domain(
+            classification.domain.value,
+            config=config,
+            message=message,
+        )
         if not model_id:
             return DomainModelPlan(
                 classification=classification,

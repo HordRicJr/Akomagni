@@ -8,19 +8,35 @@ from typing import Any
 
 from akomagni.core.config import load_config
 from akomagni.inference.client import api_base_url
+from akomagni.inference.rodium_router import (
+    RODIUM_LEGACY_ALIASES,
+    default_rodium_models_map,
+    resolve_rodium_model,
+)
 
 RODIUM_DEFAULT_BASE_URL = "https://api.rodiumai.io/v1"
-# Prefer cheaper tiers for light work; escalate for code/design.
-RODIUM_DEFAULT_MODELS = {
-    "code": "rodium/fast",
-    "design": "rodium/pro",
-    "text": "rodium/basic",
-}
+# Multi-provider catalogue defaults (Google / Anthropic / OpenAI / rodiumai).
+RODIUM_DEFAULT_MODELS = default_rodium_models_map()
 AZURE_DEFAULT_MODELS = {
     "code": "gpt-4o",
     "design": "gpt-4o",
     "text": "gpt-4o-mini",
 }
+
+
+def sanitize_rodium_model(model: str, *, domain: str = "text", message: str = "") -> str:
+    """Map empty/legacy Rodium profiles to a catalogue model id."""
+    cleaned = model.strip()
+    if cleaned in RODIUM_LEGACY_ALIASES or (
+        cleaned.startswith("rodium/") and cleaned not in {"rodiumai/smart"}
+    ):
+        return resolve_rodium_model(
+            domain,
+            message=message,
+            config_models={domain: cleaned},
+            use_live_catalogue=False,
+        )
+    return cleaned
 
 
 @dataclass(frozen=True)
@@ -77,7 +93,12 @@ def resolve_inference_endpoint(config: dict[str, Any] | None = None) -> Inferenc
     )
 
 
-def cloud_model_for_domain(domain: str, *, config: dict[str, Any] | None = None) -> str | None:
+def cloud_model_for_domain(
+    domain: str,
+    *,
+    config: dict[str, Any] | None = None,
+    message: str = "",
+) -> str | None:
     """Return a cloud model/deployment id for *domain* when provider is not local."""
     cfg = config or load_config()
     inf = cfg.get("inference") or {}
@@ -88,12 +109,22 @@ def cloud_model_for_domain(domain: str, *, config: dict[str, Any] | None = None)
     providers = cfg.get("providers") or {}
     prov = providers.get(provider) or {}
     models = prov.get("models") or prov.get("deployments") or {}
-    if provider == "rodium" and not models:
-        models = RODIUM_DEFAULT_MODELS
+
+    if provider == "rodium":
+        endpoint = resolve_inference_endpoint(cfg)
+        return resolve_rodium_model(
+            domain,
+            message=message,
+            config_models=models if isinstance(models, dict) else None,
+            base_url=endpoint.base_url,
+            api_key=endpoint.api_key,
+            use_live_catalogue=True,
+        )
+
     if provider == "azure" and not models:
         models = AZURE_DEFAULT_MODELS
 
-    value = models.get(domain) or prov.get("default_model")
+    value = (models or {}).get(domain) or (models or {}).get("text") or prov.get("default_model")
     if value is None or str(value).strip().lower() in {"", "none", "null"}:
         return None
     return str(value).strip()

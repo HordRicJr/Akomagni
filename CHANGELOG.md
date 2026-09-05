@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Skill link**: `akomagni skill link` registers BMAD skill folders so Flow works outside the install tree; English greenfield intents (`build a`, `brainstorming`) route to brainstorming
+- **Rodium routing**: multi-provider catalogue (Google / Anthropic / OpenAI / `rodiumai/smart`); picks economical models by task using `GET /v1/models` pricing; remaps legacy `rodium/basic|fast|pro`
 - **Connect wizard**: `akomagni connect` for local / Rodium / Foundry + Hugging Face token; `run cli --project` onboarding; pull any Hub GGUF via `owner/repo:file.gguf`
 - **Train (LoRA)** — `akomagni train plan|export|bundle|run`; native QLoRA (CUDA) / LoRA fallback via `akomagni[train]`
 - **Site** — GitHub Pages hub: install, tools marketplace, IDE roadmap, module pages

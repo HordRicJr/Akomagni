@@ -118,17 +118,35 @@ def try_chat_with_inference(
         plan = plan_inference_chat(message, host=host, port=port, status=status, config=cfg)
 
     model_id = model or plan.model_id or (status.models[0] if status.models else None)
-    # Cloud: never send a local GGUF catalog name; prefer mapped id or first live model.
+    # Cloud: use domain-mapped catalogue id. Listed smart profiles can still 404.
     if not endpoint.is_local:
-        available = set(status.models or [])
-        if model and model in available:
-            model_id = model
-        elif plan.model_id and plan.model_id in available:
-            model_id = plan.model_id
-        elif status.models:
-            model_id = status.models[0]
-        else:
-            model_id = plan.model_id or model
+        model_id = model or plan.model_id
+        if not model_id and status.models:
+            preferred = next(
+                (m for m in status.models if "/" in m and not m.startswith("rodium/")),
+                status.models[0],
+            )
+            model_id = preferred
+
+    if plan.domain_plan.classification.domain.value == "image" and not endpoint.is_local:
+        from akomagni.inference.client import InferenceClientError, image_generation
+        from akomagni.inference.endpoint import cloud_model_for_domain
+
+        image_model = (
+            model_id or cloud_model_for_domain("image", config=cfg) or "openai/gpt-image-1"
+        )
+        try:
+            return image_generation(
+                message,
+                base_url=endpoint.base_url,
+                api_key=endpoint.api_key,
+                model=image_model,
+            )
+        except InferenceClientError as exc:
+            return (
+                f"Image generation failed ({image_model}): {exc}\n"
+                "Check RODI credits and model id (see https://www.rodiumai.io/docs/guides/image-generation)."
+            )
 
     return chat_completion(
         message,

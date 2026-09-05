@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Models — Akomagni</title>
+    <meta
+      name="description"
+      content="Local Hugging Face GGUF or cloud APIs (Rodium, Foundry). Auto Router picks models by task to save tokens."
+    />
     <meta name="theme-color" content="#0B3D2E" />
     <link rel="icon" href="../assets/logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="../assets/logo.png" />
@@ -37,33 +41,47 @@
       <div class="page-hero-inner">
         <p class="breadcrumb"><a href="../">Home</a> / Models</p>
         <h1>Models</h1>
-        <p class="lead">Local GGUF inference with OpenAI-compatible API.</p>
+        <p class="lead">
+          Local GGUF offline, or Rodium / Foundry in the cloud. Auto Router picks the right tier for
+          the task.
+        </p>
       </div>
     </section>
 
     <main class="page-content">
       <div class="content-block">
-        <h2>Capabilities</h2>
+        <h2>Local (Hugging Face GGUF)</h2>
         <ul class="feature-list">
-          <li><code>akomagni serve</code> — llama-server on <code>127.0.0.1:8787</code></li>
-          <li><code>akomagni model pull</code> — download models from Hugging Face</li>
-          <li>Domain router swaps models for code, design, image, and text</li>
-          <li>Hardware-aware recommendations via <code>akomagni doctor</code></li>
+          <li><code>akomagni model pull phi-3.5-mini</code> or <code>owner/repo:file.gguf</code></li>
+          <li><code>akomagni serve --model phi-3.5-mini</code> on <code>127.0.0.1:8787</code></li>
+          <li>Optional Hub token via <code>akomagni connect</code> for gated models</li>
+        </ul>
+      </div>
+      <div class="content-block">
+        <h2>Rodium (token-aware routing)</h2>
+        <ul class="feature-list">
+          <li>Text / brainstorm → cheapest chat (often <code>google/gemini-*-flash-lite</code>)</li>
+          <li>Code → <code>rodiumai/smart</code> (Rodium picks a strong coding model)</li>
+          <li>Design / creative → mid-tier (e.g. <code>anthropic/claude-haiku-*</code>)</li>
+          <li>Image / poster → image models (<code>google/gemini-*-flash-image</code>, Imagen, gpt-image)</li>
+          <li>Any catalogue id works: Google, Anthropic, OpenAI, DeepSeek, … via one API key</li>
+          <li>Live pricing from <code>GET /v1/models</code> prefers lower RODI when online</li>
+          <li>Connect with <code>akomagni connect</code>, then <code>akomagni run cli</code></li>
         </ul>
       </div>
       <div class="code-panel">
         <div class="code-panel-header">Quick start</div>
-        <pre>akomagni doctor
-akomagni model recommend
-akomagni model pull Qwen2.5-Coder-7B
-akomagni serve --model qwen2.5-coder-7b
-akomagni inference chat "Explain this function"</pre>
+        <pre>akomagni connect
+akomagni doctor
+akomagni model pull phi-3.5-mini
+akomagni serve --model phi-3.5-mini
+akomagni run cli --project ./my-app</pre>
       </div>
     </main>
 
     <section class="cta-band">
-      <h2>Inference API reference</h2>
-      <p>OpenAI-compatible endpoints for local GGUF models.</p>
+      <h2>Inference API</h2>
+      <p>OpenAI-compatible endpoints for local and cloud providers.</p>
       <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/inference-api.md">API docs</a>
     </section>
 
@@ -74,20 +92,20 @@ akomagni inference chat "Explain this function"</pre>
             <img class="brand-logo" src="../assets/logo.png" alt="" width="38" height="38" />
             Akomagni
           </a>
-          <p>Local AI workstation — code, design, write, models, and memory.</p>
+          <p>Open-source AI workstation: models, agents, skills, memory, and workflows.</p>
         </div>
         <div class="footer-col">
           <h4>Modules</h4>
           <a href="../code/">Code</a>
           <a href="../design/">Design</a>
-          <a href="../write/">Write</a>
           <a href="../models/">Models</a>
           <a href="../memory/">Memory</a>
         </div>
         <div class="footer-col">
           <h4>Resources</h4>
           <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
-          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+          <a href="../install/">Install</a>
+          <a href="../tools/">Tools</a>
         </div>
       </div>
       <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>

@@ -167,3 +167,38 @@ def chat_completion(
         return data["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as exc:
         raise InferenceClientError(f"Unexpected API response: {data!r}") from exc
+
+
+def image_generation(
+    prompt: str,
+    *,
+    base_url: str,
+    api_key: str | None = None,
+    model: str = "openai/gpt-image-1",
+    size: str = "1024x1024",
+    timeout: float = 180.0,
+) -> str:
+    """Call OpenAI-compatible ``/v1/images/generations`` (Rodium image guide)."""
+    root = base_url.rstrip("/")
+    url = f"{root}/images/generations"
+    payload: dict[str, Any] = {
+        "model": model,
+        "prompt": prompt,
+        "n": 1,
+        "size": size,
+    }
+    data = _request_json(url, method="POST", payload=payload, timeout=timeout, api_key=api_key)
+    if not isinstance(data, dict):
+        raise InferenceClientError(f"Unexpected image response: {data!r}")
+    items = data.get("data") or []
+    if not items:
+        raise InferenceClientError(f"No image data in response: {data!r}")
+    first = items[0] if isinstance(items[0], dict) else {}
+    if first.get("url"):
+        return f"Image generated ({model}):\n{first['url']}"
+    if first.get("b64_json"):
+        return (
+            f"Image generated ({model}) as base64 ({len(str(first['b64_json']))} chars). "
+            "Save with your image tool or ask for a URL-capable model."
+        )
+    raise InferenceClientError(f"Unexpected image payload: {first!r}")

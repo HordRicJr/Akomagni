@@ -72,12 +72,41 @@ def test_try_chat_with_inference_online(tmp_path, monkeypatch):
     assert chat.call_args.kwargs["model"] == "local"
 
 
-def test_try_chat_with_inference_image_domain_skips():
+def test_try_chat_with_inference_image_domain_skips_locally():
+    from akomagni.core.router.domain import DomainClassification, ModelDomain
+    from akomagni.core.router.swap import DomainModelPlan, ModelSwapPlan
+    from akomagni.inference.endpoint import InferenceEndpoint
+
     decision = classify_message("génère un logo")
-    with patch(
-        "akomagni.inference.chat.check_health",
-        return_value=InferenceStatus(
-            online=True, base_url="http://127.0.0.1:8787/v1", models=["m"]
+    skip_plan = DomainModelPlan(
+        classification=DomainClassification(ModelDomain.IMAGE, 0.9, "image"),
+        catalog_name=None,
+        model_path=None,
+        model_id=None,
+        skip_inference=True,
+        reason="local image skip",
+    )
+    with (
+        patch(
+            "akomagni.inference.chat.resolve_inference_endpoint",
+            return_value=InferenceEndpoint(
+                provider="local", base_url="http://127.0.0.1:8787/v1", is_local=True
+            ),
+        ),
+        patch(
+            "akomagni.inference.chat.plan_inference_chat",
+            return_value=__import__(
+                "akomagni.inference.chat", fromlist=["InferenceChatPlan"]
+            ).InferenceChatPlan(
+                domain_plan=skip_plan,
+                swap_plan=ModelSwapPlan(
+                    needs_swap=False,
+                    current_model=None,
+                    target_model=None,
+                    target_path=None,
+                ),
+                model_id=None,
+            ),
         ),
     ):
         assert try_chat_with_inference("génère un logo", decision) is None
@@ -144,3 +173,32 @@ def test_try_chat_with_inference_client_error():
         pytest.raises(InferenceClientError, match="down"),
     ):
         try_chat_with_inference("implement login", decision)
+
+
+def test_image_generation_url_and_b64():
+    from akomagni.inference.client import image_generation
+
+    with patch(
+        "akomagni.inference.client._request_json",
+        return_value={"data": [{"url": "https://cdn.example/img.png"}]},
+    ):
+        out = image_generation(
+            "poster",
+            base_url="https://api.rodiumai.io/v1",
+            api_key="rd_sk_x",
+            model="google/gemini-3.1-flash-image",
+        )
+        assert "cdn.example" in out
+
+    with patch(
+        "akomagni.inference.client._request_json",
+        return_value={"data": [{"b64_json": "aaaa"}]},
+    ):
+        out = image_generation("poster", base_url="https://api.rodiumai.io/v1")
+        assert "base64" in out
+
+    with (
+        patch("akomagni.inference.client._request_json", return_value={"data": [{}]}),
+        pytest.raises(InferenceClientError),
+    ):
+        image_generation("poster", base_url="https://api.rodiumai.io/v1")

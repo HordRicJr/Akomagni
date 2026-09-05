@@ -45,7 +45,8 @@ INNOVATION_PATTERNS = re.compile(
 )
 PROBLEM_PATTERNS = re.compile(r"\b(problème complexe|root cause|triz|bloqué)\b", re.IGNORECASE)
 IMAGE_PATTERNS = re.compile(
-    r"\b(logo|image|illustration|génère.*visuel|sdxl|flux)\b", re.IGNORECASE
+    r"\b(logo|image|illustration|génère.*visuel|affiche|poster|banner|sdxl|flux)\b",
+    re.IGNORECASE,
 )
 
 

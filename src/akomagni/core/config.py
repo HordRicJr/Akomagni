@@ -42,9 +42,10 @@ DEFAULT_CONFIG: dict[str, Any] = {
             "base_url": "https://api.rodiumai.io/v1",
             "api_key_env": "RODIUMAI_API_KEY",
             "models": {
-                "code": "rodium/fast",
-                "design": "rodium/pro",
-                "text": "rodium/basic",
+                "code": "rodiumai/smart",
+                "design": "anthropic/claude-haiku-4-5-20251001",
+                "text": "google/gemini-3.1-flash-lite-preview",
+                "image": "google/gemini-3.1-flash-image",
             },
         },
         "azure": {

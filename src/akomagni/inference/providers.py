@@ -49,7 +49,17 @@ def apply_provider_preset(
     providers = {**(merged.get("providers") or {})}
 
     if provider == "rodium":
-        providers["rodium"] = {**rodium_provider_block(), **(providers.get("rodium") or {})}
+        existing = dict(providers.get("rodium") or {})
+        block = {**rodium_provider_block(), **existing}
+        # Force current defaults so legacy rodium/basic does not stick after connect.
+        block["models"] = dict(RODIUM_DEFAULT_MODELS)
+        if existing.get("api_key"):
+            block["api_key"] = existing["api_key"]
+        if existing.get("api_key_env"):
+            block["api_key_env"] = existing["api_key_env"]
+        if existing.get("base_url"):
+            block["base_url"] = existing["base_url"]
+        providers["rodium"] = block
     elif provider == "azure":
         base = azure_base_url or (providers.get("azure") or {}).get("base_url") or ""
         providers["azure"] = {
