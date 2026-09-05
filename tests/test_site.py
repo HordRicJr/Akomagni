@@ -77,7 +77,11 @@ def test_homepage_product_capabilities():
     assert "/model" in root
     assert "Intent" in root and "Workflow" in root
     assert "akomagni skill list" in root
-    assert "skill kernel" in root.lower() or "install kernel" in root.lower() or "no path" in root.lower()
+    assert (
+        "skill kernel" in root.lower()
+        or "install kernel" in root.lower()
+        or "no path" in root.lower()
+    )
 
 
 def test_tools_page_includes_train_and_ide():
