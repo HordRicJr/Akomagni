@@ -45,6 +45,10 @@ def build_flow_system_prompt(
         "Stay inside the active --project folder conceptually; never assume parent checkouts.",
         "Do not invent or write project files unless the user explicitly asks you to output code.",
         "Do not dump an entire codebase, scaffold, or multi-file tree in one reply.",
+        (
+            "When implementation is needed, say what you will create and use project tools — "
+            "do not paste long source code into the chat."
+        ),
         "Prefer short clarifying questions and one next step at a time.",
         "Answer in the user's language.",
     ]

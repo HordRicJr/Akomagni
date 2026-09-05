@@ -7,17 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-05
+
+### Added
+
+- **CLI agent tools**: when you ask to create/build files, the model announces work and writes via sandboxed `fs_write` / `shell_run` inside `--project` (no source-code dumps in chat)
+
 ### Fixed
 
-- **CLI conversation memory**: multi-turn history is sent to the model (no more amnesia after the first reply)
-- **Sticky BMAD skills**: follow-ups like \"je valide\" / \"commence\" stay on brainstorm while the gate is open
-- **`--project` isolation**: a folder with `.akomagni` (e.g. `./app_test` under a parent BMAD checkout) keeps sessions/workflow/RAG/memory there — no longer inherits the parent `_bmad` tree
-- **CLI chat**: do not auto-enable `--exec` on new projects; isolated projects are not treated as BMAD exec roots; system prompt stays step-by-step (no codebase dumps)
+- **CLI conversation memory**: multi-turn history is sent to the model
+- **Sticky BMAD skills**: follow-ups stay on brainstorm while the gate is open
+- **`--project` isolation**: sessions stay under the project `.akomagni/` folder
+- Brainstorm/chat replies: large code fences are masked; say « crée les fichiers » to write for real
 
 ### Changed
 
-- **Simple skill phrases** (FR/EN): `brainstorm`, `créer moi une app`, `prd`, `ux`, `archi`, `code`, agent names (Mary, John, Sally…)
-- **First prompt on a fresh project** auto-activates brainstorm
+- Simple skill phrases (FR/EN) + first prompt on a fresh project activates brainstorm
 ## [0.3.0] - 2026-09-05
 
 ### Added

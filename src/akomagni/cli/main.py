@@ -545,6 +545,24 @@ def chat(
         # CLI always continues with the model (BMAD skills included — no IDE handoff).
         allow_free_chat = True
         if inference and inference_online and allow_free_chat:
+            from akomagni.flow.gates import agent_for_skill
+            from akomagni.flow.intent import RouteDecision, _badge
+            from akomagni.inference.agent_loop import run_agent_tool_turn, wants_project_tools
+
+            use_tools = bool(active_project) and wants_project_tools(message, decision)
+            if use_tools and decision.skill in {"chat", "bmad-brainstorming"}:
+                # Promote to build so tools create files instead of dumping code in chat.
+                agent_id = agent_for_skill("bmad-build")
+                decision = RouteDecision(
+                    agent_id=agent_id,
+                    skill="bmad-build",
+                    confidence=0.9,
+                    badge=_badge(agent_id, "Build"),
+                    hint="Création de fichiers dans le projet via outils agent.",
+                )
+                sticky_skill = "bmad-build"
+                console.print(f"[dim]{decision.badge}[/] → outils projet (écriture fichiers)")
+
             chat_plan = plan_inference_chat(message, host=host, port=port)
             domain = chat_plan.domain_plan.classification.domain
             catalog = chat_plan.domain_plan.catalog_name or "n/a"
@@ -552,17 +570,36 @@ def chat(
             if chat_plan.swap_plan.needs_swap and not auto_swap:
                 console.print(f"[yellow]{chat_plan.swap_plan.hint}[/]")
             try:
-                reply = try_chat_with_inference(
-                    message,
-                    decision,
-                    host=host,
-                    port=port,
-                    model=model_override,
-                    auto_swap=auto_swap,
-                    rag_context=rag_context,
-                    skill_guidance=skill_guidance if invoke else "",
-                    history=chat_history,
-                )
+                if use_tools:
+                    agent_turn = run_agent_tool_turn(
+                        message,
+                        decision,
+                        workspace=active_project or Path.cwd(),
+                        history=chat_history,
+                        skill_guidance=skill_guidance if invoke else "",
+                        rag_context=rag_context,
+                        host=host,
+                        port=port,
+                        base_url=None if endpoint.is_local else endpoint.base_url,
+                        api_key=endpoint.api_key,
+                        model=model_override or chat_plan.model_id,
+                        on_action=lambda label: console.print(f"[dim]→ {label}[/]"),
+                    )
+                    reply = agent_turn.user_reply
+                    for action in agent_turn.actions:
+                        console.print(f"[green]✓[/] {action}")
+                else:
+                    reply = try_chat_with_inference(
+                        message,
+                        decision,
+                        host=host,
+                        port=port,
+                        model=model_override,
+                        auto_swap=auto_swap,
+                        rag_context=rag_context,
+                        skill_guidance=skill_guidance if invoke else "",
+                        history=chat_history,
+                    )
             except InferenceClientError as exc:
                 console.print(f"[yellow]{_t('run.inference_failed')}[/] {exc}")
                 if endpoint.is_local:
@@ -603,7 +640,24 @@ def chat(
                         console.print(f"[yellow]{_t('image.save_failed', error=exc)}[/]\n")
                     continue
 
-                console.print(f"\n[bold]Akomagni[/]\n{reply}\n")
+                display = str(reply)
+                if (
+                    isinstance(reply, str)
+                    and decision.skill in {"bmad-brainstorming", "gds-brainstorm-game", "chat"}
+                    and "```" in reply
+                    and not use_tools
+                ):
+                    from akomagni.inference.agent_loop import strip_tool_markup
+
+                    cleaned = strip_tool_markup(reply)
+                    if cleaned and cleaned != reply.strip():
+                        display = cleaned
+                        console.print(
+                            "[dim](Code masqué — dis « crée les fichiers » "
+                            "pour écrire dans le projet via les outils.)[/]"
+                        )
+                        reply = cleaned
+                console.print(f"\n[bold]Akomagni[/]\n{display}\n")
                 chat_history.append({"role": "user", "content": message})
                 chat_history.append({"role": "assistant", "content": str(reply)})
                 if len(chat_history) > max_history_messages:
