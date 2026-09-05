@@ -6,7 +6,7 @@
     <title>Models — Akomagni</title>
     <meta
       name="description"
-      content="Local Hugging Face GGUF or cloud APIs (Rodium, Foundry). Auto Router picks models by task to save tokens."
+      content="Local Hugging Face GGUF or Rodium / Foundry cloud. Auto Router by task, or pin any catalogue model with Space / /model."
     />
     <meta name="theme-color" content="#f3f6fa" />
     <link rel="icon" href="../assets/logo.png" type="image/png" />
@@ -29,7 +29,7 @@
           <a href="https://github.com/HordRicJr/Akomagni/tree/main/docs">Docs</a>
         </nav>
         <div class="header-actions">
-          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a class="btn btn-primary" href="../install/">Install</a>
         </div>
       </div>
     </header>
@@ -39,8 +39,8 @@
         <p class="breadcrumb"><a href="../">Home</a> / Models</p>
         <h1>Models</h1>
         <p class="lead">
-          Local GGUF offline, or Rodium / Foundry in the cloud. Auto Router picks the right tier for
-          the task.
+          Local GGUF offline, or multi-provider cloud via Rodium / Foundry. Auto Router picks by
+          task — or pin a strong model yourself.
         </p>
       </div>
     </section>
@@ -49,68 +49,68 @@
       <div class="content-block">
         <h2>Local (Hugging Face GGUF)</h2>
         <ul class="feature-list">
-          <li><code>akomagni model pull phi-3.5-mini</code> or <code>owner/repo:file.gguf</code></li>
-          <li><code>akomagni serve --model phi-3.5-mini</code> on <code>127.0.0.1:8787</code></li>
-          <li>Optional Hub token via <code>akomagni connect</code> for gated models</li>
+          <li><code>akomagni model pull phi-3.5-mini</code> or any <code>owner/repo:file.gguf</code></li>
+          <li><code>akomagni serve --model …</code> — OpenAI-compatible API on <code>127.0.0.1:8787</code></li>
+          <li><code>akomagni doctor</code> / <code>model recommend</code> for hardware-aware picks</li>
+          <li>Optional Hub token via <code>akomagni connect</code> for gated repos</li>
         </ul>
       </div>
       <div class="content-block">
-        <h2>Rodium (token-aware routing)</h2>
+        <h2>Rodium cloud (multi-provider)</h2>
         <ul class="feature-list">
-          <li>Text / brainstorm → cheap chat (e.g. <code>google/gemini-*-flash-lite*</code>)</li>
-          <li>Code → <code>rodiumai/smart</code> or strong coding models (Sonnet, Codex, DeepSeek)</li>
-          <li>Design / creative → mid-tier (e.g. <code>anthropic/claude-haiku-*</code>)</li>
           <li>
-            Image / poster → quality-first multi-vendor models (Gemini Nano Banana Pro / Flash
-            Image, then OpenAI gpt-image). After generation the CLI asks where to save the PNG in
-            your project folder.
+            One API key → Google, Anthropic, OpenAI, DeepSeek, <code>rodiumai/smart</code>, and more
           </li>
           <li>
-            Pick models: <code>Auto</code> (by task) or pin Claude / Gemini / GPT / DeepSeek from
-            the live catalogue — in CLI press Space or type <code>/model</code>
+            <strong>Auto</strong> routes by domain (code, design, image, chat) using live catalogue
+            pricing when available
           </li>
-          <li>Any catalogue id works: Google, Anthropic, OpenAI, DeepSeek, … via one API key</li>
-          <li>Live pricing from <code>GET /v1/models</code> prefers lower RODI when online</li>
-          <li>Connect with <code>akomagni connect</code>, then <code>akomagni run cli</code></li>
+          <li>
+            <strong>Pin</strong> Claude Sonnet, Gemini Pro, GPT-5.4, DeepSeek Pro, image models…
+            during <code>connect</code> or in CLI with <strong>Space</strong> / <code>/model</code>
+          </li>
+          <li>
+            Images: quality-first (Gemini Pro/Flash Image, gpt-image). CLI asks where to save the PNG
+          </li>
+          <li>Legacy <code>rodium/basic|fast|pro</code> ids remap to current catalogue models</li>
         </ul>
       </div>
       <div class="code-panel">
         <div class="code-panel-header">Quick start</div>
         <pre>akomagni connect
 akomagni doctor
-akomagni model pull phi-3.5-mini
-akomagni serve --model phi-3.5-mini
-akomagni run cli --project ./my-app</pre>
+akomagni model pull qwen2.5-coder-7b
+akomagni serve --model qwen2.5-coder-7b
+akomagni run cli --project ./my-app
+# In CLI: press Space or type /model to change the Rodium model</pre>
       </div>
     </main>
 
     <section class="cta-band">
       <h2>Inference API</h2>
-      <p>OpenAI-compatible endpoints for local and cloud providers.</p>
-      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/inference-api.md">API docs</a>
+      <p>OpenAI-compatible endpoints for local serve and cloud providers.</p>
+      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/main/docs/en/inference-api.md">API docs</a>
     </section>
 
     <footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <a class="brand" href="../" style="color: #fff">
+          <a class="brand" href="../">
             <img class="brand-logo" src="../assets/logo.png" alt="" width="28" height="28" />
             Akomagni
           </a>
-          <p>Open-source AI workstation: models, agents, skills, memory, and workflows.</p>
+          <p>Multiple models. Auto Router or your pin. Local and cloud.</p>
         </div>
         <div class="footer-col">
-          <h4>Modules</h4>
-          <a href="../code/">Code</a>
-          <a href="../design/">Design</a>
-          <a href="../models/">Models</a>
-          <a href="../memory/">Memory</a>
+          <h4>Product</h4>
+          <a href="../install/">Install</a>
+          <a href="../tools/">Tools</a>
+          <a href="../ide/">IDE</a>
         </div>
         <div class="footer-col">
           <h4>Resources</h4>
           <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
-          <a href="../install/">Install</a>
-          <a href="../tools/">Tools</a>
+          <a href="https://github.com/HordRicJr/Akomagni/tree/main/docs">Documentation</a>
         </div>
       </div>
       <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>

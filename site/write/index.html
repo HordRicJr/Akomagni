@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Write — Akomagni</title>
+    <meta
+      name="description"
+      content="Specs, docs, and content with Flow, RAG context, and memory that survives sessions."
+    />
     <meta name="theme-color" content="#f3f6fa" />
     <link rel="icon" href="../assets/logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="../assets/logo.png" />
@@ -25,7 +29,7 @@
           <a href="https://github.com/HordRicJr/Akomagni/tree/main/docs">Docs</a>
         </nav>
         <div class="header-actions">
-          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a class="btn btn-primary" href="../install/">Install</a>
         </div>
       </div>
     </header>
@@ -34,7 +38,10 @@
       <div class="page-hero-inner">
         <p class="breadcrumb"><a href="../">Home</a> / Write</p>
         <h1>Write</h1>
-        <p class="lead">Specs, documentation, and content with project context.</p>
+        <p class="lead">
+          PRDs, docs, posts, and research — with project RAG and memory so context does not reset
+          every chat.
+        </p>
       </div>
     </section>
 
@@ -42,16 +49,17 @@
       <div class="content-block">
         <h2>Capabilities</h2>
         <ul class="feature-list">
-          <li>Interactive CLI chat with inference and memory injection</li>
-          <li>Bilingual docs (EN/FR) in the repository</li>
-          <li>Auto-capture learnings with user approval</li>
-          <li>RAG over your markdown and project files</li>
+          <li>Interactive CLI with Flow framing and local or cloud inference</li>
+          <li>Writing / storytelling / product skills via BMAD and CIS suites</li>
+          <li>RAG over markdown and project files for grounded answers</li>
+          <li>Auto-capture learnings into an approval queue before they hit memory</li>
+          <li>CLI UI English by default — <code>akomagni config language fr</code> for French</li>
         </ul>
       </div>
       <div class="code-panel">
         <div class="code-panel-header">Quick start</div>
-        <pre>akomagni run cli
-akomagni rag ingest docs/
+        <pre>akomagni run cli --project ./my-app
+akomagni rag ingest docs/ --recursive
 akomagni rag query "how does memory promotion work?"
 akomagni memory pending</pre>
       </div>
@@ -60,30 +68,28 @@ akomagni memory pending</pre>
     <section class="cta-band">
       <h2>Full documentation</h2>
       <p>Bilingual guides for every Akomagni module.</p>
-      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Browse docs</a>
+      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/tree/main/docs">Browse docs</a>
     </section>
 
     <footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <a class="brand" href="../" style="color: #fff">
+          <a class="brand" href="../">
             <img class="brand-logo" src="../assets/logo.png" alt="" width="28" height="28" />
             Akomagni
           </a>
-          <p>Local AI workstation — code, design, write, models, and memory.</p>
+          <p>Write with context that stays with the project.</p>
         </div>
         <div class="footer-col">
           <h4>Modules</h4>
           <a href="../code/">Code</a>
-          <a href="../design/">Design</a>
-          <a href="../write/">Write</a>
-          <a href="../models/">Models</a>
           <a href="../memory/">Memory</a>
+          <a href="../tools/">Tools</a>
         </div>
         <div class="footer-col">
           <h4>Resources</h4>
           <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
-          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+          <a href="../install/">Install</a>
         </div>
       </div>
       <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>

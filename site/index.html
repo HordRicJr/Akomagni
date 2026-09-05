@@ -6,7 +6,7 @@
     <title>Akomagni</title>
     <meta
       name="description"
-      content="Open-source hybrid AI workstation. Local GGUF, Rodium, or Foundry. Agents, skills, memory, and workflows in one CLI."
+      content="Open-source hybrid AI workstation. Skills, 17 BMAD agents, Flow, Auto Router, memory, local GGUF and Rodium cloud."
     />
     <meta name="theme-color" content="#f3f6fa" />
     <link rel="icon" href="assets/logo.png" type="image/png" />
@@ -15,7 +15,7 @@
     <meta property="og:title" content="Akomagni" />
     <meta
       property="og:description"
-      content="Run local and cloud models with agents, skills, and workflows."
+      content="A new way to work with AI — models, agents, skills, and workflows in one place."
     />
     <link rel="stylesheet" href="assets/style.css" />
   </head>
@@ -45,10 +45,10 @@
       <div class="hero-inner">
         <img class="hero-logo" src="assets/logo.png" alt="" width="48" height="48" />
         <p class="hero-brand">Akomagni</p>
-        <h1>One workspace for local and cloud AI</h1>
+        <h1>A new way to work with AI</h1>
         <p class="hero-lead">
-          Open-source hybrid workstation. Models, agents, skills, memory, and workflows — without
-          leaving your machine unless you choose to.
+          Open-source hybrid workstation. Turn a goal into a real process — models, agents, skills,
+          memory, and workflows — local, cloud, or both.
         </p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="install/">Get started</a>
@@ -83,8 +83,8 @@
           </div>
         </div>
         <p>
-          Then run <code>akomagni connect</code> · <code>akomagni skill link</code> ·
-          <code>akomagni run cli</code>
+          Then <code>akomagni connect</code> · <code>akomagni skill link</code> ·
+          <code>akomagni run cli --project ./app</code>
         </p>
       </aside>
     </section>
@@ -92,62 +92,97 @@
     <section class="section">
       <div class="section-header">
         <h2>What you get</h2>
-        <p>One workspace for models, agents, skills, memory, and workflows.</p>
+        <p>
+          Not only chat answers — competencies, specialized agents, and workflows that finish the
+          job.
+        </p>
       </div>
       <div class="card-grid">
-        <a class="feature-card" href="models/">
-          <h3>Local or cloud</h3>
-          <p>Hugging Face GGUF offline, or Rodium / Microsoft Foundry APIs.</p>
-          <span class="arrow">Models →</span>
+        <a class="feature-card" href="tools/">
+          <h3>Skills</h3>
+          <p>
+            Structured methods for build, design, research, writing, and more. Register with
+            <code>skill link</code>.
+          </p>
+          <span class="arrow">Tools →</span>
+        </a>
+        <a class="feature-card" href="code/">
+          <h3>17 specialized agents</h3>
+          <p>BMAD roles for product, architecture, UX, development, testing, and creative work.</p>
+          <span class="arrow">Flow →</span>
         </a>
         <a class="feature-card" href="code/">
           <h3>Akomagni Flow</h3>
-          <p>Describe a goal. Flow routes to the right BMAD agent and skill.</p>
-          <span class="arrow">Flow →</span>
-        </a>
-        <a class="feature-card" href="tools/">
-          <h3>Skills</h3>
-          <p>Structured methods for build, design, research, writing, and more.</p>
-          <span class="arrow">Tools →</span>
+          <p>Describe a goal in plain language. Flow routes agent + skill + workflow for you.</p>
+          <span class="arrow">How it works →</span>
         </a>
         <a class="feature-card" href="models/">
-          <h3>Auto Router</h3>
-          <p>Picks an economical model for code, design, image, or chat.</p>
-          <span class="arrow">Routing →</span>
+          <h3>Auto Router + model picker</h3>
+          <p>
+            Fits the model to the task on Rodium (Google, Anthropic, OpenAI, …). Pin with Space or
+            <code>/model</code>, or keep Auto.
+          </p>
+          <span class="arrow">Models →</span>
         </a>
         <a class="feature-card" href="memory/">
           <h3>Memory</h3>
-          <p>Central and per-project context that survives sessions.</p>
+          <p>Central and per-project context with approval before anything is saved.</p>
           <span class="arrow">Memory →</span>
         </a>
         <a class="feature-card" href="ide/">
-          <h3>CLI + IDE</h3>
-          <p>CLI first today. VS Code extension and MCP when you want them.</p>
+          <h3>CLI, VS Code, MCP</h3>
+          <p>CLI first. Chat extension and sandboxed agent tools in Cursor / VS Code when you need them.</p>
           <span class="arrow">IDE →</span>
         </a>
       </div>
     </section>
 
+    <section class="flow-strip" id="flow">
+      <div class="section-header">
+        <h2>From intent to result</h2>
+        <p>You do not need agent names or skill ids — Flow reads your goal.</p>
+      </div>
+      <div class="flow-pipeline" aria-label="Akomagni Flow pipeline">
+        <span class="flow-step">Intent</span>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <span class="flow-step">Analysis</span>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <span class="flow-step">Agent</span>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <span class="flow-step">Skill</span>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <span class="flow-step">Workflow</span>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <span class="flow-step">Result</span>
+      </div>
+      <p class="flow-note">
+        Same Flow offline with local GGUF, or on Rodium / Foundry after
+        <code>akomagni connect</code>.
+      </p>
+    </section>
+
     <section class="section" style="padding-top: 0">
       <div class="section-header">
-        <h2>Keep your setup</h2>
+        <h2>Local, cloud, or hybrid</h2>
         <p>
-          Same Flow whether you stay local or connect cloud. English CLI by default —
-          <code>akomagni config language fr</code> when you need French.
+          English CLI by default — <code>akomagni config language fr</code> when you want French.
         </p>
       </div>
       <div class="pillar-row">
         <div class="pillar">
           <h3>Private when local</h3>
-          <p>GGUF models run on your machine. Nothing leaves unless you choose a cloud provider.</p>
+          <p>Hugging Face GGUF on your machine. Nothing leaves unless you choose a cloud provider.</p>
         </div>
         <div class="pillar">
-          <h3>Hybrid when you need it</h3>
-          <p>One key for Rodium catalogue models, or Foundry deployments, beside local serve.</p>
+          <h3>Cloud when you need it</h3>
+          <p>
+            One Rodium key for multi-provider catalogue models, or Microsoft Foundry, beside local
+            serve.
+          </p>
         </div>
         <div class="pillar">
           <h3>Open source</h3>
-          <p>Study, fork, and extend skills, agents, and integrations with the community.</p>
+          <p>Study, fork, and extend skills, agents, models, and integrations with the community.</p>
         </div>
       </div>
     </section>
@@ -168,13 +203,14 @@
             <img class="brand-logo" src="assets/logo.png" alt="" width="28" height="28" />
             Akomagni
           </a>
-          <p>Open-source AI workstation. Intent → agent → skill → result.</p>
+          <p>One workspace. Multiple models. Specialized agents. Powerful skills. Intelligent workflows.</p>
         </div>
         <div class="footer-col">
           <h4>Product</h4>
           <a href="install/">Install</a>
           <a href="models/">Models</a>
           <a href="tools/">Tools</a>
+          <a href="ide/">IDE</a>
         </div>
         <div class="footer-col">
           <h4>Resources</h4>

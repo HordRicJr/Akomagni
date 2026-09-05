@@ -39,7 +39,8 @@
         <p class="breadcrumb"><a href="../">Home</a> / Tools</p>
         <h1>Tools hub</h1>
         <p class="lead">
-          Install models, skills, and extensions for your offline workstation — like a marketplace, fully local.
+          Models, BMAD skills, MCP agent tools, Train, and IDE setup — add what you need to the
+          workstation.
         </p>
       </div>
     </section>
@@ -141,8 +142,8 @@
               <h3>Link skills directory</h3>
               <span class="tool-badge">Setup</span>
             </div>
-            <p>Copy or symlink BMAD skills into Akomagni search paths.</p>
-            <div class="tool-cmd" id="tool-skills-dir">mkdir -p ~/.akomagni/skills &amp;&amp; ln -s /path/to/.claude/skills/* ~/.akomagni/skills/</div>
+            <p>Register BMAD skill folders so Flow finds agents outside the install tree.</p>
+            <div class="tool-cmd" id="tool-skills-dir">akomagni skill link</div>
             <button class="copy-btn" type="button" data-copy="tool-skills-dir">Copy command</button>
           </article>
         </div>
@@ -240,7 +241,7 @@
               <h3>Connect (local / cloud / HF)</h3>
               <span class="tool-badge">Setup</span>
             </div>
-            <p>One command to choose local, Rodium, or Foundry and optionally save a Hugging Face token.</p>
+            <p>One command for local, Rodium, or Foundry — then pick Auto or pin a catalogue model.</p>
             <div class="tool-cmd" id="tool-connect">akomagni connect</div>
             <button class="copy-btn" type="button" data-copy="tool-connect">Copy command</button>
           </article>
@@ -312,11 +313,11 @@
     <footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <a class="brand" href="../" style="color: #fff">
+          <a class="brand" href="../">
             <img class="brand-logo" src="../assets/logo.png" alt="" width="28" height="28" />
             Akomagni
           </a>
-          <p>Install once. Add models, skills, and agent tools as you grow.</p>
+          <p>Models, skills, agents, Train, and MCP — add as you grow.</p>
         </div>
         <div class="footer-col">
           <h4>Get started</h4>

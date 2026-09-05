@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Code — Akomagni</title>
+    <meta
+      name="description"
+      content="Akomagni Flow routes goals to BMAD agents and skills. MCP tools, RAG, and CLI for real development work."
+    />
     <meta name="theme-color" content="#f3f6fa" />
     <link rel="icon" href="../assets/logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="../assets/logo.png" />
@@ -25,7 +29,7 @@
           <a href="https://github.com/HordRicJr/Akomagni/tree/main/docs">Docs</a>
         </nav>
         <div class="header-actions">
-          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a class="btn btn-primary" href="../install/">Install</a>
         </div>
       </div>
     </header>
@@ -33,8 +37,11 @@
     <section class="page-hero">
       <div class="page-hero-inner">
         <p class="breadcrumb"><a href="../">Home</a> / Code</p>
-        <h1>Code</h1>
-        <p class="lead">BMAD agent orchestration and developer-focused local AI.</p>
+        <h1>Code &amp; Flow</h1>
+        <p class="lead">
+          Describe the goal. Flow picks the agent and skill. Build with CLI, RAG context, and
+          sandboxed MCP tools.
+        </p>
       </div>
     </section>
 
@@ -42,17 +49,34 @@
       <div class="content-block">
         <h2>Capabilities</h2>
         <ul class="feature-list">
-          <li><strong>Akomagni Flow</strong> — heuristic router across 17 BMAD agents</li>
-          <li><strong>Skills</strong> — discover and invoke BMAD skills via <code>uv run</code></li>
-          <li><strong>MCP tools</strong> — sandboxed fs, shell, and git for agent mode</li>
-          <li><strong>RAG</strong> — hybrid BM25 + sqlite-vec retrieval injected into prompts</li>
+          <li>
+            <strong>Akomagni Flow</strong> — Intent → Analysis → Agent → Skill → Workflow → Result
+            across 17 BMAD agents
+          </li>
+          <li>
+            <strong>Skills</strong> — <code>akomagni skill link</code>, <code>skill list</code>,
+            discover from <code>~/.akomagni/skills</code> and project trees
+          </li>
+          <li>
+            <strong>Sessions</strong> — <code>flow invoke</code> / interactive CLI writes BMAD
+            activation session files
+          </li>
+          <li><strong>MCP tools</strong> — sandboxed fs, shell, and git with an approval queue</li>
+          <li><strong>RAG</strong> — hybrid BM25 + vector ingest injected into prompts</li>
+          <li>
+            <strong>Greenfield</strong> — English intents like “build a…” route to brainstorming
+            first
+          </li>
         </ul>
       </div>
       <div class="code-panel">
         <div class="code-panel-header">Quick start</div>
-        <pre>akomagni flow route "Add JWT auth to the API"
-akomagni flow invoke "Add JWT auth to the API" --exec
+        <pre>akomagni skill link
+akomagni run cli --project ./my-app
+akomagni flow route "Add JWT auth to the API"
+akomagni flow invoke "Add JWT auth to the API"
 akomagni skill list
+akomagni rag ingest docs/ --recursive
 akomagni mcp serve</pre>
       </div>
     </main>
@@ -60,30 +84,28 @@ akomagni mcp serve</pre>
     <section class="cta-band">
       <h2>Learn more about Flow</h2>
       <p>Route tasks to the right BMAD agent automatically.</p>
-      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/akomagni-flow.md">Flow docs</a>
+      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/main/docs/en/akomagni-flow.md">Flow docs</a>
     </section>
 
     <footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <a class="brand" href="../" style="color: #fff">
+          <a class="brand" href="../">
             <img class="brand-logo" src="../assets/logo.png" alt="" width="28" height="28" />
             Akomagni
           </a>
-          <p>Local AI workstation — code, design, write, models, and memory.</p>
+          <p>Intent → agent → skill → result.</p>
         </div>
         <div class="footer-col">
           <h4>Modules</h4>
-          <a href="../code/">Code</a>
           <a href="../design/">Design</a>
-          <a href="../write/">Write</a>
           <a href="../models/">Models</a>
           <a href="../memory/">Memory</a>
         </div>
         <div class="footer-col">
           <h4>Resources</h4>
           <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
-          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+          <a href="../tools/">Tools</a>
         </div>
       </div>
       <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
