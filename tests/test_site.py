@@ -60,8 +60,10 @@ def test_install_page_includes_windows_guide():
     assert "install/windows" in install
     assert "PowerShell" in install
     assert "winget install Python" in install
-    assert "cmd-bootstrap-win" in install
-    assert "cmd-fr-win" in install
+    assert "cmd-win-verify" in install
+    assert "akomagni connect" in install
+    assert "akomagni skill link" in install
+    assert "config language fr" in install
 
 
 def test_homepage_includes_windows_install():

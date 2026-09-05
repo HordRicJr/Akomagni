@@ -53,17 +53,18 @@ RODIUM_TIER_CANDIDATES: dict[str, tuple[str, ...]] = {
         "openai/gpt-4.1",
         "openai/gpt-4o",
     ),
-    # Image: prefer OpenAI ids that usually return a URL; then Gemini Nano Banana family.
+    # Image: quality-first multi-vendor (posters / ads), then faster fallbacks.
+    # Not OpenAI-only — Gemini Nano Banana Pro / Flash Image often best for creatives.
     "image": (
-        "openai/gpt-image-1-mini",
-        "openai/gpt-image-1.5",
-        "openai/chatgpt-image-latest",
-        "openai/gpt-image-2",
-        "google/gemini-3.1-flash-lite-image",
+        "google/gemini-3-pro-image",
+        "google/gemini-3-pro-image-preview",
         "google/gemini-3.1-flash-image",
         "google/gemini-3.1-flash-image-preview",
-        "google/gemini-3-pro-image-preview",
-        "google/gemini-3-pro-image",
+        "openai/gpt-image-1.5",
+        "openai/gpt-image-2",
+        "openai/chatgpt-image-latest",
+        "google/gemini-3.1-flash-lite-image",
+        "openai/gpt-image-1-mini",
     ),
 }
 
@@ -241,9 +242,15 @@ def pick_tier_model(
         return candidates[0]
 
     if tier == "image":
-        picked = _pick_cheapest(rows, predicate=_is_image_model) if rows else None
-        if picked:
-            return picked
+        # Prefer known quality catalogue ids in static order (not cheapest-first).
+        if rows:
+            available = {str(i["id"]): i for i in rows if _is_available(i) and _is_image_model(i)}
+            for cand in candidates:
+                if cand in available:
+                    return cand
+            picked = _pick_cheapest(list(available.values()), predicate=lambda _i: True)
+            if picked:
+                return picked
         return candidates[0]
 
     # economy / balanced / strong: cheapest available among preferred vendors first,
@@ -325,8 +332,13 @@ def default_rodium_models_map() -> dict[str, str]:
     }
 
 
-def image_model_candidates(primary: str | None = None) -> list[str]:
-    """Ordered image model ids to try (primary first, then static fallbacks)."""
+def image_model_candidates(primary: str | None = None, *, message: str = "") -> list[str]:
+    """Ordered image model ids to try (quality-first, multi-vendor).
+
+    *primary* is tried first when set. Otherwise static quality order is used.
+    Message hints do not drop strong models — posters/ads keep the full quality list.
+    """
+    del message  # reserved for future specialty routing (video, etc.)
     ordered: list[str] = []
     if primary and primary.strip():
         ordered.append(primary.strip())

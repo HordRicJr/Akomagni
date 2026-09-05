@@ -26,6 +26,7 @@ dependencies = [
   "psutil>=5.9",
   "platformdirs>=4.0",
   "sqlite-vec>=0.1.6",
+  "questionary>=2.0",
 ]
 
 [project.optional-dependencies]

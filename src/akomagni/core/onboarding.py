@@ -107,6 +107,13 @@ def run_connect_wizard(*, prompt: PromptFn, include_hf: bool = True) -> dict[str
     elif provider == "rodium":
         key = prompt("Rodium API key (rd_sk_…)")
         connect_provider("rodium", api_key=key, sync_ide=True)
+        try:
+            from akomagni.inference.model_picker import interactive_pick_model
+
+            print("Choose how Rodium picks models (Auto recommended).")
+            interactive_pick_model(prompt=prompt)
+        except OSError:
+            pass
     else:
         url = prompt("Azure Foundry URL (…/openai/v1/)")
         key = prompt("Azure API key")

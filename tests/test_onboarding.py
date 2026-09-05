@@ -109,6 +109,10 @@ def test_run_connect_wizard_rodium(akomagni_home, monkeypatch):
         )
 
     monkeypatch.setattr("akomagni.core.onboarding.connect_provider", _fake_connect)
+    monkeypatch.setattr(
+        "akomagni.inference.model_picker.interactive_pick_model",
+        lambda **_k: "auto",
+    )
     answers = iter(["rodium", "rd_sk_x", "hf_token"])
     result = run_connect_wizard(prompt=lambda _m: next(answers), include_hf=True)
     assert result["provider"] == "rodium"

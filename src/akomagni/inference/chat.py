@@ -14,6 +14,7 @@ from akomagni.core.router.swap import (
 )
 from akomagni.flow.intent import RouteDecision
 from akomagni.inference.client import (
+    ImageArtifact,
     InferenceStatus,
     chat_completion,
     check_health,
@@ -79,8 +80,12 @@ def try_chat_with_inference(
     model: str | None = None,
     auto_swap: bool = False,
     rag_context: str = "",
-) -> str | None:
-    """Call /v1/chat/completions when the configured provider is online."""
+) -> str | ImageArtifact | None:
+    """Call inference when the configured provider is online.
+
+    For cloud image domains, returns an :class:`ImageArtifact` so the CLI can
+    ask where to save the file. Text/chat still returns a string reply.
+    """
     cfg = load_config()
     endpoint = resolve_inference_endpoint(cfg)
     plan = plan_inference_chat(message, host=host, port=port, config=cfg)
@@ -118,7 +123,6 @@ def try_chat_with_inference(
         plan = plan_inference_chat(message, host=host, port=port, status=status, config=cfg)
 
     model_id = model or plan.model_id or (status.models[0] if status.models else None)
-    # Cloud: use domain-mapped catalogue id. Listed smart profiles can still 404.
     if not endpoint.is_local:
         model_id = model or plan.model_id
         if not model_id and status.models:
@@ -133,9 +137,9 @@ def try_chat_with_inference(
         from akomagni.inference.endpoint import cloud_model_for_domain
         from akomagni.inference.rodium_router import image_model_candidates
 
-        primary = model_id or cloud_model_for_domain("image", config=cfg)
+        primary = model_id or cloud_model_for_domain("image", config=cfg, message=message)
         errors: list[str] = []
-        for image_model in image_model_candidates(primary):
+        for image_model in image_model_candidates(primary, message=message):
             try:
                 return image_generation(
                     message,

@@ -61,9 +61,13 @@
           <li>Code → <code>rodiumai/smart</code> or strong coding models (Sonnet, Codex, DeepSeek)</li>
           <li>Design / creative → mid-tier (e.g. <code>anthropic/claude-haiku-*</code>)</li>
           <li>
-            Image / poster → URL-first OpenAI image models
-            (<code>openai/gpt-image-1-mini</code>, <code>gpt-image-1.5</code>, …), then Gemini
-            Nano Banana family; base64 responses are saved as PNG under your Akomagni data dir
+            Image / poster → quality-first multi-vendor models (Gemini Nano Banana Pro / Flash
+            Image, then OpenAI gpt-image). After generation the CLI asks where to save the PNG in
+            your project folder.
+          </li>
+          <li>
+            Pick models: <code>Auto</code> (by task) or pin Claude / Gemini / GPT / DeepSeek from
+            the live catalogue — in CLI press Space or type <code>/model</code>
           </li>
           <li>Any catalogue id works: Google, Anthropic, OpenAI, DeepSeek, … via one API key</li>
           <li>Live pricing from <code>GET /v1/models</code> prefers lower RODI when online</li>

@@ -36,16 +36,16 @@ def test_resolve_rodium_endpoint(monkeypatch):
 def test_cloud_model_for_domain_rodium():
     cfg = apply_provider_preset({"version": 1}, "rodium")
     # Avoid live catalogue flakiness in unit tests.
-    with patch("akomagni.inference.endpoint.resolve_rodium_model") as mocked:
+    with patch("akomagni.inference.model_picker.resolve_session_cloud_model") as mocked:
         mocked.side_effect = lambda domain, **kwargs: {
             "code": "rodiumai/smart",
             "text": "google/gemini-3.1-flash-lite-preview",
-            "image": "openai/gpt-image-1-mini",
+            "image": "google/gemini-3-pro-image",
             "design": "anthropic/claude-haiku-4-5-20251001",
         }[domain]
         assert cloud_model_for_domain("code", config=cfg) == "rodiumai/smart"
         assert cloud_model_for_domain("text", config=cfg) == "google/gemini-3.1-flash-lite-preview"
-        assert cloud_model_for_domain("image", config=cfg) == "openai/gpt-image-1-mini"
+        assert cloud_model_for_domain("image", config=cfg) == "google/gemini-3-pro-image"
 
 
 def test_sanitize_legacy_rodium_basic():
