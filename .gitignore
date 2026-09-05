@@ -28,3 +28,7 @@ Thumbs.db
 .env.*
 *.pem
 credentials.json
+
+# BMAD kernel runtime (never ship sessions)
+bmad-core/.akomagni/
+
