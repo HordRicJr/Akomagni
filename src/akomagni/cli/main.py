@@ -479,6 +479,10 @@ def run_cli(
             if rag_context:
                 console.print("[dim]RAG context injected[/]")
         if invoke:
+            from akomagni.skills.invoke import (
+                build_skill_cli_guidance,
+                prefers_session_over_free_chat,
+            )
             from akomagni.skills.link import ensure_skills_linked
 
             ensure_skills_linked()
@@ -502,41 +506,26 @@ def run_cli(
             else:
                 console.print(
                     "[yellow]Skill not found on disk. "
-                    "Run: akomagni skill link   (or open a BMAD project).[/]"
+                    "Run: akomagni update   (BMAD kernel ships with install).[/]"
                 )
             if auto_exec and result.run_result is not None:
                 if result.run_result.success:
                     console.print(f"[green]Workflow rendered:[/] {result.run_result.workflow_path}")
                 else:
                     console.print(f"[yellow]Skill exec failed:[/] {result.run_result.error}")
-                    if result.project_root:
-                        console.print(
-                            f"[dim]BMAD root:[/] {result.project_root}  ·  "
-                            "retry with [cyan]akomagni run cli --project <bmad-root>[/]"
-                        )
-                    else:
-                        console.print(
-                            "[dim]Tip:[/] link your BMAD skills folder, then run from that workspace:\n"
-                            "  [cyan]akomagni skill link path/to/.agents/skills[/]\n"
-                            "  [cyan]akomagni run cli --project path/to/bmad-workspace[/]"
-                        )
-            from akomagni.skills.invoke import prefers_session_over_free_chat
-
-            session_mode = prefers_session_over_free_chat(decision.skill)
-            if session_mode:
-                console.print(
-                    "[dim]Open the session in Cursor and follow the skill — "
-                    "the CLI does not invent project files in free chat.[/]"
-                )
+            skill_guidance = build_skill_cli_guidance(result.skill, result.run_result)
+            if prefers_session_over_free_chat(decision.skill) and result.skill:
+                console.print("[dim]Running skill in CLI…[/]")
         else:
             decision = route_message(message)
             console.print(
                 f"[dim]{decision.badge}[/] → `{decision.skill}` ({decision.confidence:.0%})"
             )
             console.print(decision.hint)
-            session_mode = False
+            skill_guidance = ""
 
-        allow_free_chat = (not invoke) or decision.skill in {"chat", "image-pipeline"}
+        # CLI always continues with the model (BMAD skills included — no IDE handoff).
+        allow_free_chat = True
         if inference and inference_online and allow_free_chat:
             chat_plan = plan_inference_chat(message, host=host, port=port)
             domain = chat_plan.domain_plan.classification.domain
@@ -553,6 +542,7 @@ def run_cli(
                     model=model_override,
                     auto_swap=auto_swap,
                     rag_context=rag_context,
+                    skill_guidance=skill_guidance if invoke else "",
                 )
             except InferenceClientError as exc:
                 console.print(f"[yellow]{_t('run.inference_failed')}[/] {exc}")

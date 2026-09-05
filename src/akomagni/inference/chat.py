@@ -30,15 +30,24 @@ class InferenceChatPlan:
     model_id: str | None
 
 
-def build_flow_system_prompt(decision: RouteDecision, *, rag_context: str = "") -> str:
-    """Build a system prompt from the Flow routing decision."""
+def build_flow_system_prompt(
+    decision: RouteDecision,
+    *,
+    rag_context: str = "",
+    skill_guidance: str = "",
+) -> str:
+    """Build a system prompt from the Flow routing decision (+ optional skill)."""
     lines = [
         f"You are the Akomagni agent `{decision.agent_id}` using skill `{decision.skill}`.",
         f"Context: {decision.hint}",
+        "You are running inside the Akomagni CLI — complete the skill workflow here in chat.",
+        "Collaborate step by step. Do not dump an entire codebase in one reply.",
+        "Answer in the user's language.",
     ]
+    if skill_guidance.strip():
+        lines.extend(["", "## Active skill guidance", "", skill_guidance.strip()])
     if rag_context.strip():
         lines.extend(["", rag_context.strip()])
-    lines.append("Answer concisely in the user's language.")
     return "\n".join(lines)
 
 
@@ -80,6 +89,7 @@ def try_chat_with_inference(
     model: str | None = None,
     auto_swap: bool = False,
     rag_context: str = "",
+    skill_guidance: str = "",
 ) -> str | ImageArtifact | None:
     """Call inference when the configured provider is online.
 
@@ -165,5 +175,9 @@ def try_chat_with_inference(
         base_url=None if endpoint.is_local else endpoint.base_url,
         api_key=endpoint.api_key,
         model=model_id,
-        system_prompt=build_flow_system_prompt(decision, rag_context=rag_context),
+        system_prompt=build_flow_system_prompt(
+            decision,
+            rag_context=rag_context,
+            skill_guidance=skill_guidance,
+        ),
     )
