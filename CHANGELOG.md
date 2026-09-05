@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Site design**: light, minimal product UI inspired by clean workstation sites (Ollama-like typography and install-first home)
 - **Install guide**: shorter path — install → connect → skill link → run
 - **Image routing**: quality-first multi-vendor models (Gemini Pro/Flash Image + OpenAI gpt-image); CLI asks where to save the PNG after generation
+- **Image save on Windows**: chunked writes + data-URL base64 cleanup so large Gemini PNGs no longer fail with Errno 22
 - **Rodium model picker**: Auto (by task) or pin any catalogue model — Space / `/model` opens the list in CLI; asked during `akomagni connect`
 - **Rodium catalogue defaults**: align economy/balanced/coding/strong static candidates with current multi-provider model ids
 - **Docs / README / site**: product vision (skills, agents, Flow, Auto Router, hybrid, memory); CLI language English by default

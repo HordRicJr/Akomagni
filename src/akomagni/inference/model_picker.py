@@ -208,30 +208,32 @@ def interactive_pick_model(
     current = pinned_model(cfg) if cloud_model_mode(cfg) == "pinned" else AUTO_VALUE
     default = current if any(v == current for v, _ in options) else AUTO_VALUE
 
-    try:
-        import questionary
-        from questionary import Choice
-    except ImportError:  # pragma: no cover - optional UI dep always installed in prod
-        questionary = None  # type: ignore[assignment]
-    else:  # pragma: no cover - requires interactive TTY
-        q_choices = [Choice(title=label, value=value) for value, label in options]
+    # Prefer questionary dropdown only when no custom prompt (TTY interactive).
+    if prompt is None:
         try:
-            result = questionary.select(
-                "Rodium model  (↑↓ move · Space/Enter confirm)",
-                choices=q_choices,
-                default=default,
-                qmark="✦",
-                pointer="›",
-            ).ask()
-        except (KeyboardInterrupt, EOFError, OSError, RuntimeError):
-            result = None
-        if result:
-            apply_model_choice(str(result), config=cfg)
-            return str(result)
-        if result is None and prompt is None:
-            return default
+            import questionary
+            from questionary import Choice
+        except ImportError:  # pragma: no cover
+            questionary = None  # type: ignore[assignment]
+        else:  # pragma: no cover - requires interactive TTY
+            q_choices = [Choice(title=label, value=value) for value, label in options]
+            try:
+                result = questionary.select(
+                    "Rodium model  (↑↓ move · Space/Enter confirm)",
+                    choices=q_choices,
+                    default=default,
+                    qmark="✦",
+                    pointer="›",
+                ).ask()
+            except Exception:  # noqa: BLE001 — console/TTY failures fall back
+                result = None
+            if result:
+                apply_model_choice(str(result), config=cfg)
+                return str(result)
+            if result is None:
+                return default
 
-    # Numbered fallback (CI / non-TTY).
+    # Numbered fallback (CI / non-TTY / custom prompt).
     ask = prompt or input
     print("Rodium models:")
     for idx, (value, label) in enumerate(options[:40], start=1):

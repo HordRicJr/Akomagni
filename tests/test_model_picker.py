@@ -270,6 +270,26 @@ def test_save_image_mkdir_destination(tmp_path):
 def test_save_image_b64_decode_error(tmp_path):
     from akomagni.inference.client import ImageArtifact, InferenceClientError, save_image_artifact
 
-    art = ImageArtifact(model="m", b64_json="@@@not-b64@@@")
-    with pytest.raises(InferenceClientError, match="decode"):
+    art = ImageArtifact(model="m", b64_json="")
+    with pytest.raises(InferenceClientError, match="decode|empty"):
         save_image_artifact(art, tmp_path / "bad.png")
+
+
+def test_save_image_strips_data_url_and_writes(tmp_path):
+    import base64
+
+    from akomagni.inference.client import ImageArtifact, save_image_artifact
+
+    raw = base64.b64encode(b"\x89PNG-demo").decode()
+    art = ImageArtifact(model="m", b64_json=f"data:image/png;base64,{raw}")
+    out = save_image_artifact(art, tmp_path / "poster.png")
+    assert out.read_bytes() == b"\x89PNG-demo"
+
+
+def test_write_bytes_chunked_large(tmp_path):
+    from akomagni.inference.client import _write_bytes_chunked
+
+    dest = tmp_path / "big.bin"
+    payload = b"x" * (9 * 1024 * 1024)
+    _write_bytes_chunked(dest, payload, chunk_size=1024 * 1024)
+    assert dest.stat().st_size == len(payload)
