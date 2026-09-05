@@ -503,9 +503,9 @@ def run_cli(
                         )
                     else:
                         console.print(
-                            "[dim]Tip:[/] link skills + BMAD root: "
-                            "[cyan]akomagni skill link D:\\Money\\.agents\\skills[/] "
-                            "then [cyan]akomagni run cli --project D:\\Money[/]"
+                            "[dim]Tip:[/] link your BMAD skills folder, then run from that workspace:\n"
+                            "  [cyan]akomagni skill link path/to/.agents/skills[/]\n"
+                            "  [cyan]akomagni run cli --project path/to/bmad-workspace[/]"
                         )
             from akomagni.skills.invoke import prefers_session_over_free_chat
 
@@ -897,7 +897,9 @@ def skill_link(
             if not guesses:
                 console.print(
                     "[yellow]No BMAD skills found nearby.[/]\n"
-                    "Pass a folder: akomagni skill link D:\\Money\\.agent\\skills"
+                    "Pass your BMAD skills folder, for example:\n"
+                    "  akomagni skill link path/to/.agents/skills\n"
+                    "or open a BMAD project and run: akomagni skill link"
                 )
                 raise typer.Exit(code=1)
             for guess in guesses:

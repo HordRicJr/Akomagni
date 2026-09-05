@@ -87,12 +87,12 @@ def test_resolve_bmad_root_from_nested_skill(tmp_path):
 def test_resolve_bmad_root_uses_configured(tmp_path, monkeypatch):
     from akomagni.core import project as proj
 
-    money = tmp_path / "Money"
-    (money / "_bmad").mkdir(parents=True)
-    monkeypatch.setattr(proj, "configured_bmad_root", lambda: money.resolve())
+    workspace = tmp_path / "workspace"
+    (workspace / "_bmad").mkdir(parents=True)
+    monkeypatch.setattr(proj, "configured_bmad_root", lambda: workspace.resolve())
     monkeypatch.setattr(proj, "find_project_root", lambda start=None: None)
     monkeypatch.chdir(tmp_path)
-    assert proj.resolve_bmad_project_root() == money.resolve()
+    assert proj.resolve_bmad_project_root() == workspace.resolve()
 
 
 def test_render_skill_script_and_configured_root(tmp_path, monkeypatch):
