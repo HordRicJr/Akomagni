@@ -872,7 +872,7 @@ def skill_list(
     if not skills:
         console.print(
             f"[yellow]{_t('skill.none_found')}[/] "
-            "Run: akomagni skill link   or install BMAD skills."
+            "Run: akomagni update   (BMAD kernel ships with install)."
         )
         raise typer.Exit(code=1)
     for skill_id in sorted(skills):
