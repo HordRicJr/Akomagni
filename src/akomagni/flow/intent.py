@@ -28,9 +28,16 @@ DESIGN_PATTERNS = re.compile(
 )
 ARCH_PATTERNS = re.compile(r"\b(architect|architecture|infra|scalabilité)\b", re.IGNORECASE)
 PRD_PATTERNS = re.compile(r"\b(prd|spec|epic|story|backlog|requirements)\b", re.IGNORECASE)
-DEV_PATTERNS = re.compile(r"\b(implémente|code|bug|fix|refactor|api|commit)\b", re.IGNORECASE)
+DEV_PATTERNS = re.compile(
+    r"\b(implémente|implement|code|bug|fix|refactor|api|commit)\b",
+    re.IGNORECASE,
+)
 BRAINSTORM_PATTERNS = re.compile(
-    r"\b(idée|brainstorm|créer un|nouveau projet|pivot|comment faire)\b",
+    r"\b("
+    r"idée|idee|brainstorm(?:ing)?|brainstorms|"
+    r"créer un|creer un|create a|build a|build an|"
+    r"nouveau projet|new project|pivot|comment faire|how (?:do|can|should) i"
+    r")\b",
     re.IGNORECASE,
 )
 INNOVATION_PATTERNS = re.compile(

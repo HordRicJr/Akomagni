@@ -438,6 +438,9 @@ def run_cli(
             if rag_context:
                 console.print("[dim]RAG context injected[/]")
         if invoke:
+            from akomagni.skills.link import ensure_skills_linked
+
+            ensure_skills_linked()
             result = invoke_skill(
                 message,
                 execute=auto_exec,
@@ -450,9 +453,15 @@ def run_cli(
             console.print(f"[green]Session:[/] {result.session_path}")
             if result.skill:
                 console.print(f"[dim]Skill path:[/] {result.skill.path}")
+            elif decision.skill in {"chat", "image-pipeline"}:
+                console.print(
+                    "[dim]Free chat mode (no BMAD skill). "
+                    "Try: brainstorm, build an app, PRD, or implement …[/dim]"
+                )
             else:
                 console.print(
-                    "[yellow]Skill not found on disk — run from a BMAD project or link skills.[/]"
+                    "[yellow]Skill not found on disk. "
+                    "Run: akomagni skill link   (or open a BMAD project).[/]"
                 )
             if auto_exec and result.run_result is not None:
                 if result.run_result.success:
@@ -765,10 +774,14 @@ def skill_list(
     filter_text: str | None = typer.Option(None, "--filter", "-f", help="Filter by name."),
 ) -> None:
     """List discovered BMAD skills."""
+    from akomagni.skills.link import ensure_skills_linked
+
+    ensure_skills_linked()
     skills = discover_skills()
     if not skills:
         console.print(
-            f"[yellow]{_t('skill.none_found')}[/] Install BMAD or link skills to ~/.akomagni/skills/"
+            f"[yellow]{_t('skill.none_found')}[/] "
+            "Run: akomagni skill link   or install BMAD skills."
         )
         raise typer.Exit(code=1)
     for skill_id in sorted(skills):
@@ -782,11 +795,51 @@ def skill_list(
         console.print(f"  [dim]{info.path}[/]")
 
 
+@skill_app.command("link")
+def skill_link(
+    source: str | None = typer.Argument(
+        None,
+        help="Skill folder (contains bmad-*/SKILL.md). Auto-detect if omitted.",
+    ),
+) -> None:
+    """Register BMAD skills so Flow works outside the install tree."""
+    from akomagni.skills.link import (
+        discover_skill_sources,
+        ensure_skills_linked,
+        register_skill_root,
+    )
+
+    if source:
+        path = register_skill_root(Path(source))
+        console.print(f"[green]Linked skills from[/] {path}")
+    else:
+        linked = ensure_skills_linked()
+        if not linked:
+            guesses = discover_skill_sources()
+            if not guesses:
+                console.print(
+                    "[yellow]No BMAD skills found nearby.[/]\n"
+                    "Pass a folder: akomagni skill link D:\\Money\\.agent\\skills"
+                )
+                raise typer.Exit(code=1)
+            for guess in guesses:
+                register_skill_root(guess)
+                console.print(f"[green]Linked skills from[/] {guess}")
+        else:
+            for path in linked:
+                console.print(f"[green]Skills available:[/] {path}")
+    count = len(discover_skills())
+    console.print(f"[dim]{count} skills discoverable[/]")
+
+
 @skill_app.command("path")
 def skill_path(
     skill_id: str = typer.Argument(..., help="Skill id, e.g. bmad-brainstorming"),
 ) -> None:
     """Print the filesystem path for a skill."""
+    from akomagni.skills.link import ensure_skills_linked
+
+    ensure_skills_linked()
     info = find_skill(skill_id)
     if not info:
         console.print(f"[red]{_t('skill.not_found')}:[/] {skill_id}")

@@ -32,6 +32,11 @@ def test_classify_greenfield_brainstorm():
     assert decision.greenfield is True
 
 
+def test_classify_english_build_app():
+    decision = classify_message("I want to build a budget app")
+    assert decision.skill == "bmad-brainstorming"
+
+
 def test_classify_creative_brainstorm():
     decision = classify_message("brainstorm créatif wild", greenfield=True)
     assert decision.agent_id == "bmad-cis-agent-brainstorming-coach"

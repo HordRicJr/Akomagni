@@ -55,10 +55,19 @@ def resolve_model_path(
         if candidate.is_file() and candidate.suffix.lower() == ".gguf":
             return candidate
         by_name = models_dir / model
-        if by_name.is_file():
+        if by_name.is_file() and by_name.suffix.lower() == ".gguf":
             return by_name
+        if by_name.is_dir():
+            nested = sorted(by_name.glob("*.gguf"))
+            if nested:
+                return nested[0]
+        needle = model.lower()
         for path in list_local_models(models_dir):
-            if path.name == model or path.stem.lower() == model.lower():
+            if path.name == model or path.stem.lower() == needle:
+                return path
+            if path.parent.name.lower() == needle:
+                return path
+            if needle in path.stem.lower() or needle in path.parent.name.lower():
                 return path
     local = list_local_models(models_dir)
     return local[0] if local else None

@@ -43,14 +43,25 @@ def resolve_workspace_root(
 def skill_search_roots(project_root: Path | None = None) -> list[Path]:
     """Directories to scan for installed BMAD skill folders."""
     from akomagni.core.config import SKILLS_DIR
+    from akomagni.skills.link import extra_skill_roots
 
     roots: list[Path] = []
+    seen: set[Path] = set()
+
+    def _add(path: Path) -> None:
+        resolved = path.resolve()
+        if resolved.is_dir() and resolved not in seen:
+            seen.add(resolved)
+            roots.append(resolved)
+
     if SKILLS_DIR.is_dir():
-        roots.append(SKILLS_DIR)
+        _add(SKILLS_DIR)
+    for extra in extra_skill_roots():
+        _add(extra)
     root = project_root or find_project_root()
     if root:
         for rel in SKILL_DIR_NAMES:
             candidate = root / rel
             if candidate.is_dir():
-                roots.append(candidate)
+                _add(candidate)
     return roots
