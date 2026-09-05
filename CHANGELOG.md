@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Site design**: light, minimal product UI inspired by clean workstation sites (Ollama-like typography and install-first home)
+- **Site design**: high-contrast readable UI (Syne + Source Sans 3, teal accent, cool mist background); brand-first hero and clearer section rhythm on GitHub Pages
 - **Install guide**: shorter path — install → connect → skill link → run
 - **Image routing**: quality-first multi-vendor models (Gemini Pro/Flash Image + OpenAI gpt-image); CLI asks where to save the PNG after generation
 - **Image save on Windows**: chunked writes + data-URL base64 cleanup so large Gemini PNGs no longer fail with Errno 22
