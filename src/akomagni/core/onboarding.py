@@ -120,6 +120,12 @@ def run_connect_wizard(*, prompt: PromptFn, include_hf: bool = True) -> dict[str
 
     mark_provider_ready(provider if provider != "azure" else "foundry")
     result["provider"] = "foundry" if provider == "azure" else provider
+    try:
+        from akomagni.skills.link import ensure_skills_linked
+
+        ensure_skills_linked()
+    except OSError:
+        pass
     return result
 
 
@@ -160,6 +166,12 @@ def run_session_setup(
     root = Path(project_input.strip() or str(Path.cwd()))
     created = not (root / ".akomagni").is_dir()
     scaffold_project(root)
+    try:
+        from akomagni.skills.link import ensure_skills_linked
+
+        ensure_skills_linked(root)
+    except OSError:
+        pass
 
     provider_name = chosen or str((load_config().get("inference") or {}).get("provider", "local"))
     if provider_name == "azure":

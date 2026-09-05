@@ -69,6 +69,7 @@ Full guide: [hordricjr.github.io/Akomagni/install/](https://hordricjr.github.io/
 ```bash
 akomagni doctor                    # Scan hardware + recommend profile
 akomagni connect                   # One wizard: local / Rodium / Foundry + Hugging Face token
+akomagni skill link                # Register BMAD skills (auto-detect or pass a folder)
 akomagni run cli --project ./app   # Chat + Flow; pick provider on first session
 akomagni config init               # Create ~/.akomagni/config.yaml
 akomagni update                    # Pull latest + reinstall CLI

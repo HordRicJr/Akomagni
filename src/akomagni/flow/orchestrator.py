@@ -20,13 +20,26 @@ def _is_greenfield(message: str) -> bool:
     lowered = message.lower()
     signals = (
         "idée",
+        "idee",
         "créer",
+        "creer",
+        "create",
+        "build a",
+        "build an",
         "nouveau",
+        "new project",
         "pivot",
         "comment faire",
+        "how do i",
+        "how can i",
+        "i want",
         "je veux",
         "une app",
+        "an app",
+        "a app",
         "un projet",
+        "a project",
+        "brainstorm",
     )
     return any(s in lowered for s in signals)
 

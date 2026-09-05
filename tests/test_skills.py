@@ -19,6 +19,11 @@ def test_invoke_writes_session(tmp_path, monkeypatch):
 
 
 def test_discover_skills_empty_without_bmad(tmp_path, monkeypatch):
+    home = tmp_path / "akomagni-home"
+    home.mkdir()
+    monkeypatch.setattr("akomagni.core.config.DATA_DIR", home)
+    monkeypatch.setattr("akomagni.core.config.CONFIG_PATH", home / "config.yaml")
+    monkeypatch.setattr("akomagni.core.config.SKILLS_DIR", home / "skills")
     monkeypatch.chdir(tmp_path)
     assert discover_skills() == {}
 
