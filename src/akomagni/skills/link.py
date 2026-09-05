@@ -95,6 +95,12 @@ def register_skill_root(source: Path) -> Path:
     if key not in roots:
         roots.append(key)
     block["extra_roots"] = roots
+    # Remember the BMAD checkout so render_skill.py works outside that tree.
+    from akomagni.core.project import find_project_root
+
+    bmad = find_project_root(resolved)
+    if bmad is not None:
+        block["bmad_project_root"] = str(bmad)
     cfg["skills"] = block
     save_config(cfg)
 

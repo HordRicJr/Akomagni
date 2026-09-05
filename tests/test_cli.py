@@ -340,7 +340,7 @@ def test_run_cli_invoke(tmp_path, monkeypatch, akomagni_home):
 def test_run_cli_with_inference(tmp_path, monkeypatch, akomagni_home):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
-    messages = iter(["implement auth", ""])
+    messages = iter(["hello there", ""])
 
     def fake_input(_):
         try:
@@ -362,6 +362,34 @@ def test_run_cli_with_inference(tmp_path, monkeypatch, akomagni_home):
     assert result.exit_code == 0
     assert "Use JWT." in result.stdout
     assert "Inference online" in result.stdout
+
+
+def test_run_cli_skips_free_chat_for_build_skill(tmp_path, monkeypatch, akomagni_home):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
+    messages = iter(["implement auth", ""])
+
+    def fake_input(_):
+        try:
+            return next(messages)
+        except StopIteration:
+            raise EOFError
+
+    with (
+        patch("akomagni.cli.main.check_health_from_config") as mock_health,
+        patch("akomagni.cli.main.try_chat_with_inference", return_value="should not appear") as mock_chat,
+        patch("akomagni.cli.main.console.input", side_effect=fake_input),
+    ):
+        mock_health.return_value = type(
+            "S",
+            (),
+            {"online": True, "base_url": "http://127.0.0.1:8787/v1"},
+        )()
+        result = runner.invoke(app, ["run", "cli", "--no-setup"])
+    assert result.exit_code == 0
+    assert "should not appear" not in result.stdout
+    assert "does not invent" in result.stdout
+    mock_chat.assert_not_called()
 
 
 def test_main_module():

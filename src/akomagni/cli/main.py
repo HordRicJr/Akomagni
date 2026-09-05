@@ -496,14 +496,35 @@ def run_cli(
                     console.print(f"[green]Workflow rendered:[/] {result.run_result.workflow_path}")
                 else:
                     console.print(f"[yellow]Skill exec failed:[/] {result.run_result.error}")
+                    if result.project_root:
+                        console.print(
+                            f"[dim]BMAD root:[/] {result.project_root}  ·  "
+                            "retry with [cyan]akomagni run cli --project <bmad-root>[/]"
+                        )
+                    else:
+                        console.print(
+                            "[dim]Tip:[/] link skills + BMAD root: "
+                            "[cyan]akomagni skill link D:\\Money\\.agents\\skills[/] "
+                            "then [cyan]akomagni run cli --project D:\\Money[/]"
+                        )
+            from akomagni.skills.invoke import prefers_session_over_free_chat
+
+            session_mode = prefers_session_over_free_chat(decision.skill)
+            if session_mode:
+                console.print(
+                    "[dim]Open the session in Cursor and follow the skill — "
+                    "the CLI does not invent project files in free chat.[/]"
+                )
         else:
             decision = route_message(message)
             console.print(
                 f"[dim]{decision.badge}[/] → `{decision.skill}` ({decision.confidence:.0%})"
             )
             console.print(decision.hint)
+            session_mode = False
 
-        if inference and inference_online:
+        allow_free_chat = (not invoke) or decision.skill in {"chat", "image-pipeline"}
+        if inference and inference_online and allow_free_chat:
             chat_plan = plan_inference_chat(message, host=host, port=port)
             domain = chat_plan.domain_plan.classification.domain
             catalog = chat_plan.domain_plan.catalog_name or "n/a"

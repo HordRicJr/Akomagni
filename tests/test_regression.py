@@ -73,6 +73,7 @@ def test_regression_flow_routes_dev(tmp_path, monkeypatch):
 
 def test_regression_flow_invoke_writes_session_and_state(akomagni_home, monkeypatch):
     monkeypatch.setattr("akomagni.skills.invoke.find_project_root", lambda *_: None)
+    monkeypatch.setattr("akomagni.skills.invoke.resolve_bmad_project_root", lambda *a, **k: None)
 
     result = invoke_skill("implement the login API with JWT")
     assert result.session_path.is_file()
