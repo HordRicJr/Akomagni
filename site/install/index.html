@@ -6,7 +6,7 @@
     <title>Install — Akomagni</title>
     <meta
       name="description"
-      content="Install Akomagni in one command — Linux, macOS, and Windows. Local AI workstation, fully offline."
+      content="Install Akomagni in one command. Hybrid AI workstation: local GGUF, Rodium, or Foundry. Connect, link skills, and run Flow."
     />
     <meta name="theme-color" content="#0B3D2E" />
     <link rel="icon" href="../assets/logo.png" type="image/png" />
@@ -42,7 +42,8 @@
         <p class="breadcrumb"><a href="../">Home</a> / Install</p>
         <h1>Install Akomagni</h1>
         <p class="lead">
-          One command to set up your local AI workstation. Python 3.11+, git, and 8 GB RAM minimum.
+          One command, then <code>akomagni connect</code>. Local GGUF, Rodium AI, or Microsoft Foundry.
+          Python 3.11+, git, and 8 GB RAM minimum.
         </p>
       </div>
     </section>
@@ -68,6 +69,15 @@
           <li>✦ Adds <code>~/.local/bin</code> to your shell profile</li>
           <li>✦ Runs smoke test (<code>akomagni --version</code>, <code>doctor</code>)</li>
         </ul>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>After install</span>
+            <button class="copy-btn" type="button" data-copy="cmd-linux-after">Copy</button>
+          </div>
+          <pre id="cmd-linux-after">akomagni connect
+akomagni skill link
+akomagni run cli --project ./my-app</pre>
+        </div>
       </div>
 
       <div class="platform-panel" data-platform-panel="windows">
@@ -100,15 +110,16 @@ winget install Git.Git</pre>
         <h3 class="panel-subtitle">Step 3 — Restart terminal</h3>
         <p class="cat-desc">Close and reopen PowerShell so PATH picks up <code>%USERPROFILE%\.local\bin</code>.</p>
 
-        <h3 class="panel-subtitle">Step 4 — Verify</h3>
+        <h3 class="panel-subtitle">Step 4 — Verify &amp; connect</h3>
         <div class="copy-block">
           <div class="copy-block-header">
-            <span>Smoke test</span>
+            <span>Smoke test + provider</span>
             <button class="copy-btn" type="button" data-copy="cmd-win-verify">Copy</button>
           </div>
           <pre id="cmd-win-verify">akomagni --version
 akomagni config init
-akomagni doctor</pre>
+akomagni doctor
+akomagni connect</pre>
         </div>
 
         <ul class="req-list">
@@ -118,8 +129,8 @@ akomagni doctor</pre>
           <li>✦ Virtualenv at <code>%LOCALAPPDATA%\akomagni\.venv</code></li>
         </ul>
 
-        <h3 class="panel-subtitle">Windows bootstrap (full setup)</h3>
-        <p class="cat-desc">After install — models, inference, and first Flow route (~5 min).</p>
+        <h3 class="panel-subtitle">Windows bootstrap (recommended)</h3>
+        <p class="cat-desc">Connect a provider, link skills, open a project. Optional local GGUF if you stay offline.</p>
         <div class="copy-block">
           <div class="copy-block-header">
             <span>PowerShell checklist</span>
@@ -127,12 +138,14 @@ akomagni doctor</pre>
           </div>
           <pre id="cmd-bootstrap-win">akomagni config init
 akomagni doctor
-akomagni config extras inference
-akomagni model recommend
-akomagni model pull qwen2.5-coder-7b
-akomagni serve --model qwen2.5-coder-7b
-akomagni inference status
-akomagni flow route "je veux créer une app de budget"</pre>
+akomagni connect
+akomagni skill link
+akomagni run cli --project ./my-app
+
+# Optional local inference:
+# akomagni config extras inference
+# akomagni model pull qwen2.5-coder-7b
+# akomagni serve --model qwen2.5-coder-7b</pre>
         </div>
       </div>
 
@@ -149,7 +162,9 @@ python -m venv .venv
 # Linux/macOS: source .venv/bin/activate
 pip install -e ".[dev]"
 akomagni config init
-akomagni doctor</pre>
+akomagni doctor
+akomagni connect
+akomagni skill link</pre>
         </div>
       </div>
 
@@ -161,24 +176,24 @@ akomagni doctor</pre>
         </div>
         <div class="step-card">
           <div class="step-num">2</div>
-          <h3>Initialize config</h3>
-          <p><code>akomagni config init</code> creates <code>~/.akomagni/config.yaml</code>.</p>
+          <h3>Connect a provider</h3>
+          <p><code>akomagni connect</code> picks local GGUF, Rodium, or Foundry (and optional Hugging Face token).</p>
         </div>
         <div class="step-card">
           <div class="step-num">3</div>
-          <h3>Install tools</h3>
-          <p>Pull models, enable BMAD skills, and optional agent packs from the <a href="../tools/">Tools hub</a>.</p>
+          <h3>Link skills</h3>
+          <p><code>akomagni skill link</code> registers BMAD skills so Flow routes outside the install tree.</p>
         </div>
         <div class="step-card">
           <div class="step-num">4</div>
           <h3>Start working</h3>
-          <p><code>akomagni run cli</code> or <code>akomagni flow route "your task"</code>.</p>
+          <p><code>akomagni run cli --project ./app</code> or <code>akomagni flow route "your task"</code>.</p>
         </div>
       </div>
 
       <div class="tools-category" style="margin-top: 3rem">
         <h2>First-run checklist (copy &amp; paste)</h2>
-        <p class="cat-desc">Complete setup in ~5 minutes after install.</p>
+        <p class="cat-desc">Hybrid setup in a few minutes. Rodium Auto Router picks economical catalogue models by task (Google / Anthropic / OpenAI / <code>rodiumai/smart</code>).</p>
         <div class="copy-block">
           <div class="copy-block-header">
             <span>Full bootstrap</span>
@@ -186,32 +201,42 @@ akomagni doctor</pre>
           </div>
           <pre id="cmd-bootstrap">akomagni config init
 akomagni doctor
+akomagni connect
+akomagni skill link
+akomagni run cli --project ./my-app
+
+# Optional: local GGUF offline
 akomagni config extras inference
 akomagni model recommend
 akomagni model pull qwen2.5-coder-7b
+# or any Hub file: akomagni model pull owner/repo:file.gguf
 akomagni serve --model qwen2.5-coder-7b
-akomagni inference status
-akomagni flow route "I want to build a budget app"</pre>
+akomagni inference status</pre>
         </div>
       </div>
 
       <div class="tools-category">
-        <h2>Optional: agent mode &amp; BMAD skills</h2>
-        <p class="cat-desc">Enable MCP tools and link BMAD skills for full Flow orchestration.</p>
+        <h2>Skills, agents &amp; routing</h2>
+        <p class="cat-desc">Enable MCP tools and BMAD skills for full Flow orchestration.</p>
         <div class="tool-grid">
+          <article class="tool-card">
+            <h3>Skill link</h3>
+            <p>Register BMAD skill folders (auto-detect known paths or pass a directory).</p>
+            <div class="tool-cmd">akomagni skill link</div>
+          </article>
           <article class="tool-card">
             <h3>Agent pack</h3>
             <p>Sandboxed fs, shell, git with approval queue.</p>
             <div class="tool-cmd">pip install "akomagni[agent]"</div>
           </article>
           <article class="tool-card">
-            <h3>BMAD skills</h3>
-            <p>Symlink skills into <code>~/.akomagni/skills/</code> or run inside a BMAD project.</p>
+            <h3>List skills</h3>
+            <p>Confirm Flow can see brainstorming, PRD, architecture, and more.</p>
             <div class="tool-cmd">akomagni skill list</div>
           </article>
           <article class="tool-card">
             <h3>Flow router (ML)</h3>
-            <p>Use local inference for smarter agent routing when online.</p>
+            <p>Use inference for smarter agent routing when a model is online.</p>
             <div class="tool-cmd">akomagni flow router-mode auto</div>
           </article>
         </div>
@@ -230,13 +255,14 @@ akomagni flow route "I want to build a budget app"</pre>
 
       <div class="tools-category">
         <h2>Update Akomagni</h2>
-        <p class="cat-desc">Pull the latest release and reinstall the CLI (keeps your config and models).</p>
+        <p class="cat-desc">Pull the latest release and reinstall the CLI (keeps your config and models). After update, run <code>akomagni connect</code> again if you use Rodium so the model map refreshes.</p>
         <div class="copy-block">
           <div class="copy-block-header">
             <span>Update command</span>
             <button class="copy-btn" type="button" data-copy="cmd-update">Copy</button>
           </div>
-          <pre id="cmd-update">akomagni update</pre>
+          <pre id="cmd-update">akomagni update
+akomagni connect</pre>
         </div>
         <p class="cat-desc">Or re-run the install one-liner — it also updates an existing install.</p>
       </div>
@@ -249,14 +275,15 @@ akomagni flow route "I want to build a budget app"</pre>
           <li><strong>Command not found after install</strong> — restart PowerShell/terminal. On Windows, check <code>%USERPROFILE%\.local\bin</code> is in your user PATH.</li>
           <li><strong>Execution policy blocked (Windows)</strong> — <code>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code> then retry the install command.</li>
           <li><strong>git not found (Windows)</strong> — <code>winget install Git.Git</code> and restart terminal.</li>
-          <li><strong>Inference offline</strong> — run <code>akomagni serve --model &lt;name&gt;</code> after pulling a model.</li>
-          <li><strong>No skills found</strong> — install BMAD or link skills; see <a href="../tools/">Tools hub</a>.</li>
+          <li><strong>Inference offline</strong> — for local: <code>akomagni serve --model &lt;name&gt;</code> after a pull. For cloud: <code>akomagni connect</code> and pick Rodium or Foundry.</li>
+          <li><strong>No skills found</strong> — run <code>akomagni skill link</code> (or pass a skills folder). On PowerShell: <code>akomagni skill list | Select-String bmad-</code>.</li>
+          <li><strong>Rodium chat 404</strong> — update, then <code>akomagni connect</code>. Akomagni uses provider-scoped catalogue ids, not empty profiles like <code>rodium/basic</code>.</li>
         </ul>
       </div>
 
       <div class="tools-category" style="margin-top: 2rem">
-        <h2>Next: install models &amp; skills</h2>
-        <p class="cat-desc">Browse the tools marketplace — GGUF models, BMAD skills, MCP agent tools, and optional packs.</p>
+        <h2>Next: models &amp; tools</h2>
+        <p class="cat-desc">Browse the tools marketplace — GGUF models, BMAD skills, MCP agent tools, and optional packs. See also the <a href="../models/">Models</a> page for Auto Router.</p>
         <a class="btn btn-primary" href="../tools/">Open Tools hub</a>
       </div>
 
@@ -279,9 +306,9 @@ irm https://hordricjr.github.io/Akomagni/install/windows | iex
 akomagni config init
 akomagni config language fr
 akomagni doctor
-akomagni config extras inference
-akomagni model pull qwen2.5-coder-7b
-akomagni flow route "je veux créer une app de budget"</pre>
+akomagni connect
+akomagni skill link
+akomagni run cli --project ./mon-app</pre>
         </div>
       </div>
     </section>
@@ -293,18 +320,18 @@ akomagni flow route "je veux créer une app de budget"</pre>
             <img class="brand-logo" src="../assets/logo.png" alt="" width="38" height="38" />
             Akomagni
           </a>
-          <p>Local AI workstation — install once, add tools as you need them.</p>
+          <p>Hybrid AI workstation — install once, connect local or cloud, add tools as you need them.</p>
         </div>
         <div class="footer-col">
           <h4>Get started</h4>
           <a href="../install/">Install</a>
           <a href="../tools/">Tools</a>
-          <a href="../code/">Modules</a>
+          <a href="../models/">Models</a>
         </div>
         <div class="footer-col">
           <h4>Resources</h4>
           <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
-          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+          <a href="https://github.com/HordRicJr/Akomagni/tree/main/docs">Documentation</a>
         </div>
       </div>
       <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
