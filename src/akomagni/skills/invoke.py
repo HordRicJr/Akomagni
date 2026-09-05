@@ -160,7 +160,9 @@ def invoke_skill(
     decision = route_message(message, project_root=preliminary_root)
     skill_id = skill_override or decision.skill
     skill = (
-        find_skill(skill_id, preliminary_root) if skill_id not in ("chat", "image-pipeline") else None
+        find_skill(skill_id, preliminary_root)
+        if skill_id not in ("chat", "image-pipeline")
+        else None
     )
     bmad_root = resolve_bmad_project_root(
         project_root,
