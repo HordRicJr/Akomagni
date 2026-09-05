@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "akomagni"
-version = "0.1.0"
+version = "0.3.0"
 description = "Poste de travail IA local — multi-métiers, BMAD, offline"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -89,5 +89,5 @@ target-version = "py311"
 quote-style = "double"
 
 [tool.bandit]
-exclude_dirs = ["tests"]
+exclude_dirs = ["tests", "bmad-core"]
 skips = ["B101", "B603", "B404"]

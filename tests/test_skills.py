@@ -24,8 +24,34 @@ def test_discover_skills_empty_without_bmad(tmp_path, monkeypatch):
     monkeypatch.setattr("akomagni.core.config.DATA_DIR", home)
     monkeypatch.setattr("akomagni.core.config.CONFIG_PATH", home / "config.yaml")
     monkeypatch.setattr("akomagni.core.config.SKILLS_DIR", home / "skills")
+    monkeypatch.setattr("akomagni.core.bmad_kernel.find_shipped_bmad_core", lambda: None)
+    monkeypatch.setattr("akomagni.core.bmad_kernel.ensure_bmad_kernel", lambda **_: None)
     monkeypatch.chdir(tmp_path)
     assert discover_skills() == {}
+
+
+def test_discover_skills_from_shipped_kernel(tmp_path, monkeypatch):
+    home = tmp_path / "akomagni-home"
+    home.mkdir()
+    kernel = tmp_path / "bmad-core"
+    (kernel / "_bmad").mkdir(parents=True)
+    skill = kernel / ".agents" / "skills" / "bmad-brainstorming"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "---\nname: bmad-brainstorming\ndescription: brainstorm\n---\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("akomagni.core.config.DATA_DIR", home)
+    monkeypatch.setattr("akomagni.core.config.CONFIG_PATH", home / "config.yaml")
+    monkeypatch.setattr("akomagni.core.config.SKILLS_DIR", home / "skills")
+    monkeypatch.setattr("akomagni.core.bmad_kernel.find_shipped_bmad_core", lambda: kernel)
+    monkeypatch.setattr(
+        "akomagni.core.bmad_kernel.ensure_bmad_kernel",
+        lambda **_: None,
+    )
+    monkeypatch.chdir(tmp_path)
+    skills = discover_skills()
+    assert "bmad-brainstorming" in skills
 
 
 @pytest.mark.skipif(

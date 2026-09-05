@@ -63,22 +63,45 @@ def resolve_bmad_project_root(
 ) -> Path | None:
     """Best BMAD root for skill execution / render_skill.py.
 
-    Prefer an explicit root, then the skill's ancestor tree, then cwd discovery,
-    then a linked workspace from config / known skill roots.
+    Prefer an explicit root, then an ambient project under *start*/cwd, then the
+    skill's ancestor tree (unless that tree is only the shipped kernel and a
+    real project is open), then config / kernel / linked roots.
     """
     if project_root is not None:
         return project_root.resolve()
-    # Prefer the skill's checkout so CLI outside that tree still finds render_skill.py
-    # (and so ambient cwd markers cannot steal resolution from an explicit skill path).
+
+    found = find_project_root(start)
     from_skill = find_bmad_root_from_skill(skill_path)
+
+    if found is not None:
+        if from_skill is None or from_skill == found:
+            return found
+        # Skill may live in the shipped kernel while the user works in another
+        # BMAD project — keep workflow/state in the ambient project.
+        try:
+            from akomagni.core.bmad_kernel import find_shipped_bmad_core
+
+            kernel = find_shipped_bmad_core()
+        except ImportError:  # pragma: no cover
+            kernel = None
+        if kernel is not None and from_skill == kernel:
+            return found
+        return from_skill
+
     if from_skill is not None:
         return from_skill
-    found = find_project_root(start)
-    if found is not None:
-        return found
+
     configured = configured_bmad_root()
     if configured is not None:
         return configured
+    try:
+        from akomagni.core.bmad_kernel import find_shipped_bmad_core
+
+        kernel = find_shipped_bmad_core()
+        if kernel is not None:
+            return kernel
+    except ImportError:  # pragma: no cover
+        pass
     try:
         from akomagni.skills.link import extra_skill_roots
     except ImportError:  # pragma: no cover
@@ -108,12 +131,23 @@ def resolve_workspace_root(
     In a BMAD workspace, data lives under ``<project>/.akomagni/``. Outside a
     project, use the central Akomagni data directory (``platformdirs``) instead
     of the current working directory — so running from ``System32`` still works.
+    The shipped BMAD kernel is never used as workflow storage (skills only).
     """
     if project_root is not None:
         return project_root.resolve(), True
     found = find_project_root(start)
     if found is not None:
         return found, True
+    configured = configured_bmad_root()
+    if configured is not None:
+        try:
+            from akomagni.core.bmad_kernel import find_shipped_bmad_core
+
+            kernel = find_shipped_bmad_core()
+        except ImportError:  # pragma: no cover
+            kernel = None
+        if kernel is None or configured != kernel:
+            return configured, True
     from akomagni.core.config import DATA_DIR
 
     return DATA_DIR, False
@@ -121,6 +155,7 @@ def resolve_workspace_root(
 
 def skill_search_roots(project_root: Path | None = None) -> list[Path]:
     """Directories to scan for installed BMAD skill folders."""
+    from akomagni.core.bmad_kernel import ensure_bmad_kernel, find_shipped_bmad_core
     from akomagni.core.config import SKILLS_DIR
     from akomagni.skills.link import extra_skill_roots
 
@@ -132,6 +167,18 @@ def skill_search_roots(project_root: Path | None = None) -> list[Path]:
         if resolved.is_dir() and resolved not in seen:
             seen.add(resolved)
             roots.append(resolved)
+
+    # Shipped kernel first — install/update place skills here; no skill link needed.
+    try:
+        ensure_bmad_kernel(persist=True)
+    except (OSError, ValueError, TypeError, KeyError):  # pragma: no cover
+        pass
+    kernel = find_shipped_bmad_core()
+    if kernel is not None:
+        for rel in SKILL_DIR_NAMES:
+            candidate = kernel / rel
+            if candidate.is_dir():
+                _add(candidate)
 
     if SKILLS_DIR.is_dir():
         _add(SKILLS_DIR)

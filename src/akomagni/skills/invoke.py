@@ -172,7 +172,12 @@ def invoke_skill(
         skill = find_skill(skill_id, bmad_root)
     agent_path = _agent_skill_path(decision.agent_id, bmad_root)
     central = load_central_context()
-    project = load_project_context(bmad_root)
+    # Workflow/session storage: ambient user project or central DATA_DIR — never
+    # the shipped kernel alone (skills come from the kernel; state stays local).
+    storage_root = find_project_root()
+    if storage_root is None and project_root is not None:
+        storage_root = project_root.resolve()
+    project = load_project_context(storage_root or bmad_root)
     rag = rag_context
     if rag is None:
         cfg = load_config()
@@ -181,7 +186,7 @@ def invoke_skill(
             rag = retrieve_rag_context(
                 message,
                 project=bool(rag_cfg.get("inject_project", True)),
-                project_root=bmad_root,
+                project_root=storage_root or bmad_root,
                 limit=int(rag_cfg.get("inject_limit", 3)),
                 rrf_k=int(rag_cfg.get("rrf_k", 60)),
             )
@@ -202,7 +207,7 @@ def invoke_skill(
             rag_context=rag,
         )
 
-    sessions = workflow_dir(bmad_root, discover=bmad_root is not None) / "sessions"
+    sessions = workflow_dir(storage_root, discover=storage_root is not None) / "sessions"
     sessions.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
     safe_skill = skill_id.replace("/", "-")
@@ -223,12 +228,12 @@ def invoke_skill(
         agent_id=decision.agent_id,
         skill_id=skill_id,
         session_path=session_path,
-        project_root=bmad_root,
+        project_root=storage_root,
     )
     return InvokeResult(
         decision=decision,
         session_path=session_path,
         skill=skill,
-        project_root=bmad_root,
+        project_root=storage_root,
         run_result=run_result,
     )

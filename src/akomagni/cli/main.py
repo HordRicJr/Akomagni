@@ -277,12 +277,25 @@ def update() -> None:
         )
         raise typer.Exit(code=1) from None
     console.print(f"[green]{_t('update.success')}[/]")
+    console.print(
+        _t(
+            "update.version_from_to",
+            previous=result.previous_version,
+            current=result.current_version,
+        )
+    )
     if result.previous_ref != result.current_ref:
         console.print(
             _t("update.from_to", previous=result.previous_ref, current=result.current_ref)
         )
     else:
-        console.print("  Already up to date.")
+        console.print(_t("update.already_current"))
+    if result.highlights:
+        console.print(_t("update.whats_new"))
+        for item in result.highlights:
+            console.print(f"  • {item}")
+    if result.bmad_skill_count:
+        console.print(_t("update.bmad_skills", count=result.bmad_skill_count))
     console.print(_t("update.install_dir", path=result.install_dir))
     console.print(_t("update.bin_path", path=result.bin_path))
 
@@ -859,7 +872,7 @@ def skill_list(
     if not skills:
         console.print(
             f"[yellow]{_t('skill.none_found')}[/] "
-            "Run: akomagni skill link   or install BMAD skills."
+            "Run: akomagni update   (BMAD kernel ships with install)."
         )
         raise typer.Exit(code=1)
     for skill_id in sorted(skills):

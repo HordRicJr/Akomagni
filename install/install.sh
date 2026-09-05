@@ -71,6 +71,7 @@ done
 export PATH="$BIN_DIR:$PATH"
 echo "==> Smoke test"
 "$BIN_DIR/akomagni" --version
+echo "==> Syncing BMAD kernel (skills)"
 "$BIN_DIR/akomagni" doctor --json >/dev/null
 
 echo ""
@@ -78,3 +79,4 @@ echo "Akomagni installed."
 echo "  akomagni doctor"
 echo "  akomagni config init"
 echo "  akomagni run cli"
+echo "  akomagni skill list   # BMAD skills are installed automatically"

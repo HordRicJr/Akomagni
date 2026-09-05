@@ -1,6 +1,6 @@
 # Getting started
 
-Install Akomagni, connect a provider, link skills, and run the CLI.
+Install Akomagni, connect a provider, and run the CLI. BMAD skills are installed with the kernel automatically.
 
 ## Requirements
 
@@ -26,7 +26,7 @@ CLI language is **English** by default.
 
 ```bash
 akomagni connect
-akomagni skill link
+akomagni skill list
 akomagni run cli --project ./my-app
 
 # optional
