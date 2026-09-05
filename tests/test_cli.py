@@ -377,7 +377,9 @@ def test_run_cli_skips_free_chat_for_build_skill(tmp_path, monkeypatch, akomagni
 
     with (
         patch("akomagni.cli.main.check_health_from_config") as mock_health,
-        patch("akomagni.cli.main.try_chat_with_inference", return_value="should not appear") as mock_chat,
+        patch(
+            "akomagni.cli.main.try_chat_with_inference", return_value="should not appear"
+        ) as mock_chat,
         patch("akomagni.cli.main.console.input", side_effect=fake_input),
     ):
         mock_health.return_value = type(
