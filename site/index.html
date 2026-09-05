@@ -8,7 +8,7 @@
       name="description"
       content="Open-source hybrid AI workstation. Local GGUF, Rodium, or Foundry. Agents, skills, memory, and workflows in one CLI."
     />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#f3f6fa" />
     <link rel="icon" href="assets/logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="assets/logo.png" />
     <meta property="og:image" content="https://hordricjr.github.io/Akomagni/assets/logo.png" />
@@ -41,56 +41,56 @@
     </header>
 
     <section class="hero">
+      <div class="hero-atmosphere" aria-hidden="true"></div>
       <div class="hero-inner">
-        <div>
-          <img class="hero-logo" src="assets/logo.png" alt="Akomagni" width="56" height="56" />
-          <h1>Akomagni</h1>
-          <p class="hero-lead">
-            An open-source hybrid AI workstation. Local models, cloud APIs, agents, and skills in
-            one place.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="install/">Get started</a>
-            <a class="btn btn-outline" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+        <img class="hero-logo" src="assets/logo.png" alt="" width="48" height="48" />
+        <p class="hero-brand">Akomagni</p>
+        <h1>One workspace for local and cloud AI</h1>
+        <p class="hero-lead">
+          Open-source hybrid workstation. Models, agents, skills, memory, and workflows — without
+          leaving your machine unless you choose to.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="install/">Get started</a>
+          <a class="btn btn-outline" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+        </div>
+      </div>
+      <aside class="hero-card" data-hero-install>
+        <div class="hero-platform-tabs">
+          <button class="hero-platform-tab active" type="button" data-hero-platform="linux">
+            macOS / Linux
+          </button>
+          <button class="hero-platform-tab" type="button" data-hero-platform="windows">
+            Windows
+          </button>
+        </div>
+        <div class="hero-platform-panel active" data-hero-platform-panel="linux">
+          <div class="copy-block">
+            <div class="copy-block-header">
+              <span>Terminal</span>
+              <button class="copy-btn" type="button" data-copy="hero-linux">Copy</button>
+            </div>
+            <pre id="hero-linux">curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash</pre>
           </div>
         </div>
-        <aside class="hero-card" data-hero-install>
-          <div class="hero-platform-tabs">
-            <button class="hero-platform-tab active" type="button" data-hero-platform="linux">
-              macOS / Linux
-            </button>
-            <button class="hero-platform-tab" type="button" data-hero-platform="windows">
-              Windows
-            </button>
-          </div>
-          <div class="hero-platform-panel active" data-hero-platform-panel="linux">
-            <div class="copy-block">
-              <div class="copy-block-header">
-                <span>Terminal</span>
-                <button class="copy-btn" type="button" data-copy="hero-linux">Copy</button>
-              </div>
-              <pre id="hero-linux">curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash</pre>
+        <div class="hero-platform-panel" data-hero-platform-panel="windows">
+          <div class="copy-block">
+            <div class="copy-block-header">
+              <span>PowerShell</span>
+              <button class="copy-btn" type="button" data-copy="hero-windows">Copy</button>
             </div>
+            <pre id="hero-windows">irm https://hordricjr.github.io/Akomagni/install/windows | iex</pre>
           </div>
-          <div class="hero-platform-panel" data-hero-platform-panel="windows">
-            <div class="copy-block">
-              <div class="copy-block-header">
-                <span>PowerShell</span>
-                <button class="copy-btn" type="button" data-copy="hero-windows">Copy</button>
-              </div>
-              <pre id="hero-windows">irm https://hordricjr.github.io/Akomagni/install/windows | iex</pre>
-            </div>
-          </div>
-          <p>
-            Then run <code>akomagni connect</code> · <code>akomagni skill link</code> ·
-            <code>akomagni run cli</code>
-          </p>
-        </aside>
-      </div>
+        </div>
+        <p>
+          Then run <code>akomagni connect</code> · <code>akomagni skill link</code> ·
+          <code>akomagni run cli</code>
+        </p>
+      </aside>
     </section>
 
     <section class="section">
-      <div class="section-header center">
+      <div class="section-header">
         <h2>What you get</h2>
         <p>One workspace for models, agents, skills, memory, and workflows.</p>
       </div>
