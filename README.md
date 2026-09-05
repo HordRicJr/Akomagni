@@ -6,26 +6,86 @@
 [![CI Test](https://github.com/HordRicJr/Akomagni/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/HordRicJr/Akomagni/actions/workflows/test.yml)
 [![CI Security](https://github.com/HordRicJr/Akomagni/actions/workflows/security.yml/badge.svg?branch=develop)](https://github.com/HordRicJr/Akomagni/actions/workflows/security.yml)
 
-**Akomagni: a new way to work with AI.** An open-source hybrid workstation that orchestrates models, agents, skills, memory, and workflows so intent becomes a real work process.
+**Akomagni: a new way to work with AI.**
+
+An open-source hybrid AI workstation, built to go beyond a chatbot or coding assistant. It brings models, agents, skills, workflows, memory, and tools into one environment so a simple request becomes a real work process.
 
 [Français](README.fr.md) · [Site](https://hordricjr.github.io/Akomagni/) · [Install](https://hordricjr.github.io/Akomagni/install/) · [Tools hub](https://hordricjr.github.io/Akomagni/tools/) · [Documentation](docs/README.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ---
 
-## Why Akomagni?
+## Skills give the AI real capabilities
 
-Cloud AI tools are powerful but costly and fragmented. Local tools rarely share one workflow. **Akomagni** combines:
+A **Skill** is a specialized capability or working method the AI can use for a precise task. Instead of asking one model to invent every process alone, Akomagni lets it lean on structured competencies: development, design, research, writing, analysis, product, business, and more.
 
-| Pillar | What it does |
-|--------|----------------|
-| **Local + cloud** | Hugging Face GGUF offline, or Rodium / Microsoft Foundry APIs |
-| **Akomagni Flow** | Routes plain language to 17 BMAD agents and skills |
-| **Skills** | Structured methods the model can run (`akomagni skill link`) |
-| **Auto Router** | Picks economical Rodium catalogue models by task (Google / Anthropic / OpenAI / `rodiumai/smart`) |
-| **Memory** | Central + per-project context that survives sessions |
-| **Three modes** | CLI, Agent, IDE (VS Code extension + MCP today) |
+The model supplies intelligence. Skills supply a structured way to work. Register them with `akomagni skill link`.
 
-> Not a chatbot wrap. A **multi-domain workstation** where Skills, agents, and workflows collaborate.
+## Specialized agents
+
+Akomagni is not a single generalist agent. It ships **17 BMAD agents**, each tied to tasks and workflows, so the system can take different roles depending on context.
+
+## Akomagni Flow: you do not need to know the system
+
+Describe your goal in your own words. You do not need agent names, skill ids, or special commands.
+
+Akomagni analyzes the request and can route it to the right **agent + workflow + skill**:
+
+**Intent → Analysis → Agent → Skill → Workflow → Result**
+
+Flow is the orchestration layer between you and the AI tools.
+
+## Auto Router: pick the right model
+
+Akomagni does not force a single model. Auto Router selects the best fit by task (code, design, image, text, and more).
+
+On **Rodium**, that means economical multi-provider catalogue ids (Google, Anthropic, OpenAI, `rodiumai/smart`, …) using live pricing when available. Locally, it maps domains to your pulled GGUF models.
+
+## Local, cloud, or hybrid
+
+- **Local:** Hugging Face GGUF models, including offline work
+- **Cloud:** your own APIs via Rodium or Microsoft Foundry (`akomagni connect`)
+- **Hybrid:** local models + external APIs + agents + skills + tools
+
+You choose how and with which engines you work.
+
+## Memory that stays with the project
+
+**Akomagni Memory** keeps a central store and per-project memory so context, facts, and history survive sessions instead of resetting every chat.
+
+## One environment, several ways to work
+
+| Surface | Status |
+|---------|--------|
+| **CLI** | Primary interface today: config, models, skills, Flow, memory, services |
+| **VS Code + MCP** | Extension and MCP tools for Cursor / VS Code |
+| **IDE** | Roadmap: deeper integration in the developer workspace |
+
+CLI UI language defaults to **English**. Switch anytime:
+
+```bash
+akomagni config language fr   # French
+akomagni config language en   # English (default)
+```
+
+## What makes Akomagni different
+
+Most AI tools focus on one job: write code, chat, generate images, or automate a slice of work.
+
+Akomagni aims at an environment where **models, agents, skills, and workflows collaborate**.
+
+Not only: *What answer can the AI give me?*
+
+But: *What is my goal, which competencies are needed, and which workflow should the AI use to help me get there?*
+
+Because it is open source, the architecture can be studied, adapted, and extended: new skills, agents, models, and integrations.
+
+### In one sentence
+
+Akomagni is an open-source AI workstation that orchestrates models, agents, skills, memory, and workflows to turn user intent into an intelligent work process.
+
+**One workspace. Multiple models. Specialized agents. Powerful Skills. Intelligent workflows. Open source.**
+
+---
 
 ## Quick start
 
@@ -35,7 +95,27 @@ Cloud AI tools are powerful but costly and fragmented. Local tools rarely share 
 - **8 GB RAM** minimum (16 GB+ recommended)
 - Windows, Linux, or macOS
 
-### Install (development)
+### One-liner install
+
+```bash
+# Linux / macOS
+curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash
+
+# Windows (PowerShell)
+irm https://hordricjr.github.io/Akomagni/install/windows | iex
+```
+
+Then:
+
+```bash
+akomagni connect
+akomagni skill link
+akomagni run cli --project ./my-app
+```
+
+Full guide: [hordricjr.github.io/Akomagni/install/](https://hordricjr.github.io/Akomagni/install/)
+
+### Development install
 
 ```bash
 git clone https://github.com/HordRicJr/Akomagni.git
@@ -51,40 +131,30 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 akomagni config init
 akomagni doctor
+akomagni connect
+akomagni skill link
 ```
-
-### One-liner install
-
-```bash
-# Linux / macOS
-curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash
-
-# Windows (PowerShell)
-irm https://hordricjr.github.io/Akomagni/install/windows | iex
-```
-
-Full guide: [hordricjr.github.io/Akomagni/install/](https://hordricjr.github.io/Akomagni/install/)
 
 ## Commands
 
 ```bash
-akomagni doctor                    # Scan hardware + recommend profile
-akomagni connect                   # One wizard: local / Rodium / Foundry + Hugging Face token
-akomagni skill link                # Register BMAD skills (auto-detect or pass a folder)
-akomagni run cli --project ./app   # Chat + Flow; pick provider on first session
-akomagni config init               # Create ~/.akomagni/config.yaml
+akomagni doctor                    # Hardware scan + profile
+akomagni connect                   # Local / Rodium / Foundry + optional HF token
+akomagni skill link                # Register BMAD skills
+akomagni run cli --project ./app   # Chat + Flow on a project
+akomagni config init               # Create ~/.akomagni/config.yaml (language: en)
+akomagni config language fr        # Optional: French CLI
 akomagni update                    # Pull latest + reinstall CLI
-akomagni config language fr        # French CLI (en/fr)
 akomagni memory status             # Central + project memory
 akomagni flow route "your message" # Route to BMAD agent/skill
 akomagni flow router-mode auto     # ML router when inference is online
-akomagni skill list                # Discover installed BMAD skills
+akomagni skill list                # List linked skills
 akomagni model pull qwen2.5-coder-7b
 akomagni model pull owner/repo:file.gguf   # Any Hugging Face GGUF
 akomagni serve --model phi-3.5-mini        # Local OpenAI-compatible API (:8787)
 akomagni mcp serve                 # MCP agent tools (Cursor / VS Code)
 akomagni train plan                # Preview LoRA dataset from memory
-akomagni train run -m phi-3.5-mini # Native QLoRA/LoRA (needs: akomagni config extras train)
+akomagni train run -m phi-3.5-mini # Native QLoRA/LoRA (akomagni config extras train)
 ```
 
 ## Project structure
@@ -96,8 +166,9 @@ Akomagni/
 │   ├── core/           # config, doctor, router, registry
 │   ├── flow/           # Akomagni Flow orchestrator
 │   ├── memory/         # Akomagni Memory
-│   └── inference/      # Local server (llama.cpp)
+│   └── inference/      # Local server + cloud providers
 ├── docs/               # Documentation (en + fr)
+├── site/               # GitHub Pages
 ├── install/            # install.sh, install.ps1
 ├── tests/
 └── .github/            # CI, issue/PR templates
@@ -116,18 +187,16 @@ Akomagni/
 |---------|-------|
 | **v0.1** | CLI, doctor, config, Akomagni Flow (heuristic), memory scaffold ✅ |
 | **v0.2** | llama.cpp server, model pull, BMAD invoke, RAG, Memory epic, MCP agent ✅ |
-| **v0.3** | Akomagni Train (LoRA) — export/bundle + native `train run` |
+| **v0.3** | Akomagni Train (LoRA), connect wizard, skill link, Rodium multi-provider Auto Router ✅ |
 | **v1.0** | Akomagni IDE (VS Code fork) — MCP + roadmap page today |
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Contributing
 
-We welcome contributions! Please read:
-
-- [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, PR process, i18n policy
+- [CONTRIBUTING.md](CONTRIBUTING.md) — English first, French mirror required for docs
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
-- [SECURITY.md](SECURITY.md) — vulnerability reporting
+- [SECURITY.md](SECURITY.md)
 
 ## License
 

@@ -6,7 +6,11 @@
 - 8 GB RAM minimum (16 GB+ recommended)
 - Git
 
-## Clone and install
+## Install
+
+One-liner (recommended): see [Install guide](https://hordricjr.github.io/Akomagni/install/).
+
+Development:
 
 ```bash
 git clone https://github.com/HordRicJr/Akomagni.git
@@ -18,27 +22,32 @@ pip install -e ".[dev]"
 
 ## First run
 
+CLI language defaults to **English**. Switch later with `akomagni config language fr`.
+
 ```bash
-akomagni config init    # creates ~/.akomagni/config.yaml
-akomagni doctor         # hardware scan + profile recommendation
-akomagni memory status  # memory directories
+akomagni config init
+akomagni doctor
+akomagni connect              # local GGUF, Rodium, or Foundry
+akomagni skill link           # register BMAD skills
+akomagni run cli --project ./my-app
 ```
 
 ## Try Akomagni Flow
 
 ```bash
 akomagni flow route "I have an idea for a budget app"
-akomagni flow invoke "I have an idea for a budget app"   # writes session file
+akomagni flow invoke "I have an idea for a budget app"
 akomagni flow status
 akomagni skill list
 akomagni model recommend
 ```
 
-## Interactive CLI
+## Image / poster (cloud)
 
-```bash
-akomagni run cli
-```
+With Rodium connected, ask for an affiche/poster in `akomagni run cli`. Auto Router tries
+URL-capable image models first, then Gemini image models. If the API returns base64 only,
+Akomagni saves a PNG under `~/.local/share/akomagni/generated-images/` (Windows:
+`%LOCALAPPDATA%\akomagni\generated-images\`) and prints the path.
 
 ## Next steps
 

@@ -6,6 +6,8 @@ import json
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+from datetime import UTC
+from pathlib import Path
 from typing import Any
 
 
@@ -174,11 +176,20 @@ def image_generation(
     *,
     base_url: str,
     api_key: str | None = None,
-    model: str = "openai/gpt-image-1",
+    model: str = "openai/gpt-image-1-mini",
     size: str = "1024x1024",
     timeout: float = 180.0,
+    save_dir: Path | None = None,
 ) -> str:
-    """Call OpenAI-compatible ``/v1/images/generations`` (Rodium image guide)."""
+    """Call OpenAI-compatible ``/v1/images/generations`` (Rodium image guide).
+
+    Prefers a returned URL. When the provider only sends ``b64_json``, decode and
+    save a PNG under the Akomagni data dir so the user gets a local file path.
+    """
+    from datetime import datetime
+
+    from akomagni.core.config import DATA_DIR
+
     root = base_url.rstrip("/")
     url = f"{root}/images/generations"
     payload: dict[str, Any] = {
@@ -187,6 +198,9 @@ def image_generation(
         "n": 1,
         "size": size,
     }
+    # OpenAI-family image models often honor this; others ignore it.
+    if model.startswith("openai/"):
+        payload["response_format"] = "url"
     data = _request_json(url, method="POST", payload=payload, timeout=timeout, api_key=api_key)
     if not isinstance(data, dict):
         raise InferenceClientError(f"Unexpected image response: {data!r}")
@@ -196,9 +210,21 @@ def image_generation(
     first = items[0] if isinstance(items[0], dict) else {}
     if first.get("url"):
         return f"Image generated ({model}):\n{first['url']}"
-    if first.get("b64_json"):
+    raw_b64 = first.get("b64_json")
+    if raw_b64:
+        import base64
+
+        out_root = Path(save_dir) if save_dir else (DATA_DIR / "generated-images")
+        out_root.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+        path = out_root / f"akomagni-{stamp}.png"
+        try:
+            path.write_bytes(base64.b64decode(str(raw_b64), validate=False))
+        except Exception as exc:
+            raise InferenceClientError(f"Could not decode image base64: {exc}") from exc
         return (
-            f"Image generated ({model}) as base64 ({len(str(first['b64_json']))} chars). "
-            "Save with your image tool or ask for a URL-capable model."
+            f"Image generated ({model}) and saved locally:\n{path}\n"
+            "Open that file in your image viewer. "
+            "(This provider returned base64, not a public URL.)"
         )
     raise InferenceClientError(f"Unexpected image payload: {first!r}")

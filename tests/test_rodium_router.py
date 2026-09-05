@@ -101,7 +101,7 @@ def test_live_catalogue_picks_cheapest_text():
 def test_pick_image_and_coding_from_catalogue():
     catalogue = [
         {
-            "id": "openai/gpt-image-1",
+            "id": "openai/gpt-image-1-mini",
             "rodiumai_status": "available",
             "rodiumai_pricing": {"per_image": "50"},
             "rodiumai_capabilities": {"output_modalities": ["image"]},
@@ -281,7 +281,16 @@ def test_default_rodium_models_map_keys():
 
 
 def test_image_empty_catalogue_uses_static():
-    assert pick_tier_model("image", catalogue=[]).startswith("google/")
+    assert pick_tier_model("image", catalogue=[]).startswith("openai/")
+
+
+def test_image_model_candidates_dedupe_primary():
+    from akomagni.inference.rodium_router import image_model_candidates
+
+    rows = image_model_candidates("openai/gpt-image-1.5")
+    assert rows[0] == "openai/gpt-image-1.5"
+    assert rows.count("openai/gpt-image-1.5") == 1
+    assert "openai/gpt-image-1-mini" in rows
 
 
 def test_pick_cheapest_none_when_unavailable():
