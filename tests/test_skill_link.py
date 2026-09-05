@@ -105,7 +105,7 @@ def test_ensure_returns_global_skills_dir(akomagni_home, monkeypatch):
 
 def test_discover_skill_sources_empty(akomagni_home, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", lambda: [])
+    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", list)
     assert discover_skill_sources(tmp_path) == []
 
 
@@ -130,7 +130,7 @@ def test_skill_link_cli_autodetect(akomagni_home, tmp_path, monkeypatch):
 
 def test_skill_link_cli_none_found(akomagni_home, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", lambda: [])
+    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", list)
     result = runner.invoke(app, ["skill", "link"])
     assert result.exit_code == 1
     assert "No BMAD skills found" in result.stdout
@@ -138,7 +138,7 @@ def test_skill_link_cli_none_found(akomagni_home, tmp_path, monkeypatch):
 
 def test_skill_list_empty(akomagni_home, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", lambda: [])
+    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", list)
     result = runner.invoke(app, ["skill", "list"])
     assert result.exit_code == 1
     assert "skill link" in result.stdout.lower() or "BMAD" in result.stdout
