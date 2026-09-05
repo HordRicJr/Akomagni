@@ -66,10 +66,23 @@ def test_install_page_includes_windows_guide():
     assert "config language fr" in install
 
 
-def test_homepage_includes_windows_install():
+def test_homepage_product_capabilities():
     root = (SITE / "index.html").read_text(encoding="utf-8")
-    assert "hero-windows" in root
-    assert "install/windows" in root
+    assert "A new way to work with AI" in root
+    assert "17 specialized agents" in root
+    assert "Akomagni Flow" in root
+    assert "Auto Router" in root
+    assert "/model" in root
+    assert "Intent" in root and "Workflow" in root
+    assert "akomagni skill link" in root
+
+
+def test_models_page_mentions_picker_and_rodium():
+    models = (SITE / "models" / "index.html").read_text(encoding="utf-8")
+    assert "Space" in models
+    assert "/model" in models
+    assert "multi-provider" in models
+    assert "quality-first" in models
 
 
 def test_ide_page_includes_setup_commands():

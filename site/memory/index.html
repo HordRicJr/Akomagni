@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Memory — Akomagni</title>
+    <meta
+      name="description"
+      content="Akomagni Memory — central and per-project stores with approve-before-save capture and promote."
+    />
     <meta name="theme-color" content="#f3f6fa" />
     <link rel="icon" href="../assets/logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="../assets/logo.png" />
@@ -25,7 +29,7 @@
           <a href="https://github.com/HordRicJr/Akomagni/tree/main/docs">Docs</a>
         </nav>
         <div class="header-actions">
-          <a class="btn btn-ghost" href="https://github.com/HordRicJr/Akomagni">GitHub</a>
+          <a class="btn btn-primary" href="../install/">Install</a>
         </div>
       </div>
     </header>
@@ -34,7 +38,10 @@
       <div class="page-hero-inner">
         <p class="breadcrumb"><a href="../">Home</a> / Memory</p>
         <h1>Memory</h1>
-        <p class="lead">Central and project memory with approval-based capture.</p>
+        <p class="lead">
+          Context that survives sessions — central store plus per-project memory, with approval
+          before anything is saved.
+        </p>
       </div>
     </section>
 
@@ -42,10 +49,14 @@
       <div class="content-block">
         <h2>Capabilities</h2>
         <ul class="feature-list">
-          <li><strong>Project memory</strong> — <code>.akomagni/memory/</code> per repository</li>
+          <li><strong>Project memory</strong> — <code>.akomagni/memory/</code> in the repo</li>
           <li><strong>Central memory</strong> — <code>~/.akomagni/memory/</code> across projects</li>
           <li><strong>Promote</strong> — lift project learnings into central memory</li>
-          <li><strong>Auto-capture</strong> — queue exchanges for approval before saving</li>
+          <li><strong>Auto-capture</strong> — queue chat exchanges; you approve before save</li>
+          <li>
+            <strong>Train</strong> — export / bundle / run LoRA from memory learnings
+            (<code>akomagni[train]</code>)
+          </li>
         </ul>
       </div>
       <div class="code-panel">
@@ -54,37 +65,36 @@
 akomagni memory add "Always use pytest fixtures" --title "Testing"
 akomagni memory promote
 akomagni memory pending
-akomagni memory approve &lt;capture-id&gt;</pre>
+akomagni memory approve &lt;capture-id&gt;
+akomagni train bundle</pre>
       </div>
     </main>
 
     <section class="cta-band">
       <h2>Memory system guide</h2>
       <p>Project and central memory with approval-based capture.</p>
-      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/develop/docs/en/akomagni-memory.md">Memory docs</a>
+      <a class="btn btn-primary" href="https://github.com/HordRicJr/Akomagni/blob/main/docs/en/akomagni-memory.md">Memory docs</a>
     </section>
 
     <footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <a class="brand" href="../" style="color: #fff">
+          <a class="brand" href="../">
             <img class="brand-logo" src="../assets/logo.png" alt="" width="28" height="28" />
             Akomagni
           </a>
-          <p>Local AI workstation — code, design, write, models, and memory.</p>
+          <p>Facts and history that stay with the work.</p>
         </div>
         <div class="footer-col">
           <h4>Modules</h4>
           <a href="../code/">Code</a>
-          <a href="../design/">Design</a>
           <a href="../write/">Write</a>
-          <a href="../models/">Models</a>
-          <a href="../memory/">Memory</a>
+          <a href="../tools/">Tools</a>
         </div>
         <div class="footer-col">
           <h4>Resources</h4>
           <a href="https://github.com/HordRicJr/Akomagni">GitHub</a>
-          <a href="https://github.com/HordRicJr/Akomagni/tree/develop/docs">Documentation</a>
+          <a href="../install/">Install</a>
         </div>
       </div>
       <div class="footer-bottom">© 2026 Akomagni · Apache-2.0</div>
