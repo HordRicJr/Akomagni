@@ -103,6 +103,14 @@ def test_ensure_returns_global_skills_dir(akomagni_home, monkeypatch):
     assert ensure_skills_linked() == [skills_dir]
 
 
+def test_known_skill_locations_are_portable(akomagni_home):
+    from akomagni.skills.link import _known_skill_locations
+
+    locations = [str(p).replace("\\", "/").lower() for p in _known_skill_locations()]
+    assert all("/money/" not in loc and not loc.endswith("/money") for loc in locations)
+    assert any(loc.endswith(("/.agents/skills", "/.agent/skills")) for loc in locations)
+
+
 def test_discover_skill_sources_empty(akomagni_home, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("akomagni.skills.link._known_skill_locations", list)

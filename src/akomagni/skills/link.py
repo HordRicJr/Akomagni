@@ -5,32 +5,25 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from akomagni.core.config import DATA_DIR, SKILLS_DIR, load_config
+from akomagni.core.config import SKILLS_DIR, load_config
 from akomagni.core.project import SKILL_DIR_NAMES
 from akomagni.inference.connect import save_config
 
 
 def _known_skill_locations() -> list[Path]:
-    """Extra places to look when the user is outside a BMAD checkout."""
+    """Portable places to look when the user is outside a BMAD checkout.
+
+    Never hardcode a developer machine path. Discovery uses the current project
+    tree, the user's home skill folders, and whatever ``skill link`` registered.
+    """
     home = Path.home()
-    locations = [
+    return [
         home / ".agent" / "skills",
         home / ".agents" / "skills",
         home / ".claude" / "skills",
         home / ".cursor" / "skills",
-        Path("D:/Money/.agent/skills"),
-        Path("D:/Money/.agents/skills"),
-        Path("D:/Money/.claude/skills"),
+        home / ".cursor" / "skills-cursor",
     ]
-    # Install tree lives under LocalAppData/akomagni; Money may sit next to repos.
-    for parent in (DATA_DIR, Path.cwd().resolve()):
-        for rel in (
-            "../Money/.agent/skills",
-            "../Money/.claude/skills",
-            "../../Money/.agent/skills",
-        ):
-            locations.append((parent / rel).resolve())
-    return locations
 
 
 def extra_skill_roots(config: dict[str, Any] | None = None) -> list[Path]:
@@ -46,7 +39,7 @@ def extra_skill_roots(config: dict[str, Any] | None = None) -> list[Path]:
 
 
 def discover_skill_sources(start: Path | None = None) -> list[Path]:
-    """Find BMAD skill install folders near *start*, home, or known workspaces."""
+    """Find BMAD skill install folders near *start*, home, or linked workspaces."""
     found: list[Path] = []
     seen: set[Path] = set()
     cwd = (start or Path.cwd()).resolve()
@@ -70,6 +63,8 @@ def discover_skill_sources(start: Path | None = None) -> list[Path]:
     for root in search_roots:
         for rel in SKILL_DIR_NAMES:
             _consider(root / rel)
+        # Skills may live directly under a BMAD-linked bundle folder.
+        _consider(root / "skills")
         if found:
             return found
 

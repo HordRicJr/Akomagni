@@ -68,8 +68,8 @@ def resolve_bmad_project_root(
     """
     if project_root is not None:
         return project_root.resolve()
-    # Prefer the skill's checkout so CLI outside the tree still finds render_skill.py
-    # (and so tests are not polluted by an ambient Money/_bmad on cwd).
+    # Prefer the skill's checkout so CLI outside that tree still finds render_skill.py
+    # (and so ambient cwd markers cannot steal resolution from an explicit skill path).
     from_skill = find_bmad_root_from_skill(skill_path)
     if from_skill is not None:
         return from_skill
