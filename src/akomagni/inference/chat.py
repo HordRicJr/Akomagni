@@ -131,22 +131,28 @@ def try_chat_with_inference(
     if plan.domain_plan.classification.domain.value == "image" and not endpoint.is_local:
         from akomagni.inference.client import InferenceClientError, image_generation
         from akomagni.inference.endpoint import cloud_model_for_domain
+        from akomagni.inference.rodium_router import image_model_candidates
 
-        image_model = (
-            model_id or cloud_model_for_domain("image", config=cfg) or "openai/gpt-image-1"
+        primary = model_id or cloud_model_for_domain("image", config=cfg)
+        errors: list[str] = []
+        for image_model in image_model_candidates(primary):
+            try:
+                return image_generation(
+                    message,
+                    base_url=endpoint.base_url,
+                    api_key=endpoint.api_key,
+                    model=image_model,
+                )
+            except InferenceClientError as exc:
+                errors.append(f"{image_model}: {exc}")
+                continue
+        detail = "\n".join(errors[:5]) if errors else "no image model tried"
+        return (
+            "Image generation failed after trying catalogue image models.\n"
+            f"{detail}\n"
+            "Check RODI credits / model access "
+            "(https://www.rodiumai.io/docs/guides/image-generation)."
         )
-        try:
-            return image_generation(
-                message,
-                base_url=endpoint.base_url,
-                api_key=endpoint.api_key,
-                model=image_model,
-            )
-        except InferenceClientError as exc:
-            return (
-                f"Image generation failed ({image_model}): {exc}\n"
-                "Check RODI credits and model id (see https://www.rodiumai.io/docs/guides/image-generation)."
-            )
 
     return chat_completion(
         message,

@@ -175,7 +175,7 @@ def test_try_chat_with_inference_client_error():
         try_chat_with_inference("implement login", decision)
 
 
-def test_image_generation_url_and_b64():
+def test_image_generation_url_and_b64(tmp_path):
     from akomagni.inference.client import image_generation
 
     with patch(
@@ -186,16 +186,26 @@ def test_image_generation_url_and_b64():
             "poster",
             base_url="https://api.rodiumai.io/v1",
             api_key="rd_sk_x",
-            model="google/gemini-3.1-flash-image",
+            model="openai/gpt-image-1-mini",
         )
         assert "cdn.example" in out
 
+    # minimal valid base64 ("aa")
     with patch(
         "akomagni.inference.client._request_json",
         return_value={"data": [{"b64_json": "aaaa"}]},
     ):
-        out = image_generation("poster", base_url="https://api.rodiumai.io/v1")
-        assert "base64" in out
+        out = image_generation(
+            "poster",
+            base_url="https://api.rodiumai.io/v1",
+            model="google/gemini-3.1-flash-lite-image",
+            save_dir=tmp_path,
+        )
+        assert "saved locally" in out
+        assert str(tmp_path) in out
+        saved = list(tmp_path.glob("akomagni-*.png"))
+        assert len(saved) == 1
+        assert saved[0].stat().st_size > 0
 
     with (
         patch("akomagni.inference.client._request_json", return_value={"data": [{}]}),

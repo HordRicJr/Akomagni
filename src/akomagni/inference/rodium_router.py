@@ -13,38 +13,57 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-# Static fallbacks ordered cheapest → stronger within each tier (docs samples + guides).
+# Static fallbacks ordered economical → stronger within each tier.
+# Ids match current Rodium catalogue (Google / Anthropic / OpenAI / DeepSeek / …).
 RODIUM_TIER_CANDIDATES: dict[str, tuple[str, ...]] = {
-    # Light chat / brainstorm / Q&A — prefer Google Flash Lite (lowest RODI in docs sample).
+    # Light chat / brainstorm / Q&A.
     "economy": (
         "google/gemini-3.1-flash-lite-preview",
+        "google/gemini-3.1-flash-lite",
+        "google/gemini-2.5-flash-lite",
         "anthropic/claude-haiku-4-5-20251001",
-        "deepseek/deepseek-chat",
+        "deepseek/deepseek-v4-flash",
+        "openai/gpt-4.1-nano",
     ),
-    # UX copy, creative briefs, structured product writing — mid cost / solid quality.
+    # UX copy, creative briefs, structured product writing.
     "balanced": (
         "anthropic/claude-haiku-4-5-20251001",
+        "google/gemini-3.5-flash",
         "google/gemini-2.5-flash",
         "openai/gpt-4o-mini",
+        "openai/gpt-4.1-mini",
         "openai/gpt-4o",
     ),
-    # Docs: coding agents → rodiumai/smart (router picks a strong coding model).
+    # Coding: smart router when available, else strong open coding models.
     "coding": (
         "rodiumai/smart",
         "anthropic/claude-sonnet-4-6",
-        "openai/gpt-4o",
+        "openai/gpt-5.3-codex",
+        "openai/gpt-5-codex",
+        "deepseek/deepseek-v4-pro",
+        "mistral/devstral-2-123b",
+        "openai/gpt-4.1",
     ),
-    # Hard reasoning / long architecture — pay for quality only when needed.
+    # Hard reasoning / long architecture.
     "strong": (
-        "openai/gpt-4o",
+        "openai/gpt-5.4",
         "anthropic/claude-sonnet-4-6",
+        "google/gemini-3.1-pro-preview",
         "anthropic/claude-opus-4-6",
+        "openai/gpt-4.1",
+        "openai/gpt-4o",
     ),
-    # Image guide: Gemini Flash Image / Imagen / gpt-image (multi-vendor).
+    # Image: prefer OpenAI ids that usually return a URL; then Gemini Nano Banana family.
     "image": (
+        "openai/gpt-image-1-mini",
+        "openai/gpt-image-1.5",
+        "openai/chatgpt-image-latest",
+        "openai/gpt-image-2",
+        "google/gemini-3.1-flash-lite-image",
         "google/gemini-3.1-flash-image",
-        "google/imagen-4.0-generate-001",
-        "openai/gpt-image-1",
+        "google/gemini-3.1-flash-image-preview",
+        "google/gemini-3-pro-image-preview",
+        "google/gemini-3-pro-image",
     ),
 }
 
@@ -304,3 +323,14 @@ def default_rodium_models_map() -> dict[str, str]:
         "code": pick_tier_model("coding"),
         "image": pick_tier_model("image"),
     }
+
+
+def image_model_candidates(primary: str | None = None) -> list[str]:
+    """Ordered image model ids to try (primary first, then static fallbacks)."""
+    ordered: list[str] = []
+    if primary and primary.strip():
+        ordered.append(primary.strip())
+    for cand in RODIUM_TIER_CANDIDATES["image"]:
+        if cand not in ordered:
+            ordered.append(cand)
+    return ordered

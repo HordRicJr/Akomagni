@@ -45,7 +45,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
                 "code": "rodiumai/smart",
                 "design": "anthropic/claude-haiku-4-5-20251001",
                 "text": "google/gemini-3.1-flash-lite-preview",
-                "image": "google/gemini-3.1-flash-image",
+                "image": "openai/gpt-image-1-mini",
             },
         },
         "azure": {

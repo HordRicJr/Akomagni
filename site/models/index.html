@@ -60,10 +60,14 @@
       <div class="content-block">
         <h2>Rodium (token-aware routing)</h2>
         <ul class="feature-list">
-          <li>Text / brainstorm → cheapest chat (often <code>google/gemini-*-flash-lite</code>)</li>
-          <li>Code → <code>rodiumai/smart</code> (Rodium picks a strong coding model)</li>
+          <li>Text / brainstorm → cheap chat (e.g. <code>google/gemini-*-flash-lite*</code>)</li>
+          <li>Code → <code>rodiumai/smart</code> or strong coding models (Sonnet, Codex, DeepSeek)</li>
           <li>Design / creative → mid-tier (e.g. <code>anthropic/claude-haiku-*</code>)</li>
-          <li>Image / poster → image models (<code>google/gemini-*-flash-image</code>, Imagen, gpt-image)</li>
+          <li>
+            Image / poster → URL-first OpenAI image models
+            (<code>openai/gpt-image-1-mini</code>, <code>gpt-image-1.5</code>, …), then Gemini
+            Nano Banana family; base64 responses are saved as PNG under your Akomagni data dir
+          </li>
           <li>Any catalogue id works: Google, Anthropic, OpenAI, DeepSeek, … via one API key</li>
           <li>Live pricing from <code>GET /v1/models</code> prefers lower RODI when online</li>
           <li>Connect with <code>akomagni connect</code>, then <code>akomagni run cli</code></li>
