@@ -1,56 +1,48 @@
 # Getting started
 
-## Prerequisites
+Install Akomagni, connect a provider, link skills, and run the CLI.
+
+## Requirements
 
 - Python 3.11+
-- 8 GB RAM minimum (16 GB+ recommended)
+- 8 GB RAM minimum
 - Git
 
 ## Install
 
-One-liner (recommended): see [Install guide](https://hordricjr.github.io/Akomagni/install/).
-
-Development:
-
 ```bash
-git clone https://github.com/HordRicJr/Akomagni.git
-cd Akomagni
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+# macOS / Linux
+curl -fsSL https://hordricjr.github.io/Akomagni/install/linux | bash
+
+# Windows (PowerShell)
+irm https://hordricjr.github.io/Akomagni/install/windows | iex
 ```
 
-## First run
+Full guide: [Install](https://hordricjr.github.io/Akomagni/install/)
 
-CLI language defaults to **English**. Switch later with `akomagni config language fr`.
+## First commands
+
+CLI language is **English** by default.
 
 ```bash
-akomagni config init
-akomagni doctor
-akomagni connect              # local GGUF, Rodium, or Foundry
-akomagni skill link           # register BMAD skills
+akomagni connect
+akomagni skill link
 akomagni run cli --project ./my-app
+
+# optional
+akomagni config language fr
 ```
 
-## Try Akomagni Flow
+## Local models (optional)
 
 ```bash
-akomagni flow route "I have an idea for a budget app"
-akomagni flow invoke "I have an idea for a budget app"
-akomagni flow status
-akomagni skill list
-akomagni model recommend
+akomagni config extras inference
+akomagni model pull qwen2.5-coder-7b
+akomagni serve --model qwen2.5-coder-7b
 ```
 
-## Image / poster (cloud)
+## Next
 
-With Rodium connected, ask for an affiche/poster in `akomagni run cli`. Auto Router tries
-URL-capable image models first, then Gemini image models. If the API returns base64 only,
-Akomagni saves a PNG under `~/.local/share/akomagni/generated-images/` (Windows:
-`%LOCALAPPDATA%\akomagni\generated-images\`) and prints the path.
-
-## Next steps
-
-- [Architecture](architecture.md)
 - [Akomagni Flow](akomagni-flow.md)
+- [Architecture](architecture.md)
 - [Contributing](../../CONTRIBUTING.md)
