@@ -6,7 +6,7 @@
 [![CI Test](https://github.com/HordRicJr/Akomagni/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/HordRicJr/Akomagni/actions/workflows/test.yml)
 [![CI Security](https://github.com/HordRicJr/Akomagni/actions/workflows/security.yml/badge.svg?branch=develop)](https://github.com/HordRicJr/Akomagni/actions/workflows/security.yml)
 
-**Akomagni: a new way to work with AI.** An open-source hybrid workstation that turns intent into workflows with models, agents, skills, memory, and tools.
+**Akomagni: a new way to work with AI.** An open-source hybrid workstation that orchestrates models, agents, skills, memory, and workflows so intent becomes a real work process.
 
 [Français](README.fr.md) · [Site](https://hordricjr.github.io/Akomagni/) · [Install](https://hordricjr.github.io/Akomagni/install/) · [Tools hub](https://hordricjr.github.io/Akomagni/tools/) · [Documentation](docs/README.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
 
@@ -14,17 +14,18 @@
 
 ## Why Akomagni?
 
-Cloud AI tools are powerful but costly, privacy-invasive, and dev-centric. Local tools are often fragmented. **Akomagni** combines:
+Cloud AI tools are powerful but costly and fragmented. Local tools rarely share one workflow. **Akomagni** combines:
 
 | Pillar | What it does |
 |--------|----------------|
 | **Local + cloud** | Hugging Face GGUF offline, or Rodium / Microsoft Foundry APIs |
-| **Akomagni Flow** | Auto-routes to 17 BMAD agents: no slash commands |
-| **Akomagni Memory** | Central + per-project memory, Git-friendly |
-| **Auto Router** | Picks the right model per task (code, design, text) and saves tokens on Rodium |
+| **Akomagni Flow** | Routes plain language to 17 BMAD agents and skills |
+| **Skills** | Structured methods the model can run (`akomagni skill link`) |
+| **Auto Router** | Picks economical Rodium catalogue models by task (Google / Anthropic / OpenAI / `rodiumai/smart`) |
+| **Memory** | Central + per-project context that survives sessions |
 | **Three modes** | CLI, Agent, IDE (VS Code extension + MCP today) |
 
-> Not a chatbot wrap. A **multi-domain workstation** with structured BMAD workflows.
+> Not a chatbot wrap. A **multi-domain workstation** where Skills, agents, and workflows collaborate.
 
 ## Quick start
 

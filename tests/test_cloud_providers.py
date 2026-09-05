@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
 from typer.testing import CliRunner
 
@@ -33,8 +35,43 @@ def test_resolve_rodium_endpoint(monkeypatch):
 
 def test_cloud_model_for_domain_rodium():
     cfg = apply_provider_preset({"version": 1}, "rodium")
-    model = cloud_model_for_domain("code", config=cfg)
-    assert model == "rodium/fast"
+    # Avoid live catalogue flakiness in unit tests.
+    with patch("akomagni.inference.endpoint.resolve_rodium_model") as mocked:
+        mocked.side_effect = lambda domain, **kwargs: {
+            "code": "rodiumai/smart",
+            "text": "google/gemini-3.1-flash-lite-preview",
+            "image": "google/gemini-3.1-flash-image",
+            "design": "anthropic/claude-haiku-4-5-20251001",
+        }[domain]
+        assert cloud_model_for_domain("code", config=cfg) == "rodiumai/smart"
+        assert cloud_model_for_domain("text", config=cfg) == "google/gemini-3.1-flash-lite-preview"
+        assert cloud_model_for_domain("image", config=cfg) == "google/gemini-3.1-flash-image"
+
+
+def test_sanitize_legacy_rodium_basic():
+    from akomagni.inference.endpoint import sanitize_rodium_model
+
+    assert sanitize_rodium_model("rodium/basic") == "google/gemini-3.1-flash-lite-preview"
+    assert sanitize_rodium_model("rodium/fast", domain="code") == "rodiumai/smart"
+    assert sanitize_rodium_model("openai/gpt-4o") == "openai/gpt-4o"
+
+
+def test_apply_rodium_preset_refreshes_basic_model(akomagni_home):
+    cfg = {
+        "version": 1,
+        "providers": {
+            "rodium": {
+                "api_key": "rd_sk_keep",
+                "models": {"text": "rodium/basic", "code": "rodium/fast", "design": "rodium/pro"},
+            }
+        },
+    }
+    merged = apply_provider_preset(cfg, "rodium")
+    models = merged["providers"]["rodium"]["models"]
+    assert models["text"] == "google/gemini-3.1-flash-lite-preview"
+    assert models["code"] == "rodiumai/smart"
+    assert models["design"].startswith(("anthropic/", "google/", "openai/"))
+    assert merged["providers"]["rodium"]["api_key"] == "rd_sk_keep"
 
 
 def test_apply_azure_provider_requires_base_url():

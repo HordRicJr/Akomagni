@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 IMAGE_PATTERNS = re.compile(
-    r"\b(logo|image|illustration|visuel|sdxl|flux|dall[\s-]?e|midjourney|icon)\b",
+    r"\b(logo|image|illustration|visuel|affiche|poster|banner|flyer|"
+    r"sdxl|flux|dall[\s-]?e|midjourney|icon)\b",
     re.IGNORECASE,
 )
 DESIGN_PATTERNS = re.compile(

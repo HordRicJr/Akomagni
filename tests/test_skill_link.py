@@ -105,6 +105,7 @@ def test_ensure_returns_global_skills_dir(akomagni_home, monkeypatch):
 
 def test_discover_skill_sources_empty(akomagni_home, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", lambda: [])
     assert discover_skill_sources(tmp_path) == []
 
 
@@ -129,6 +130,7 @@ def test_skill_link_cli_autodetect(akomagni_home, tmp_path, monkeypatch):
 
 def test_skill_link_cli_none_found(akomagni_home, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", lambda: [])
     result = runner.invoke(app, ["skill", "link"])
     assert result.exit_code == 1
     assert "No BMAD skills found" in result.stdout
@@ -136,6 +138,7 @@ def test_skill_link_cli_none_found(akomagni_home, tmp_path, monkeypatch):
 
 def test_skill_list_empty(akomagni_home, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", lambda: [])
     result = runner.invoke(app, ["skill", "list"])
     assert result.exit_code == 1
     assert "skill link" in result.stdout.lower() or "BMAD" in result.stdout
@@ -150,7 +153,9 @@ def test_skill_list_and_path_cli(akomagni_home, tmp_path):
     assert "bmad-brainstorming" in listed.stdout
     path = runner.invoke(app, ["skill", "path", "bmad-brainstorming"])
     assert path.exit_code == 0
-    assert "bmad-brainstorming" in path.stdout
+    # Rich may soft-wrap long paths on narrow CI terminals.
+    normalized = path.stdout.replace("\n", "").replace("\r", "")
+    assert "bmad-brainstorming" in normalized
     missing = runner.invoke(app, ["skill", "path", "nope-skill"])
     assert missing.exit_code == 1
 

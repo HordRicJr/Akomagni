@@ -5,9 +5,32 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from akomagni.core.config import SKILLS_DIR, load_config
+from akomagni.core.config import DATA_DIR, SKILLS_DIR, load_config
 from akomagni.core.project import SKILL_DIR_NAMES
 from akomagni.inference.connect import save_config
+
+
+def _known_skill_locations() -> list[Path]:
+    """Extra places to look when the user is outside a BMAD checkout."""
+    home = Path.home()
+    locations = [
+        home / ".agent" / "skills",
+        home / ".agents" / "skills",
+        home / ".claude" / "skills",
+        home / ".cursor" / "skills",
+        Path("D:/Money/.agent/skills"),
+        Path("D:/Money/.agents/skills"),
+        Path("D:/Money/.claude/skills"),
+    ]
+    # Install tree lives under LocalAppData/akomagni; Money may sit next to repos.
+    for parent in (DATA_DIR, Path.cwd().resolve()):
+        for rel in (
+            "../Money/.agent/skills",
+            "../Money/.claude/skills",
+            "../../Money/.agent/skills",
+        ):
+            locations.append((parent / rel).resolve())
+    return locations
 
 
 def extra_skill_roots(config: dict[str, Any] | None = None) -> list[Path]:
@@ -23,16 +46,35 @@ def extra_skill_roots(config: dict[str, Any] | None = None) -> list[Path]:
 
 
 def discover_skill_sources(start: Path | None = None) -> list[Path]:
-    """Find BMAD skill install folders near *start* or the current directory."""
+    """Find BMAD skill install folders near *start*, home, or known workspaces."""
     found: list[Path] = []
     seen: set[Path] = set()
     cwd = (start or Path.cwd()).resolve()
-    for root in (cwd, *cwd.parents):
+    search_roots = [
+        cwd,
+        *cwd.parents,
+        *[p.parent for p in _known_skill_locations() if p.parent.exists()],
+    ]
+
+    def _consider(candidate: Path) -> None:
+        try:
+            resolved = candidate.resolve()
+        except OSError:
+            return
+        if resolved in seen or not resolved.is_dir():
+            return
+        if any(resolved.glob("*/SKILL.md")):
+            seen.add(resolved)
+            found.append(resolved)
+
+    for root in search_roots:
         for rel in SKILL_DIR_NAMES:
-            candidate = (root / rel).resolve()
-            if candidate.is_dir() and candidate not in seen and any(candidate.glob("*/SKILL.md")):
-                seen.add(candidate)
-                found.append(candidate)
+            _consider(root / rel)
+        if found:
+            return found
+
+    for location in _known_skill_locations():
+        _consider(location)
         if found:
             break
     return found

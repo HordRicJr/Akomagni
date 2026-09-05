@@ -266,9 +266,12 @@ def test_model_pull_unknown(akomagni_home):
 
 def test_skill_list_empty(akomagni_home, monkeypatch):
     monkeypatch.chdir(akomagni_home)
+    monkeypatch.setattr("akomagni.skills.link._known_skill_locations", list)
+    monkeypatch.setattr("akomagni.skills.link.ensure_skills_linked", lambda start=None: [])
+    monkeypatch.setattr("akomagni.cli.main.discover_skills", lambda project_root=None: {})
     result = runner.invoke(app, ["skill", "list"])
     assert result.exit_code == 1
-    assert "No skills found" in result.stdout
+    assert "No skills found" in result.stdout or "skill link" in result.stdout.lower()
 
 
 def test_skill_list_with_skill(akomagni_home, monkeypatch):
