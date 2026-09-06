@@ -162,6 +162,12 @@ def test_shell_bg_and_open_url(workspace, tools, monkeypatch):
     assert opened == ["http://127.0.0.1:5173"]
 
 
+def test_shell_bg_and_open_url_errors(workspace, tools):
+    assert not tools.shell_bg("").ok
+    assert not tools.open_url("").ok
+    assert not tools.open_url("ftp://x").ok
+
+
 def test_git_missing_executable(workspace, tools, monkeypatch):
     def raise_not_found(*_args, **_kwargs):
         raise FileNotFoundError("git")

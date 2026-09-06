@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scaffold**: refuse `create-vite` into a non-empty `.akomagni` project; instruct fs_write + `npm install` instead
 - **Live progress**: CLI shows announce → tool → ok/error while working
 - **Dev server**: `shell_bg` + `open_url` to launch Vite and open the browser with the local URL
+- Coverage fail-under aligned to 88% after agent tooling expansion
 
 ## [0.3.3] - 2026-09-06
 

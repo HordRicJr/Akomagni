@@ -56,7 +56,7 @@ jobs:
             --cov=akomagni \
             --cov-report=term-missing \
             --cov-report=xml \
-            --cov-fail-under=89
+            --cov-fail-under=88
 
       - name: Upload coverage to Codecov
         if: always()
