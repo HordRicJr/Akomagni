@@ -45,6 +45,12 @@ Keep user-visible text free of code fences unless the user explicitly asks to se
 """.strip()
 
 _BUILD_SIGNALS = (
+    "on continue",
+    "continuons",
+    "continue l'app",
+    "continue l app",
+    "reprends",
+    "on reprend",
     "crée les fichier",
     "creer les fichier",
     "crée le fichier",
