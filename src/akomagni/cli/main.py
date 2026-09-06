@@ -381,6 +381,7 @@ def chat(
     )
     from akomagni.inference.connect import ConnectError
 
+    project_context = ""
     if setup and (project or provider or needs_provider_onboarding(cfg)):
         try:
             session = run_session_setup(
@@ -398,11 +399,39 @@ def chat(
         active_project = session.project_root
         console.print(f"[dim]Project:[/] {session.project_root}")
         console.print(f"[dim]Provider:[/] {session.provider}")
+        if not session.created_project:
+            from akomagni.core.onboarding import summarize_project_files
+
+            project_context = (
+                "Existing project — read these files before changing anything:\n"
+                + summarize_project_files(session.project_root)
+            )
+            console.print("[dim]Continuing existing project (files loaded into context).[/]")
         # Never auto-enable --exec: it runs render_skill and can pollute the project.
         cfg = load_config()
     elif project:
         try:
-            root = scaffold_project(resolve_project_path(project))
+            from akomagni.core.onboarding import (
+                choose_existing_project,
+                project_has_content,
+                summarize_project_files,
+            )
+
+            root = resolve_project_path(project)
+            if project_has_content(root):
+                root = choose_existing_project(
+                    root=root,
+                    prompt=lambda msg: typer.prompt(msg),
+                )
+                if project_has_content(root):
+                    project_context = (
+                        "Existing project — read these files before changing anything:\n"
+                        + summarize_project_files(root)
+                    )
+                    console.print(
+                        "[dim]Continuing existing project (files loaded into context).[/]"
+                    )
+            root = scaffold_project(root)
         except ProjectPathError as exc:
             console.print(f"[red]{exc}[/]")
             raise typer.Exit(code=1) from exc
@@ -571,6 +600,10 @@ def chat(
                 sticky_skill = "bmad-build"
                 console.print(f"[dim]{decision.badge}[/] → outils projet (écriture fichiers)")
 
+            guidance = skill_guidance if invoke else ""
+            if project_context:
+                guidance = f"{project_context}\n\n{guidance}".strip()
+
             chat_plan = plan_inference_chat(message, host=host, port=port)
             domain = chat_plan.domain_plan.classification.domain
             catalog = chat_plan.domain_plan.catalog_name or "n/a"
@@ -584,7 +617,7 @@ def chat(
                         decision,
                         workspace=active_project or Path.cwd(),
                         history=chat_history,
-                        skill_guidance=skill_guidance if invoke else "",
+                        skill_guidance=guidance,
                         rag_context=rag_context,
                         host=host,
                         port=port,
@@ -605,7 +638,7 @@ def chat(
                         model=model_override,
                         auto_swap=auto_swap,
                         rag_context=rag_context,
-                        skill_guidance=skill_guidance if invoke else "",
+                        skill_guidance=guidance,
                         history=chat_history,
                     )
             except InferenceClientError as exc:

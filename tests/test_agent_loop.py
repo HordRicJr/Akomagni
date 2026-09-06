@@ -59,6 +59,8 @@ def test_execute_shell_run(tmp_path):
 def test_wants_project_tools_for_build_phrases():
     chat = RouteDecision("akomagni", "chat", 0.5, "x", "y")
     assert wants_project_tools("crée les fichiers maintenant", chat) is True
+    assert wants_project_tools("vas y", chat) is True
+    assert wants_project_tools("Oui fais tout en même temps", chat) is True
     assert wants_project_tools("juste une app de gestion", chat) is False
     build = RouteDecision("bmad-agent-dev", "bmad-build", 0.9, "x", "y")
     assert wants_project_tools("continue", build) is True

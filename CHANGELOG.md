@@ -5,11 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.2] - 2026-09-06
+
+### Changed
+
+- **Projects home**: relative `--project` paths always live under `C:\Akomagni` on Windows (`~/Akomagni` elsewhere); the folder is created on first use (`AKOMAGNI_PROJECTS_ROOT` to override)
+- **Existing projects**: if the folder already exists, CLI asks to **modify**, create **new**, or **delete**; modify mode injects a file list so the model works from what is already there
+- **Build phrases**: « vas-y », « fais tout », « oui fais », etc. trigger sandboxed file tools
 
 ### Fixed
 
-- **`--project` from System32**: relative paths no longer try to create folders under `C:\Windows\System32`; they go to `%LOCALAPPDATA%\akomagni\projects\` with a clear error if the path is still not writable
+- **`--project` from System32**: relative paths never create under `C:\Windows\System32`
 
 ## [0.3.1] - 2026-09-05
 
