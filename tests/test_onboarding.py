@@ -43,6 +43,32 @@ def test_scaffold_project(tmp_path):
     assert (root / ".akomagni" / "workflow" / "state.yaml").is_file()
 
 
+def test_scaffold_project_permission_error(tmp_path, monkeypatch):
+    from pathlib import Path as PathCls
+
+    from akomagni.core.onboarding import ProjectPathError, scaffold_project
+
+    target = tmp_path / "blocked"
+    real_mkdir = PathCls.mkdir
+
+    def boom(self, *args, **kwargs):
+        if "blocked" in self.parts:
+            raise PermissionError("denied")
+        return real_mkdir(self, *args, **kwargs)
+
+    monkeypatch.setattr(PathCls, "mkdir", boom)
+    with pytest.raises(ProjectPathError, match="Cannot create project"):
+        scaffold_project(target)
+
+
+def test_resolve_absolute_project_path(tmp_path):
+    from akomagni.core.onboarding import resolve_project_path
+
+    abs_path = tmp_path / "abs-app"
+    resolved = resolve_project_path(abs_path)
+    assert resolved == abs_path.resolve()
+
+
 def test_resolve_project_path_avoids_system32(tmp_path, monkeypatch):
     from akomagni.core.onboarding import default_projects_root, resolve_project_path
 

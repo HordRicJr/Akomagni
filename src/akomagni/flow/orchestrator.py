@@ -37,18 +37,16 @@ _EXPLICIT_SKILLS = frozenset(
 
 
 def _brainstorm_already_done(project_root: Path | None = None) -> bool:
-    discover = project_root is not None
-    state = load_state(project_root, discover=discover)
+    state = load_state(project_root, discover=True)
     gates = state.get("gates") or {}
     if gates.get("brainstorm") == "complete":
         return True
-    brainstorm_dir = workflow_dir(project_root, discover=discover) / "brainstorm"
+    brainstorm_dir = workflow_dir(project_root, discover=True) / "brainstorm"
     return brainstorm_dir.exists() and any(brainstorm_dir.glob("**/.memlog.md"))
 
 
 def _brainstorm_in_progress(project_root: Path | None = None) -> bool:
-    discover = project_root is not None
-    state = load_state(project_root, discover=discover)
+    state = load_state(project_root, discover=True)
     return (state.get("gates") or {}).get("brainstorm") == "in_progress"
 
 
@@ -56,8 +54,7 @@ def _is_fresh_project(project_root: Path | None = None) -> bool:
     """True when this project has not started a BMAD flow yet (first prompts)."""
     if _brainstorm_already_done(project_root):
         return False
-    discover = project_root is not None
-    state = load_state(project_root, discover=discover)
+    state = load_state(project_root, discover=True)
     gates = state.get("gates") or {}
     if gates.get("brainstorm") in {"complete", "in_progress"}:
         return False
