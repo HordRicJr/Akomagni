@@ -38,7 +38,7 @@ class AgentTools:
         workspace: Path,
         *,
         auto_approve: bool = False,
-        shell_timeout: int = 30,
+        shell_timeout: int = 180,
     ) -> None:
         self.workspace = workspace.resolve()
         self.auto_approve = auto_approve
@@ -139,6 +139,18 @@ class AgentTools:
         command = command.strip()
         if not command:
             return ToolResult(ok=False, output="command is required")
+        lowered = command.lower()
+        if ("create vite" in lowered or "create-vite" in lowered) and (
+            (self.workspace / ".akomagni").is_dir() or any(self.workspace.iterdir())
+        ):
+            return ToolResult(
+                ok=False,
+                output=(
+                    "Refused: cannot scaffold with create-vite into a non-empty project "
+                    f"({self.workspace}). Use fs_write for package.json / vite.config / "
+                    "src/* then shell_run `npm install`."
+                ),
+            )
         workdir = self.workspace
         if cwd:
             try:
@@ -148,6 +160,10 @@ class AgentTools:
         if not workdir.is_dir():
             return ToolResult(ok=False, output=f"working directory not found: {cwd or '.'}")
 
+        timeout = self.shell_timeout
+        if any(token in lowered for token in ("npm install", "npm i ", "pnpm install", "yarn")):
+            timeout = max(timeout, 300)
+
         def _run() -> ToolResult:
             try:
                 completed = subprocess.run(  # nosec B602 — sandboxed shell; destructive cmds need approval
@@ -156,11 +172,11 @@ class AgentTools:
                     cwd=workdir,
                     capture_output=True,
                     text=True,
-                    timeout=self.shell_timeout,
+                    timeout=timeout,
                     check=False,
                 )
             except subprocess.TimeoutExpired:
-                return ToolResult(ok=False, output=f"command timed out after {self.shell_timeout}s")
+                return ToolResult(ok=False, output=f"command timed out after {timeout}s")
             output = (completed.stdout or "") + (completed.stderr or "")
             if completed.returncode != 0:
                 return ToolResult(
@@ -178,6 +194,68 @@ class AgentTools:
                 executor=_run,
             )
         return _run()
+
+    def shell_bg(self, command: str, *, cwd: str | None = None) -> ToolResult:
+        """Start a long-running command (dev server) without blocking the CLI."""
+        command = command.strip()
+        if not command:
+            return ToolResult(ok=False, output="command is required")
+        workdir = self.workspace
+        if cwd:
+            try:
+                workdir = resolve_path(cwd, self.workspace)
+            except SandboxError as exc:
+                return ToolResult(ok=False, output=str(exc))
+        if not workdir.is_dir():
+            return ToolResult(ok=False, output=f"working directory not found: {cwd or '.'}")
+
+        run_dir = self.workspace / ".akomagni" / "run"
+        run_dir.mkdir(parents=True, exist_ok=True)
+        log_path = run_dir / "dev-server.log"
+        try:
+            log_file = log_path.open("w", encoding="utf-8")
+            process = subprocess.Popen(  # nosec B602
+                command,
+                shell=True,
+                cwd=workdir,
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+        except OSError as exc:
+            return ToolResult(ok=False, output=f"failed to start: {exc}")
+
+        (run_dir / "dev-server.pid").write_text(str(process.pid), encoding="utf-8")
+        url = "http://127.0.0.1:5173"
+        lowered = command.lower()
+        if "3000" in lowered or "react-scripts" in lowered or "cra" in lowered:
+            url = "http://127.0.0.1:3000"
+        return ToolResult(
+            ok=True,
+            output=(
+                f"started pid={process.pid}\n"
+                f"log={log_path}\n"
+                f"url={url}\n"
+                "Dev server is running in the background."
+            ),
+        )
+
+    def open_url(self, url: str) -> ToolResult:
+        cleaned = (url or "").strip()
+        if not cleaned:
+            return ToolResult(ok=False, output="url is required")
+        if not cleaned.startswith(("http://", "https://")):
+            return ToolResult(ok=False, output="url must start with http:// or https://")
+        try:
+            import webbrowser
+
+            opened = webbrowser.open(cleaned)
+        except OSError as exc:
+            return ToolResult(ok=False, output=f"could not open browser: {exc}")
+        return ToolResult(
+            ok=True,
+            output=f"{'opened' if opened else 'attempted'} browser at {cleaned}",
+        )
 
     def _git(
         self, args: list[str], *, approved: bool = False, destructive: bool = False

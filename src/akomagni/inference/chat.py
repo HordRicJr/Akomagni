@@ -35,23 +35,38 @@ def build_flow_system_prompt(
     *,
     rag_context: str = "",
     skill_guidance: str = "",
+    tools_enabled: bool = False,
 ) -> str:
     """Build a system prompt from the Flow routing decision (+ optional skill)."""
     lines = [
         f"You are the Akomagni agent `{decision.agent_id}` using skill `{decision.skill}`.",
         f"Context: {decision.hint}",
         "You are running inside the Akomagni CLI chat for the user's active project only.",
-        "Collaborate step by step in conversation.",
         "Stay inside the active --project folder conceptually; never assume parent checkouts.",
-        "Do not invent or write project files unless the user explicitly asks you to output code.",
-        "Do not dump an entire codebase, scaffold, or multi-file tree in one reply.",
-        (
-            "When implementation is needed, say what you will create and use project tools — "
-            "do not paste long source code into the chat."
-        ),
-        "Prefer short clarifying questions and one next step at a time.",
         "Answer in the user's language.",
     ]
+    if tools_enabled:
+        lines.extend(
+            [
+                "IMPLEMENTATION MODE: create real files with project tools.",
+                "Always tell the user briefly what you are doing before each batch of tools.",
+                "Never dump long source code into chat; write files via tools instead.",
+                "Finish by starting the local dev server and giving the user the URL.",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "Collaborate step by step in conversation.",
+                "Do not invent or write project files unless the user explicitly asks you to output code.",
+                "Do not dump an entire codebase, scaffold, or multi-file tree in one reply.",
+                (
+                    "When implementation is needed, say what you will create and use project tools — "
+                    "do not paste long source code into the chat."
+                ),
+                "Prefer short clarifying questions and one next step at a time.",
+            ]
+        )
     if skill_guidance.strip():
         lines.extend(["", "## Active skill guidance", "", skill_guidance.strip()])
     if rag_context.strip():
