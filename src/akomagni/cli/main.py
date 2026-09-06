@@ -643,6 +643,17 @@ def chat(
                 console.print(f"[yellow]{chat_plan.swap_plan.hint}[/]")
             try:
                 if use_tools:
+                    console.print("\n[bold]Akomagni[/] [dim](implémentation en cours…)[/]")
+
+                    def _announce(text: str) -> None:
+                        console.print(f"[cyan]{text}[/]\n")
+
+                    def _action(label: str) -> None:
+                        console.print(f"[dim]→ {label}[/]")
+
+                    def _result(line: str, ok: bool) -> None:
+                        console.print(f"[green]✓[/] {line}" if ok else f"[red]✗[/] {line}")
+
                     agent_turn = run_agent_tool_turn(
                         message,
                         decision,
@@ -655,11 +666,14 @@ def chat(
                         base_url=None if endpoint.is_local else endpoint.base_url,
                         api_key=endpoint.api_key,
                         model=model_override or chat_plan.model_id,
-                        on_action=lambda label: console.print(f"[dim]→ {label}[/]"),
+                        on_announce=_announce,
+                        on_action=_action,
+                        on_result=_result,
                     )
                     reply = agent_turn.user_reply
-                    for action in agent_turn.actions:
-                        console.print(f"[green]✓[/] {action}")
+                    if agent_turn.urls:
+                        console.print(f"[bold green]URL:[/] {agent_turn.urls[-1]}")
+                    # actions already printed live via on_result
                 else:
                     reply = try_chat_with_inference(
                         message,

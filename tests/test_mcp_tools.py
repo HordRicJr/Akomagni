@@ -129,6 +129,45 @@ def test_fs_delete_empty_directory(workspace, tools):
     assert not (workspace / "empty").exists()
 
 
+def test_shell_refuses_create_vite_in_nonempty_project(workspace, tools):
+    (workspace / ".akomagni").mkdir()
+    result = tools.shell_run("npm create vite@latest . -- --template react")
+    assert not result.ok
+    assert "fs_write" in result.output
+
+
+def test_shell_bg_and_open_url(workspace, tools, monkeypatch):
+    opened: list[str] = []
+
+    class FakeProc:
+        pid = 4242
+
+    monkeypatch.setattr(
+        "akomagni.mcp.tools.subprocess.Popen",
+        lambda *a, **k: FakeProc(),
+    )
+    monkeypatch.setattr(
+        "webbrowser.open",
+        lambda url: opened.append(url) or True,
+    )
+    bg = tools.shell_bg("npm run dev")
+    assert bg.ok
+    assert "pid=4242" in bg.output
+    assert "5173" in bg.output
+    assert (workspace / ".akomagni" / "run" / "dev-server.pid").read_text(
+        encoding="utf-8"
+    ) == "4242"
+    opened_result = tools.open_url("http://127.0.0.1:5173")
+    assert opened_result.ok
+    assert opened == ["http://127.0.0.1:5173"]
+
+
+def test_shell_bg_and_open_url_errors(workspace, tools):
+    assert not tools.shell_bg("").ok
+    assert not tools.open_url("").ok
+    assert not tools.open_url("ftp://x").ok
+
+
 def test_git_missing_executable(workspace, tools, monkeypatch):
     def raise_not_found(*_args, **_kwargs):
         raise FileNotFoundError("git")

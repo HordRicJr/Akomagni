@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from akomagni.flow.intent import RouteDecision
 from akomagni.inference.agent_loop import (
     execute_tool_call,
@@ -28,6 +30,18 @@ def test_parse_and_strip_tool_blocks():
     assert "<<<TOOL>>>" not in visible
     assert "export default" not in visible
     assert "crée App.jsx" in visible or "Je crée" in visible
+
+
+def test_parse_tool_json_with_braces_in_content():
+    """Regression: JSX/content with `}` must not truncate JSON parsing."""
+    content = 'export default function App() {\n  return <div className="x">{ok}</div>;\n}\n'
+    payload = {"name": "fs_write", "path": "src/App.jsx", "content": content}
+    raw = f"ok\n<<<TOOL>>>\n{json.dumps(payload)}\n<<<END_TOOL>>>\n"
+    calls = parse_tool_calls(raw)
+    assert len(calls) == 1
+    assert calls[0]["path"] == "src/App.jsx"
+    assert "return <div" in calls[0]["content"]
+    assert calls[0]["content"].count("}") >= 2
 
 
 def test_parse_skips_invalid_json():

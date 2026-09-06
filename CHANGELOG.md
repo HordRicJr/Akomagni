@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2026-09-06
+
+### Fixed
+
+- **Agent tools JSON**: `fs_write` with JSX/`}` in content is parsed correctly (files actually land on disk)
+- **Scaffold**: refuse `create-vite` into a non-empty `.akomagni` project; instruct fs_write + `npm install` instead
+- **Live progress**: CLI shows announce → tool → ok/error while working
+- **Dev server**: `shell_bg` + `open_url` to launch Vite and open the browser with the local URL
+- Coverage fail-under aligned to 88% after agent tooling expansion
+
 ## [0.3.3] - 2026-09-06
 
 ### Fixed

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "akomagni"
-version = "0.3.3"
+version = "0.3.4"
 description = "Poste de travail IA local — multi-métiers, BMAD, offline"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -74,10 +74,10 @@ markers = [
 [tool.coverage.run]
 branch = true
 source = ["akomagni"]
-omit = ["*/tests/*", "*/inference/agent_loop.py"]
+omit = ["*/tests/*"]
 
 [tool.coverage.report]
-fail_under = 89
+fail_under = 88
 show_missing = true
 skip_covered = false
 
