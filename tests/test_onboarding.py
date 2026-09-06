@@ -43,6 +43,38 @@ def test_scaffold_project(tmp_path):
     assert (root / ".akomagni" / "workflow" / "state.yaml").is_file()
 
 
+def test_scaffold_project_permission_error(tmp_path, monkeypatch):
+    from pathlib import Path as PathCls
+
+    from akomagni.core.onboarding import ProjectPathError, scaffold_project
+
+    target = tmp_path / "blocked"
+    real_mkdir = PathCls.mkdir
+
+    def boom(self, *args, **kwargs):
+        if "blocked" in self.parts:
+            raise PermissionError("denied")
+        return real_mkdir(self, *args, **kwargs)
+
+    monkeypatch.setattr(PathCls, "mkdir", boom)
+    with pytest.raises(ProjectPathError, match="Cannot create project"):
+        scaffold_project(target)
+
+
+def test_default_projects_root_and_drive_root(tmp_path, monkeypatch):
+    import sys
+
+    from akomagni.core.onboarding import default_projects_root, is_unsafe_cwd
+
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "Local"))
+    root = default_projects_root()
+    if sys.platform == "win32":
+        assert root == (tmp_path / "Local" / "akomagni" / "projects")
+        assert is_unsafe_cwd(Path("C:/")) is True
+    else:
+        assert root == Path.home() / "akomagni-projects"
+
+
 def test_resolve_project_path_avoids_system32(tmp_path, monkeypatch):
     from akomagni.core.onboarding import default_projects_root, resolve_project_path
 
