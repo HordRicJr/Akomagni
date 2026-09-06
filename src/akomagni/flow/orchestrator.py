@@ -17,6 +17,24 @@ _GREENFIELD_OK = frozenset(
     }
 )
 
+# Clear intents that must not be forced into brainstorm on a fresh project.
+_EXPLICIT_SKILLS = frozenset(
+    {
+        "bmad-build",
+        "bmad-prd",
+        "bmad-ux",
+        "bmad-architecture",
+        "bmad-testarch-automate",
+        "bmad-cis-storytelling",
+        "bmad-cis-innovation-strategy",
+        "bmad-cis-problem-solving",
+        "presentation-deck",
+        "gds-quick-dev",
+        "gds-gdd",
+        "image-pipeline",
+    }
+)
+
 
 def _brainstorm_already_done(project_root: Path | None = None) -> bool:
     discover = project_root is not None
@@ -33,6 +51,7 @@ def _brainstorm_in_progress(project_root: Path | None = None) -> bool:
     state = load_state(project_root, discover=discover)
     return (state.get("gates") or {}).get("brainstorm") == "in_progress"
 
+
 def _is_fresh_project(project_root: Path | None = None) -> bool:
     """True when this project has not started a BMAD flow yet (first prompts)."""
     if _brainstorm_already_done(project_root):
@@ -46,13 +65,24 @@ def _is_fresh_project(project_root: Path | None = None) -> bool:
     return len(completed) == 0
 
 
+def _has_explicit_non_greenfield_intent(message: str) -> bool:
+    """True when the message already maps to a concrete skill (dev, PRD, …)."""
+    from akomagni.flow.intent import classify_message
+
+    decision = classify_message(message, greenfield=False)
+    return decision.skill in _EXPLICIT_SKILLS and decision.confidence >= 0.75
+
+
 def _is_greenfield(message: str, project_root: Path | None = None) -> bool:
     """Greenfield = brainstorm gate still open for this project.
 
-    Always true on the first prompt(s) of a fresh project. Also true when the
-    message clearly starts a new product idea (FR/EN).
+    Fresh projects default to brainstorm, unless the user already asks for a
+    concrete skill (implement, PRD, UX, tests, …).
     """
     if _brainstorm_already_done(project_root):
+        return False
+
+    if _has_explicit_non_greenfield_intent(message):
         return False
 
     if _is_fresh_project(project_root):
