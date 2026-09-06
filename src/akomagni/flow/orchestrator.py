@@ -128,8 +128,21 @@ def route_message(message: str, project_root: Path | None = None) -> RouteDecisi
 
     While brainstorm is ``in_progress`` on the project, weak follow-ups
     (short answers, \"je valide\", \"commence\") stay on brainstorm.
+    Explicit resume/continue phrases leave brainstorm so work can proceed.
     """
+    from akomagni.flow.history import is_resume_continue
     from akomagni.flow.intent import classify_message as _cls
+
+    if is_resume_continue(message) and project_root is not None:
+        # Pick up existing work: do not re-open greenfield discovery.
+        decision = RouteDecision(
+            agent_id="bmad-agent-dev",
+            skill="bmad-build",
+            confidence=0.88,
+            badge=_badge_build(),
+            hint="Reprise du projet existant — lecture de .akomagni + fichiers.",
+        )
+        return apply_workflow_gates(decision, project_root=project_root)
 
     greenfield = _is_greenfield(message, project_root=project_root)
     from akomagni.core.config import load_config
@@ -161,6 +174,13 @@ def route_message(message: str, project_root: Path | None = None) -> RouteDecisi
         _brainstorm_in_progress(project_root)
         and decision.skill not in _GREENFIELD_OK
         and (decision.skill == "chat" or decision.confidence < 0.8)
+        and not is_resume_continue(message)
     ):
         decision = _cls(message, greenfield=True)
     return apply_workflow_gates(decision, project_root=project_root)
+
+
+def _badge_build() -> str:
+    from akomagni.flow.intent import _badge
+
+    return _badge("bmad-agent-dev", "Build")

@@ -401,12 +401,15 @@ def chat(
         console.print(f"[dim]Provider:[/] {session.provider}")
         if not session.created_project:
             from akomagni.core.onboarding import summarize_project_files
+            from akomagni.flow.history import prior_workflow_context
 
             project_context = (
                 "Existing project — read these files before changing anything:\n"
                 + summarize_project_files(session.project_root)
+                + "\n\n"
+                + prior_workflow_context(session.project_root)
             )
-            console.print("[dim]Continuing existing project (files loaded into context).[/]")
+            console.print("[dim]Continuing existing project (files + .akomagni context loaded).[/]")
         # Never auto-enable --exec: it runs render_skill and can pollute the project.
         cfg = load_config()
     elif project:
@@ -416,6 +419,7 @@ def chat(
                 project_has_content,
                 summarize_project_files,
             )
+            from akomagni.flow.history import prior_workflow_context
 
             root = resolve_project_path(project)
             if project_has_content(root):
@@ -427,9 +431,11 @@ def chat(
                     project_context = (
                         "Existing project — read these files before changing anything:\n"
                         + summarize_project_files(root)
+                        + "\n\n"
+                        + prior_workflow_context(root)
                     )
                     console.print(
-                        "[dim]Continuing existing project (files loaded into context).[/]"
+                        "[dim]Continuing existing project (files + .akomagni context loaded).[/]"
                     )
             root = scaffold_project(root)
         except ProjectPathError as exc:
@@ -477,8 +483,27 @@ def chat(
 
     sticky_skill: str | None = None
     skill_guidance_cache = ""
-    chat_history: list[dict[str, str]] = []
+    from akomagni.flow.history import (
+        is_resume_continue,
+        load_chat_history,
+        restore_sticky_skill,
+        save_chat_history,
+    )
+
+    chat_history: list[dict[str, str]] = load_chat_history(active_project)
     max_history_messages = 24
+    if active_project and not project_context:
+        from akomagni.flow.history import prior_workflow_context
+
+        prior = prior_workflow_context(active_project)
+        if prior:
+            project_context = prior
+    if active_project:
+        sticky_skill = restore_sticky_skill(active_project)
+        if sticky_skill:
+            console.print(f"[dim]Resuming skill:[/] `{sticky_skill}`")
+        if chat_history:
+            console.print(f"[dim]Chat history restored:[/] {len(chat_history)} messages")
 
     while True:
         try:
@@ -511,6 +536,12 @@ def chat(
             continue
         if not message.strip():
             continue
+        if is_resume_continue(message) and sticky_skill in {
+            "bmad-brainstorming",
+            "gds-brainstorm-game",
+        }:
+            sticky_skill = None
+            console.print("[dim]Resume → leaving brainstorm sticky, continuing the app[/]")
         rag_context = ""
         if use_rag:
             rag_context = retrieve_rag_context(
@@ -703,6 +734,7 @@ def chat(
                 chat_history.append({"role": "assistant", "content": str(reply)})
                 if len(chat_history) > max_history_messages:
                     chat_history[:] = chat_history[-max_history_messages:]
+                save_chat_history(active_project, chat_history)
                 if auto_capture:
                     preview = build_capture_text(message, reply)
                     console.print(f"[dim]{_t('memory.capture_preview')}[/]")
