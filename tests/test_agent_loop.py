@@ -134,11 +134,7 @@ def test_run_agent_tool_turn_summary_after_tools_without_done(tmp_path):
     decision = RouteDecision("bmad-agent-dev", "bmad-build", 0.9, "dev", "build")
     replies = iter(
         [
-            (
-                "<<<TOOL>>>\n"
-                '{"name":"fs_write","path":"x.txt","content":"x"}\n'
-                "<<<END_TOOL>>>"
-            ),
+            ('<<<TOOL>>>\n{"name":"fs_write","path":"x.txt","content":"x"}\n<<<END_TOOL>>>'),
             "",
         ]
     )

@@ -68,9 +68,11 @@ def test_default_projects_root_and_drive_root(tmp_path, monkeypatch):
 
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "Local"))
     root = default_projects_root()
-    assert root == (tmp_path / "Local" / "akomagni" / "projects")
     if sys.platform == "win32":
+        assert root == (tmp_path / "Local" / "akomagni" / "projects")
         assert is_unsafe_cwd(Path("C:/")) is True
+    else:
+        assert root == Path.home() / "akomagni-projects"
 
 
 def test_resolve_project_path_avoids_system32(tmp_path, monkeypatch):
