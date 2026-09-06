@@ -18,38 +18,43 @@ from akomagni.skills.invoke import is_implementation_skill
 _TOOL_OPEN = re.compile(r"<<<TOOL>>>\s*", re.IGNORECASE)
 _TOOL_CLOSE = re.compile(r"<<<END_TOOL>>>", re.IGNORECASE)
 _DONE_MARK = re.compile(r"<<<DONE>>>", re.IGNORECASE)
+# Models often emit: [TOOL_CALLS]fs_write{"name":"fs_write",...}
+_ALT_TOOL_HEAD = re.compile(r"\[TOOL_CALLS\]\s*([a-zA-Z_][\w]*)\s*", re.IGNORECASE)
 
 TOOL_INSTRUCTIONS = """
 ## Project tools (required for file work)
-You are in IMPLEMENTATION mode. You MUST use tools to create real files on disk.
+You are in IMPLEMENTATION mode. You MUST use tools to create/read real files on disk.
 Do not paste long source code into the chat. The user sees your short status text + tool progress.
 
 ### Visibility (required)
-1. First write 2-5 short sentences telling the user what you will do now
-   (e.g. "Je crée le projet React + localStorage, puis j'installe npm et je lance le serveur.").
-2. Then emit tool calls.
+1. First write 2-5 short sentences telling the user what you will do now.
+2. Then emit tool calls in the EXACT format below (nothing else).
 3. After tools, summarize what succeeded and the next step (or <<<DONE>>>).
 
-### Tool format (exact)
+### Tool format (ONLY this — never [TOOL_CALLS] or bare fs_write{)
 <<<TOOL>>>
 {"name":"fs_write","path":"relative/path.ext","content":"file contents here"}
 <<<END_TOOL>>>
 
 Available tools:
 - fs_write: {"name":"fs_write","path":"...","content":"..."}
-- fs_read: {"name":"fs_read","path":"..."}
-- fs_list: {"name":"fs_list","path":"."}
+- fs_read: {"name":"fs_read","path":"..."}  — read a file before fixing it
+- fs_list: {"name":"fs_list","path":"."}    — list project files
 - shell_run: {"name":"shell_run","command":"npm install"}
-- shell_bg: {"name":"shell_bg","command":"npm run dev"}  (long-running: Vite/dev server)
+- shell_bg: {"name":"shell_bg","command":"npm run dev"}
 - open_url: {"name":"open_url","url":"http://127.0.0.1:5173"}
 
-### Scaffolding rules
-- The workspace already has `.akomagni/` — do NOT run `npm create vite@latest .` (fails: dir not empty).
-- Prefer writing Vite+React files with fs_write (package.json, vite.config.js, index.html, src/*), then `npm install`.
-- Use non-interactive commands only (no prompts).
-- When the app is ready: shell_bg `npm run dev` (waits until the port listens), then open_url the returned url, then <<<DONE>>>.
-- End user-visible text with the URL (usually http://127.0.0.1:5173).
+### Debugging / fixes
+- ALWAYS fs_list + fs_read the failing files BEFORE writing fixes.
+- For Vite "Failed to resolve import ./X", create the missing file with fs_write.
+- For React+Vite apps, ensure at least: index.html, vite.config.js, package.json,
+  src/main.jsx, src/App.jsx, src/index.css.
+- When asked to launch the server: shell_bg `npm run dev`, then open_url the returned url.
 - If shell_bg fails, show the error and fix — do not claim the site is online.
+
+### Scaffolding rules
+- Workspace may already have `.akomagni/` — do NOT run `npm create vite@latest .`.
+- Prefer fs_write for source files, then `npm install` if needed.
 """.strip()
 
 _BUILD_SIGNALS = (
@@ -81,6 +86,7 @@ _BUILD_SIGNALS = (
     "genere le fichier",
     "scaffold",
     "npm create",
+    "npm run",
     "vite",
     "implemente",
     "implémente",
@@ -90,7 +96,32 @@ _BUILD_SIGNALS = (
     "commence a coder",
     "code l'app",
     "code l app",
+    "lance le serveur",
+    "lancer le serveur",
+    "lance serveur",
+    "start the server",
+    "start server",
+    "run the server",
+    "corrige",
+    "fix the",
+    "fix error",
+    "erreur",
+    "error",
+    "failed to resolve",
+    "import-analysis",
+    "analyse les fichier",
+    "analyze the file",
+    "fichier manquant",
+    "missing file",
+    "index.css",
+    "does the file exist",
 )
+
+
+def is_code_work_request(message: str) -> bool:
+    """True when the user wants server/fix/file work (not brainstorm talk)."""
+    lowered = message.lower()
+    return any(sig in lowered for sig in _BUILD_SIGNALS)
 
 
 def wants_project_tools(message: str, decision: RouteDecision) -> bool:
@@ -99,8 +130,75 @@ def wants_project_tools(message: str, decision: RouteDecision) -> bool:
         return True
     if decision.skill in {"bmad-build", "bmad-quick-dev", "gds-quick-dev"}:
         return True
-    lowered = message.lower()
-    return any(sig in lowered for sig in _BUILD_SIGNALS)
+    # UX/arch often get routed on "css/import" words — still need real file tools.
+    return is_code_work_request(message)
+
+
+def _decode_json_object(text: str, start: int = 0) -> tuple[dict[str, Any] | None, int]:
+    decoder = json.JSONDecoder()
+    slice_ = text[start:].lstrip()
+    if not slice_.startswith("{"):
+        brace = slice_.find("{")
+        if brace < 0:
+            return None, start
+        slice_ = slice_[brace:]
+        start = len(text) - len(slice_)
+    try:
+        payload, consumed = decoder.raw_decode(slice_)
+    except json.JSONDecodeError:
+        return None, start
+    if isinstance(payload, dict):
+        return payload, start + consumed
+    return None, start
+
+
+def parse_tool_calls(text: str) -> list[dict[str, Any]]:
+    """Parse <<<TOOL>>> blocks and common model variants like [TOOL_CALLS]fs_write{...}."""
+    calls: list[dict[str, Any]] = []
+    seen: set[str] = set()
+
+    def _add(payload: dict[str, Any]) -> None:
+        name = str(payload.get("name", "")).strip()
+        if not name:
+            return
+        key = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+        if key in seen:
+            return
+        seen.add(key)
+        calls.append(payload)
+
+    pos = 0
+    while True:
+        open_m = _TOOL_OPEN.search(text, pos)
+        if not open_m:
+            break
+        close_m = _TOOL_CLOSE.search(text, open_m.end())
+        if not close_m:
+            break
+        raw = text[open_m.end() : close_m.start()].strip()
+        pos = close_m.end()
+        payload: Any = None
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError:
+            payload, _ = _decode_json_object(raw, 0)
+            payload = payload or None
+        if isinstance(payload, dict):
+            _add(payload)
+
+    # Alternate: [TOOL_CALLS]fs_write{...}[TOOL_CALLS]fs_read{...}
+    for match in _ALT_TOOL_HEAD.finditer(text):
+        tool_name = match.group(1).strip()
+        payload, _ = _decode_json_object(text, match.end())
+        if not payload:
+            continue
+        payload.setdefault("name", tool_name)
+        # Some models put the tool name only in the prefix.
+        if str(payload.get("name", "")).lower() in {"", "tool"}:
+            payload["name"] = tool_name
+        _add(payload)
+
+    return calls
 
 
 def strip_tool_markup(text: str) -> str:
@@ -115,39 +213,21 @@ def strip_tool_markup(text: str) -> str:
             cleaned = cleaned[: open_m.start()].rstrip()
             break
         cleaned = (cleaned[: open_m.start()] + cleaned[close_m.end() :]).strip()
+
+    # Strip [TOOL_CALLS]name{json}
+    while True:
+        match = _ALT_TOOL_HEAD.search(cleaned)
+        if not match:
+            break
+        payload, end = _decode_json_object(cleaned, match.end())
+        if payload is None:
+            cleaned = cleaned[: match.start()] + cleaned[match.end() :]
+            continue
+        cleaned = (cleaned[: match.start()] + cleaned[end:]).strip()
+
     cleaned = _DONE_MARK.sub("", cleaned)
     cleaned = re.sub(r"```[\s\S]*?```", "", cleaned)
     return re.sub(r"\n{3,}", "\n\n", cleaned).strip()
-
-
-def parse_tool_calls(text: str) -> list[dict[str, Any]]:
-    """Parse tool JSON between <<<TOOL>>> … <<<END_TOOL>>> (supports `}` inside content)."""
-    calls: list[dict[str, Any]] = []
-    pos = 0
-    decoder = json.JSONDecoder()
-    while True:
-        open_m = _TOOL_OPEN.search(text, pos)
-        if not open_m:
-            break
-        close_m = _TOOL_CLOSE.search(text, open_m.end())
-        if not close_m:
-            break
-        raw = text[open_m.end() : close_m.start()].strip()
-        pos = close_m.end()
-        payload: Any = None
-        try:
-            payload = json.loads(raw)
-        except json.JSONDecodeError:
-            brace = raw.find("{")
-            if brace < 0:
-                continue
-            try:
-                payload, _ = decoder.raw_decode(raw[brace:])
-            except json.JSONDecodeError:
-                continue
-        if isinstance(payload, dict) and payload.get("name"):
-            calls.append(payload)
-    return calls
 
 
 def execute_tool_call(tools: AgentTools, call: dict[str, Any]) -> ToolResult:
@@ -212,12 +292,13 @@ def run_agent_tool_turn(
     last_raw = ""
     visible = ""
     announces: list[str] = []
+    format_nudge_used = False
 
     user_message = (
         f"{message}\n\n"
-        "(Reminder: announce briefly, then use tools. Prefer fs_write for React/Vite files "
-        "because this folder already contains .akomagni. After npm install, shell_bg the "
-        "dev server and open_url http://127.0.0.1:5173.)"
+        "(Reminder: fs_list/fs_read before fixes. Use ONLY <<<TOOL>>> JSON <<<END_TOOL>>> "
+        "blocks — never [TOOL_CALLS]. For Vite apps create missing src/index.css etc. "
+        "Then shell_bg npm run dev and open_url when asked to launch.)"
     )
     for _ in range(max(1, max_rounds)):
         last_raw = runner(
@@ -236,6 +317,26 @@ def run_agent_tool_turn(
             announces.append(visible)
             if on_announce:
                 on_announce(visible)
+
+        if (
+            not calls
+            and not format_nudge_used
+            and ("[TOOL_CALLS]" in last_raw or "fs_write" in last_raw or "fs_read" in last_raw)
+        ):
+            # Parsed nothing useful — force a format retry once.
+            format_nudge_used = True
+            working_history.append({"role": "user", "content": user_message})
+            working_history.append({"role": "assistant", "content": last_raw})
+            user_message = (
+                "Your previous tool markup was not executable. "
+                "Retry NOW using ONLY this format (one or more blocks):\n"
+                "<<<TOOL>>>\n"
+                '{"name":"fs_write","path":"src/index.css","content":"body{}"}\n'
+                "<<<END_TOOL>>>\n"
+                "First fs_list '.', then fs_read failing files, then fs_write fixes."
+            )
+            continue
+
         if not calls:
             break
 
@@ -250,9 +351,11 @@ def run_agent_tool_turn(
                 on_action(label)
             result = execute_tool_call(tools, call)
             status = "ok" if result.ok else "error"
-            line = f"{status}: {label} — {result.output[:800]}"
+            # Cap huge fs_read dumps in the action log, keep full text for the model.
+            shown = result.output[:800]
+            line = f"{status}: {label} — {shown}"
             actions.append(line)
-            results.append(line)
+            results.append(f"{status}: {label} — {result.output[:4000]}")
             if on_result:
                 on_result(line, result.ok)
             if name in {"open_url", "open_browser"} and result.ok and path:
@@ -274,9 +377,9 @@ def run_agent_tool_turn(
         user_message = (
             "Tool results:\n"
             + "\n".join(results)
-            + "\nContinue with more tools if needed. Announce briefly what you do next. "
-            "Do not paste source code to the user. When the app runs, shell_bg the server, "
-            "open_url, then <<<DONE>>>."
+            + "\nContinue with more tools if needed. Announce briefly. "
+            "Use <<<TOOL>>> JSON <<<END_TOOL>>> only. "
+            "When the app runs, shell_bg then open_url, then <<<DONE>>>."
         )
 
     done = bool(_DONE_MARK.search(last_raw))
