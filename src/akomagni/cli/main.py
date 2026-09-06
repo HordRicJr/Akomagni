@@ -372,7 +372,13 @@ def chat(
     auto_exec = execute
     active_project: Path | None = None
 
-    from akomagni.core.onboarding import needs_provider_onboarding, run_session_setup
+    from akomagni.core.onboarding import (
+        ProjectPathError,
+        needs_provider_onboarding,
+        resolve_project_path,
+        run_session_setup,
+        scaffold_project,
+    )
     from akomagni.inference.connect import ConnectError
 
     if setup and (project or provider or needs_provider_onboarding(cfg)):
@@ -385,7 +391,7 @@ def chat(
                     provider is None and not needs_provider_onboarding(cfg) and project is not None
                 ),
             )
-        except ConnectError as exc:
+        except (ConnectError, ProjectPathError) as exc:
             console.print(f"[red]{exc}[/]")
             raise typer.Exit(code=1) from exc
         os.chdir(session.project_root)
@@ -395,9 +401,11 @@ def chat(
         # Never auto-enable --exec: it runs render_skill and can pollute the project.
         cfg = load_config()
     elif project:
-        from akomagni.core.onboarding import scaffold_project
-
-        root = scaffold_project(Path(project))
+        try:
+            root = scaffold_project(resolve_project_path(project))
+        except ProjectPathError as exc:
+            console.print(f"[red]{exc}[/]")
+            raise typer.Exit(code=1) from exc
         os.chdir(root)
         active_project = root
         console.print(f"[dim]Project:[/] {root}")

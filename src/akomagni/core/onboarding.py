@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,6 +32,10 @@ class SessionSetup:
     connected: bool
 
 
+class ProjectPathError(RuntimeError):
+    """Raised when a project path cannot be created safely."""
+
+
 def needs_provider_onboarding(config: dict[str, Any] | None = None) -> bool:
     cfg = config or load_config()
     onboarding = cfg.get("onboarding") or {}
@@ -45,13 +51,63 @@ def mark_provider_ready(provider: str) -> None:
     save_config(cfg)
 
 
+def default_projects_root() -> Path:
+    """Writable base for relative ``--project`` paths when cwd is unsafe."""
+    if sys.platform == "win32":
+        base = os.environ.get("LOCALAPPDATA")
+        if base:
+            return Path(base) / "akomagni" / "projects"
+    return Path.home() / "akomagni-projects"
+
+
+def is_unsafe_cwd(path: Path | None = None) -> bool:
+    """True when *path* (default: cwd) is a protected system directory."""
+    current = (path or Path.cwd()).resolve()
+    # Drive root (C:\)
+    if current.parent == current:
+        return True
+    for part in current.parts:
+        low = part.lower()
+        if low in {"windows", "system32", "syswow64", "programdata"}:
+            return True
+        if low.startswith("program files"):
+            return True
+    return False
+
+
+def resolve_project_path(project: str | Path, *, start: Path | None = None) -> Path:
+    """Resolve a user project path, avoiding protected system folders.
+
+    Relative paths use *start* (or cwd). If that base is unsafe (e.g. System32),
+    they are placed under :func:`default_projects_root` instead.
+    """
+    raw = Path(str(project).strip() or ".")
+    base = (start or Path.cwd()).resolve()
+    if raw.is_absolute():
+        return raw.expanduser().resolve()
+    if is_unsafe_cwd(base):
+        return (default_projects_root() / raw).expanduser().resolve()
+    return (base / raw).expanduser().resolve()
+
+
 def scaffold_project(path: Path) -> Path:
     """Create a project folder with ``.akomagni/`` workspace markers."""
     root = path.expanduser().resolve()
-    root.mkdir(parents=True, exist_ok=True)
-    (root / ".akomagni").mkdir(parents=True, exist_ok=True)
-    (root / ".akomagni" / "memory" / "learnings").mkdir(parents=True, exist_ok=True)
-    (root / ".akomagni" / "workflow").mkdir(parents=True, exist_ok=True)
+    try:
+        root.mkdir(parents=True, exist_ok=True)
+        (root / ".akomagni").mkdir(parents=True, exist_ok=True)
+        (root / ".akomagni" / "memory" / "learnings").mkdir(parents=True, exist_ok=True)
+        (root / ".akomagni" / "workflow").mkdir(parents=True, exist_ok=True)
+    except PermissionError as exc:
+        hint = default_projects_root() / "app_test"
+        raise ProjectPathError(
+            f"Cannot create project at {root} (access denied).\n"
+            "Use a writable folder, e.g.:\n"
+            "  cd %USERPROFILE%\\Documents\n"
+            "  akomagni run cli --project ./app_test\n"
+            f"Or an absolute path:\n"
+            f"  akomagni run cli --project {hint}"
+        ) from exc
     state = root / ".akomagni" / "workflow" / "state.yaml"
     if not state.is_file():
         state.write_text(
@@ -76,8 +132,6 @@ def save_hf_token(token: str) -> None:
 
 def resolve_hf_token(config: dict[str, Any] | None = None) -> str | None:
     """Resolve HF Hub token from config or environment."""
-    import os
-
     cfg = config or load_config()
     block = cfg.get("huggingface") or {}
     inline = block.get("api_key")
@@ -169,8 +223,12 @@ def run_session_setup(
     elif chosen:
         connected = False
 
-    project_input = project or prompt(f"Project folder [{Path.cwd()}]")
-    root = Path(project_input.strip() or str(Path.cwd()))
+    if project:
+        root = resolve_project_path(project)
+    else:
+        default_base = default_projects_root() if is_unsafe_cwd() else Path.cwd()
+        project_input = prompt(f"Project folder [{default_base / 'app'}]")
+        root = resolve_project_path(project_input.strip() or str(default_base / "app"))
     created = not (root / ".akomagni").is_dir()
     scaffold_project(root)
     try:

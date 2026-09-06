@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`--project` from System32**: relative paths no longer try to create folders under `C:\Windows\System32`; they go to `%LOCALAPPDATA%\akomagni\projects\` with a clear error if the path is still not writable
+
 ## [0.3.1] - 2026-09-05
 
 ### Added

@@ -43,6 +43,29 @@ def test_scaffold_project(tmp_path):
     assert (root / ".akomagni" / "workflow" / "state.yaml").is_file()
 
 
+def test_resolve_project_path_avoids_system32(tmp_path, monkeypatch):
+    from akomagni.core.onboarding import default_projects_root, resolve_project_path
+
+    fake_system32 = tmp_path / "Windows" / "System32"
+    fake_system32.mkdir(parents=True)
+    monkeypatch.chdir(fake_system32)
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "Local"))
+    resolved = resolve_project_path("./app_test")
+    assert "System32" not in resolved.parts
+    assert resolved == (default_projects_root() / "app_test").resolve()
+
+
+def test_is_unsafe_cwd_detects_windows_system32(tmp_path):
+    from akomagni.core.onboarding import is_unsafe_cwd
+
+    system32 = tmp_path / "Windows" / "System32"
+    system32.mkdir(parents=True)
+    assert is_unsafe_cwd(system32) is True
+    safe = tmp_path / "Documents"
+    safe.mkdir()
+    assert is_unsafe_cwd(safe) is False
+
+
 def test_save_and_resolve_hf_token(akomagni_home):
     save_hf_token("hf_test_token")
     assert resolve_hf_token() == "hf_test_token"
