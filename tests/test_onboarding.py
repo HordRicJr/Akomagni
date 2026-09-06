@@ -27,6 +27,7 @@ runner = CliRunner()
 def akomagni_home(tmp_path, monkeypatch):
     home = tmp_path / "akomagni-home"
     home.mkdir()
+    monkeypatch.setenv("AKOMAGNI_PROJECTS_ROOT", str(tmp_path / "Akomagni"))
     monkeypatch.setattr("akomagni.core.config.DATA_DIR", home)
     monkeypatch.setattr("akomagni.core.config.CONFIG_PATH", home / "config.yaml")
     monkeypatch.setattr("akomagni.core.config.MEMORY_DIR", home / "memory")
@@ -66,13 +67,15 @@ def test_default_projects_root_and_drive_root(tmp_path, monkeypatch):
 
     from akomagni.core.onboarding import default_projects_root, is_unsafe_cwd
 
-    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "Local"))
+    monkeypatch.setenv("AKOMAGNI_PROJECTS_ROOT", str(tmp_path / "Akomagni"))
     root = default_projects_root()
+    assert root == tmp_path / "Akomagni"
+    monkeypatch.delenv("AKOMAGNI_PROJECTS_ROOT", raising=False)
     if sys.platform == "win32":
-        assert root == (tmp_path / "Local" / "akomagni" / "projects")
+        assert default_projects_root() == Path("C:/Akomagni")
         assert is_unsafe_cwd(Path("C:/")) is True
     else:
-        assert root == Path.home() / "akomagni-projects"
+        assert default_projects_root() == Path.home() / "Akomagni"
 
 
 def test_resolve_project_path_avoids_system32(tmp_path, monkeypatch):
@@ -81,10 +84,42 @@ def test_resolve_project_path_avoids_system32(tmp_path, monkeypatch):
     fake_system32 = tmp_path / "Windows" / "System32"
     fake_system32.mkdir(parents=True)
     monkeypatch.chdir(fake_system32)
-    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "Local"))
+    monkeypatch.setenv("AKOMAGNI_PROJECTS_ROOT", str(tmp_path / "Akomagni"))
     resolved = resolve_project_path("./app_test")
     assert "System32" not in resolved.parts
     assert resolved == (default_projects_root() / "app_test").resolve()
+    assert (tmp_path / "Akomagni").is_dir()
+
+
+def test_choose_existing_project_modify_new_delete(tmp_path, monkeypatch):
+    from akomagni.core.onboarding import (
+        choose_existing_project,
+        project_has_content,
+        scaffold_project,
+        summarize_project_files,
+    )
+
+    monkeypatch.setenv("AKOMAGNI_PROJECTS_ROOT", str(tmp_path / "Akomagni"))
+    root = scaffold_project(tmp_path / "Akomagni" / "app_test")
+    (root / "index.html").write_text("<html></html>", encoding="utf-8")
+    assert project_has_content(root)
+    snap = summarize_project_files(root)
+    assert "index.html" in snap
+
+    kept = choose_existing_project(root=root, prompt=lambda _m: "m")
+    assert kept == root
+    assert (root / "index.html").is_file()
+
+    answers = iter(["n", "app_other"])
+    other = choose_existing_project(root=root, prompt=lambda _m: next(answers))
+    assert other == (tmp_path / "Akomagni" / "app_other").resolve()
+
+    deleted = choose_existing_project(
+        root=root,
+        prompt=lambda m: "DELETE" if "DELETE" in m else "d",
+    )
+    assert deleted == root
+    assert not root.exists()
 
 
 def test_is_unsafe_cwd_detects_windows_system32(tmp_path):
@@ -193,6 +228,7 @@ def test_run_connect_wizard_invalid(akomagni_home):
 
 
 def test_session_setup_prompts_provider(akomagni_home, tmp_path, monkeypatch):
+    monkeypatch.setenv("AKOMAGNI_PROJECTS_ROOT", str(tmp_path / "Akomagni"))
     monkeypatch.setattr(
         "akomagni.core.onboarding.connect_provider",
         lambda *a, **k: None,
