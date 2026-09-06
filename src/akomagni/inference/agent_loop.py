@@ -47,8 +47,9 @@ Available tools:
 - The workspace already has `.akomagni/` — do NOT run `npm create vite@latest .` (fails: dir not empty).
 - Prefer writing Vite+React files with fs_write (package.json, vite.config.js, index.html, src/*), then `npm install`.
 - Use non-interactive commands only (no prompts).
-- When the app is ready: shell_bg `npm run dev` (or `npx vite`), then open_url the local URL, then <<<DONE>>>.
+- When the app is ready: shell_bg `npm run dev` (waits until the port listens), then open_url the returned url, then <<<DONE>>>.
 - End user-visible text with the URL (usually http://127.0.0.1:5173).
+- If shell_bg fails, show the error and fix — do not claim the site is online.
 """.strip()
 
 _BUILD_SIGNALS = (
