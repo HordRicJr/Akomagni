@@ -120,6 +120,10 @@ def restore_sticky_skill(project_root: Path | None) -> str | None:
 
 def is_resume_continue(message: str) -> bool:
     """True when the user wants to pick up existing work, not restart brainstorm."""
+    from akomagni.inference.agent_loop import is_code_work_request
+
+    if is_code_work_request(message):
+        return True
     lowered = message.lower().strip()
     signals = (
         "on continue",

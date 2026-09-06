@@ -7,6 +7,7 @@ import json
 from akomagni.flow.intent import RouteDecision
 from akomagni.inference.agent_loop import (
     execute_tool_call,
+    is_code_work_request,
     parse_tool_calls,
     run_agent_tool_turn,
     strip_tool_markup,
@@ -42,6 +43,37 @@ def test_parse_tool_json_with_braces_in_content():
     assert calls[0]["path"] == "src/App.jsx"
     assert "return <div" in calls[0]["content"]
     assert calls[0]["content"].count("}") >= 2
+
+
+def test_parse_bracket_tool_calls_variant():
+    raw = (
+        "Je crée le CSS.\n"
+        '[TOOL_CALLS]fs_write{"name":"fs_write","path":"src/index.css","content":"body{margin:0}"}\n'
+        '[TOOL_CALLS]fs_read{"name":"fs_read","path":"src/main.jsx"}'
+    )
+    calls = parse_tool_calls(raw)
+    assert len(calls) == 2
+    assert calls[0]["path"] == "src/index.css"
+    assert "margin:0" in calls[0]["content"]
+    assert calls[1]["name"] == "fs_read"
+    visible = strip_tool_markup(raw)
+    assert "[TOOL_CALLS]" not in visible
+    assert "crée le CSS" in visible
+
+
+def test_code_work_signals_enable_tools():
+    chat = RouteDecision("akomagni", "chat", 0.5, "x", "y")
+    assert is_code_work_request("lance le serveur") is True
+    assert wants_project_tools("lance le serveur", chat) is True
+    assert (
+        wants_project_tools(
+            'Failed to resolve import "./index.css" from "src/main.jsx"',
+            chat,
+        )
+        is True
+    )
+    ux = RouteDecision("bmad-agent-ux-designer", "bmad-ux", 0.85, "x", "y")
+    assert wants_project_tools("corrige l'erreur d'import", ux) is True
 
 
 def test_parse_skips_invalid_json():

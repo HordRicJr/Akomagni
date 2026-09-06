@@ -484,7 +484,6 @@ def chat(
     sticky_skill: str | None = None
     skill_guidance_cache = ""
     from akomagni.flow.history import (
-        is_resume_continue,
         load_chat_history,
         restore_sticky_skill,
         save_chat_history,
@@ -536,12 +535,17 @@ def chat(
             continue
         if not message.strip():
             continue
-        if is_resume_continue(message) and sticky_skill in {
+        from akomagni.inference.agent_loop import is_code_work_request
+
+        if is_code_work_request(message) and sticky_skill in {
             "bmad-brainstorming",
             "gds-brainstorm-game",
+            "bmad-ux",
+            "bmad-prd",
+            "bmad-architecture",
         }:
             sticky_skill = None
-            console.print("[dim]Resume → leaving brainstorm sticky, continuing the app[/]")
+            console.print("[dim]Code/fix/server → leaving sticky skill, using project tools[/]")
         rag_context = ""
         if use_rag:
             rag_context = retrieve_rag_context(
@@ -618,15 +622,22 @@ def chat(
             from akomagni.inference.agent_loop import run_agent_tool_turn, wants_project_tools
 
             use_tools = bool(active_project) and wants_project_tools(message, decision)
-            if use_tools and decision.skill in {"chat", "bmad-brainstorming"}:
-                # Promote to build so tools create files instead of dumping code in chat.
+            if use_tools and decision.skill in {
+                "chat",
+                "bmad-brainstorming",
+                "gds-brainstorm-game",
+                "bmad-ux",
+                "bmad-prd",
+                "bmad-architecture",
+            }:
+                # Promote to build so tools create/fix files instead of dumping code in chat.
                 agent_id = agent_for_skill("bmad-build")
                 decision = RouteDecision(
                     agent_id=agent_id,
                     skill="bmad-build",
                     confidence=0.9,
                     badge=_badge(agent_id, "Build"),
-                    hint="Création de fichiers dans le projet via outils agent.",
+                    hint="Création/correction de fichiers dans le projet via outils agent.",
                 )
                 sticky_skill = "bmad-build"
                 console.print(f"[dim]{decision.badge}[/] → outils projet (écriture fichiers)")
