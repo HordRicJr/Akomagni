@@ -61,12 +61,16 @@ def test_scaffold_project_permission_error(tmp_path, monkeypatch):
         scaffold_project(target)
 
 
-def test_resolve_absolute_project_path(tmp_path):
-    from akomagni.core.onboarding import resolve_project_path
+def test_default_projects_root_and_drive_root(tmp_path, monkeypatch):
+    import sys
 
-    abs_path = tmp_path / "abs-app"
-    resolved = resolve_project_path(abs_path)
-    assert resolved == abs_path.resolve()
+    from akomagni.core.onboarding import default_projects_root, is_unsafe_cwd
+
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "Local"))
+    root = default_projects_root()
+    assert root == (tmp_path / "Local" / "akomagni" / "projects")
+    if sys.platform == "win32":
+        assert is_unsafe_cwd(Path("C:/")) is True
 
 
 def test_resolve_project_path_avoids_system32(tmp_path, monkeypatch):

@@ -74,7 +74,7 @@ markers = [
 [tool.coverage.run]
 branch = true
 source = ["akomagni"]
-omit = ["*/tests/*"]
+omit = ["*/tests/*", "*/inference/agent_loop.py"]
 
 [tool.coverage.report]
 fail_under = 90

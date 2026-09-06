@@ -61,6 +61,40 @@ def test_sticky_override_keeps_brainstorm(tmp_path, monkeypatch):
     assert second.session_path.is_relative_to(app.resolve())
 
 
+def test_explicit_implement_skips_fresh_greenfield(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".akomagni").mkdir()
+    decision = route_message("Implémente le endpoint login avec JWT", project_root=tmp_path)
+    assert decision.skill == "bmad-build"
+
+
+def test_invoke_sticky_override_non_brainstorm_skill(tmp_path, monkeypatch):
+    app = tmp_path / "app"
+    app.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setattr("akomagni.core.config.DATA_DIR", home)
+    monkeypatch.setattr("akomagni.core.config.CONFIG_PATH", home / "config.yaml")
+    monkeypatch.setattr("akomagni.core.config.MEMORY_DIR", home / "memory")
+    monkeypatch.setattr("akomagni.core.config.MODELS_DIR", home / "models")
+    monkeypatch.setattr("akomagni.core.config.SKILLS_DIR", home / "skills")
+    monkeypatch.setattr("akomagni.core.bmad_kernel.find_shipped_bmad_core", lambda: None)
+    monkeypatch.setattr("akomagni.core.bmad_kernel.ensure_bmad_kernel", lambda **_: None)
+    monkeypatch.chdir(app)
+    save_state(
+        {
+            "phase": "anytime",
+            "gates": {"brainstorm": "complete"},
+            "completed": ["bmad-brainstorming"],
+        },
+        project_root=app,
+    )
+
+    result = invoke_skill("hello there", project_root=app, skill_override="bmad-ux")
+    assert result.decision.skill == "bmad-ux"
+    assert result.decision.agent_id == "bmad-agent-ux-designer"
+
+
 def test_creer_moi_routes_brainstorm():
     decision = classify_message("créer moi une mini application de gestion en web avec react")
     assert decision.skill == "bmad-brainstorming"

@@ -128,3 +128,31 @@ def test_run_agent_tool_turn_no_tools_default_reply(tmp_path):
 
     turn = run_agent_tool_turn("continue", decision, workspace=tmp_path, chat_fn=fake_chat)
     assert turn.user_reply
+
+
+def test_run_agent_tool_turn_summary_after_tools_without_done(tmp_path):
+    decision = RouteDecision("bmad-agent-dev", "bmad-build", 0.9, "dev", "build")
+    replies = iter(
+        [
+            (
+                "<<<TOOL>>>\n"
+                '{"name":"fs_write","path":"x.txt","content":"x"}\n'
+                "<<<END_TOOL>>>"
+            ),
+            "",
+        ]
+    )
+
+    def fake_chat(message, **kwargs):
+        return next(replies)
+
+    turn = run_agent_tool_turn(
+        "crée les fichiers",
+        decision,
+        workspace=tmp_path,
+        chat_fn=fake_chat,
+        max_rounds=2,
+    )
+    assert (tmp_path / "x.txt").read_text(encoding="utf-8") == "x"
+    assert turn.actions
+    assert turn.user_reply
