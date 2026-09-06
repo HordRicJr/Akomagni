@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.5] - 2026-09-06
+
+### Fixed
+
+- **Dev server on Windows**: background Vite no longer dies when the tool returns (stdout pipe close); waits until `127.0.0.1:5173` is listening before reporting success / opening the browser
+
 ## [0.3.4] - 2026-09-06
 
 ### Fixed

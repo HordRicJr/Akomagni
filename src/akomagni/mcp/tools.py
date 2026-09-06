@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -197,6 +198,9 @@ class AgentTools:
 
     def shell_bg(self, command: str, *, cwd: str | None = None) -> ToolResult:
         """Start a long-running command (dev server) without blocking the CLI."""
+        import socket
+        import time
+
         command = command.strip()
         if not command:
             return ToolResult(ok=False, output="command is required")
@@ -212,31 +216,110 @@ class AgentTools:
         run_dir = self.workspace / ".akomagni" / "run"
         run_dir.mkdir(parents=True, exist_ok=True)
         log_path = run_dir / "dev-server.log"
-        try:
-            log_file = log_path.open("w", encoding="utf-8")
-            process = subprocess.Popen(  # nosec B602
-                command,
-                shell=True,
-                cwd=workdir,
-                stdout=log_file,
-                stderr=subprocess.STDOUT,
-                text=True,
+
+        lowered = command.lower()
+        # Bind loopback explicitly so 127.0.0.1 works (and we can probe the port).
+        launch = command
+        if ("npm run dev" in lowered or "vite" in lowered) and "--host" not in lowered:
+            if "npm" in lowered:
+                launch = f"{command} -- --host 127.0.0.1 --port 5173"
+            else:
+                launch = f"{command} --host 127.0.0.1 --port 5173"
+
+        url = "http://127.0.0.1:5173"
+        if "3000" in lowered or "react-scripts" in lowered:
+            url = "http://127.0.0.1:3000"
+        probe_ports = (5173, 3000, 4173, 8080)
+
+        # Redirect via the shell into a file so Python does not own the child's
+        # stdout pipe (closing that handle on Windows kills Vite/npm).
+        log_escaped = str(log_path).replace('"', '""')
+        if sys.platform == "win32":
+            wrapped = f'cmd.exe /d /c "({launch}) > "{log_escaped}" 2>&1"'
+            creationflags = (
+                getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
+                | 0x08000000  # CREATE_NO_WINDOW
             )
-        except OSError as exc:
-            return ToolResult(ok=False, output=f"failed to start: {exc}")
+            try:
+                process = subprocess.Popen(  # nosec B603 — sandboxed workspace command
+                    wrapped,
+                    cwd=workdir,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=creationflags,
+                )
+            except OSError as exc:
+                return ToolResult(ok=False, output=f"failed to start: {exc}")
+        else:
+            wrapped = f"({launch}) > '{log_path}' 2>&1"
+            try:
+                process = subprocess.Popen(  # nosec B602
+                    wrapped,
+                    shell=True,
+                    cwd=workdir,
+                    stdin=subprocess.DEVNULL,
+                    start_new_session=True,
+                )
+            except OSError as exc:
+                return ToolResult(ok=False, output=f"failed to start: {exc}")
 
         (run_dir / "dev-server.pid").write_text(str(process.pid), encoding="utf-8")
-        url = "http://127.0.0.1:5173"
-        lowered = command.lower()
-        if "3000" in lowered or "react-scripts" in lowered or "cra" in lowered:
-            url = "http://127.0.0.1:3000"
+
+        def _listening(port: int) -> bool:
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=0.35):
+                    return True
+            except OSError:
+                return False
+
+        ready_port: int | None = None
+        for _ in range(60):  # up to ~30s
+            if process.poll() is not None:
+                tail = ""
+                if log_path.is_file():
+                    try:
+                        tail = log_path.read_text(encoding="utf-8", errors="replace")[-1200:]
+                    except OSError:
+                        tail = "(could not read log)"
+                return ToolResult(
+                    ok=False,
+                    output=(
+                        f"dev server exited early (code={process.returncode}).\n"
+                        f"log={log_path}\n{tail}"
+                    ),
+                )
+            for port in probe_ports:
+                if _listening(port):
+                    ready_port = port
+                    break
+            if ready_port is not None:
+                break
+            time.sleep(0.5)
+
+        if ready_port is None:
+            tail = ""
+            if log_path.is_file():
+                try:
+                    tail = log_path.read_text(encoding="utf-8", errors="replace")[-1200:]
+                except OSError:
+                    tail = ""
+            return ToolResult(
+                ok=False,
+                output=(
+                    f"started pid={process.pid} but no port opened within 30s.\n"
+                    f"log={log_path}\n{tail}"
+                ),
+            )
+
+        url = f"http://127.0.0.1:{ready_port}"
         return ToolResult(
             ok=True,
             output=(
                 f"started pid={process.pid}\n"
                 f"log={log_path}\n"
                 f"url={url}\n"
-                "Dev server is running in the background."
+                f"Dev server is listening on {url}"
             ),
         )
 

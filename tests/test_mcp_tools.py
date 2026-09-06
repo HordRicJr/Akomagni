@@ -142,10 +142,22 @@ def test_shell_bg_and_open_url(workspace, tools, monkeypatch):
     class FakeProc:
         pid = 4242
 
+        def poll(self):
+            return None
+
+    class FakeSock:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
     monkeypatch.setattr(
         "akomagni.mcp.tools.subprocess.Popen",
         lambda *a, **k: FakeProc(),
     )
+    monkeypatch.setattr("socket.create_connection", lambda *a, **k: FakeSock())
+    monkeypatch.setattr("time.sleep", lambda *_a, **_k: None)
     monkeypatch.setattr(
         "webbrowser.open",
         lambda url: opened.append(url) or True,
@@ -154,6 +166,7 @@ def test_shell_bg_and_open_url(workspace, tools, monkeypatch):
     assert bg.ok
     assert "pid=4242" in bg.output
     assert "5173" in bg.output
+    assert "listening" in bg.output.lower()
     assert (workspace / ".akomagni" / "run" / "dev-server.pid").read_text(
         encoding="utf-8"
     ) == "4242"
