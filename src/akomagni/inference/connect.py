@@ -110,30 +110,39 @@ def sync_vscode_settings(
     api_key: str | None,
     model: str | None = None,
 ) -> Path | None:
-    """Write VS Code settings for the Akomagni Chat extension."""
+    """Write VS Code settings for the Akomagni Chat extension.
+
+    Skips unsafe system directories (e.g. ``C:\\Windows\\System32``) and never
+    raises on permission errors — connect must succeed even when IDE sync cannot.
+    """
+    from akomagni.core.onboarding import is_unsafe_cwd
+
     root = (workspace or Path.cwd()).resolve()
-    if not root.is_dir():
+    if not root.is_dir() or is_unsafe_cwd(root):
         return None
     vscode_dir = root / ".vscode"
-    vscode_dir.mkdir(parents=True, exist_ok=True)
     settings_path = vscode_dir / "settings.json"
-    payload: dict[str, Any] = {}
-    if settings_path.is_file():
-        with settings_path.open(encoding="utf-8") as handle:
-            try:
-                loaded = json.loads(handle.read())
-            except json.JSONDecodeError:
-                loaded = {}
-            payload = loaded if isinstance(loaded, dict) else {}
+    try:
+        vscode_dir.mkdir(parents=True, exist_ok=True)
+        payload: dict[str, Any] = {}
+        if settings_path.is_file():
+            with settings_path.open(encoding="utf-8") as handle:
+                try:
+                    loaded = json.loads(handle.read())
+                except json.JSONDecodeError:
+                    loaded = {}
+                payload = loaded if isinstance(loaded, dict) else {}
 
-    payload["akomagni.provider"] = provider
-    payload["akomagni.baseUrl"] = base_url
-    if api_key:
-        payload["akomagni.apiKey"] = api_key
-    if model:
-        payload["akomagni.model"] = model
+        payload["akomagni.provider"] = provider
+        payload["akomagni.baseUrl"] = base_url
+        if api_key:
+            payload["akomagni.apiKey"] = api_key
+        if model:
+            payload["akomagni.model"] = model
 
-    settings_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        settings_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    except OSError:
+        return None
     return settings_path
 
 

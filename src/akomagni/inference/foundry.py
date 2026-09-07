@@ -160,15 +160,26 @@ def resolve_azure_auth_mode(provider_block: dict[str, Any] | None = None) -> str
 
 
 def get_foundry_entra_token(*, scope: str = ENTRA_SCOPE) -> str:
-    """Fetch a Microsoft Entra access token for Foundry (requires azure-identity)."""
+    """Fetch a Microsoft Entra access token for Foundry (requires azure-identity).
+
+    Prefers ``AzureCliCredential`` (matches ``akomagni connect foundry`` / ``az login``),
+    then falls back to the rest of ``DefaultAzureCredential``.
+    """
     try:
-        from azure.identity import DefaultAzureCredential
+        from azure.identity import (
+            AzureCliCredential,
+            ChainedTokenCredential,
+            DefaultAzureCredential,
+        )
     except ImportError as exc:  # pragma: no cover - optional dep
         raise RuntimeError(
             "Entra authentication requires azure-identity. Install with: pip install azure-identity"
         ) from exc
 
-    credential = DefaultAzureCredential()
+    credential = ChainedTokenCredential(
+        AzureCliCredential(process_timeout=60),
+        DefaultAzureCredential(exclude_azure_cli_credential=True),
+    )
     token = credential.get_token(scope)
     if not token or not token.token:
         raise RuntimeError("Failed to obtain Entra token for Foundry (empty token)")
