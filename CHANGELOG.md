@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Env support: `AZURE_OPENAI_ENDPOINT`, `AZURE_INFERENCE_CREDENTIAL`, `AZURE_OPENAI_AUTH`
 - Extra pack: `akomagni extras foundry` (same Entra bootstrap)
 - Coverage fail-under set to **87%** (Foundry Entra optional Azure CLI paths)
+- GitHub Pages install/tools: Foundry Entra commands, URL variants, troubleshooting
 
 ### Changed
 
