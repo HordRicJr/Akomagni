@@ -90,6 +90,41 @@ def test_connect_azure_appends_v1_suffix(akomagni_home, tmp_path, monkeypatch):
     assert "/openai/v1" in result.base_url
 
 
+def test_connect_azure_services_ai_host(akomagni_home, tmp_path, monkeypatch):
+    runner.invoke(app, ["config", "init"])
+    status = SimpleNamespace(online=True, models=["gpt-4o", "gpt-4o-mini"], error=None)
+    monkeypatch.setattr(
+        "akomagni.inference.connect.check_health_from_config",
+        lambda _cfg: status,
+    )
+    result = connect_provider(
+        "foundry",
+        base_url="https://my.services.ai.azure.com",
+        api_key="azure-key",
+        workspace=tmp_path,
+    )
+    assert result.base_url == "https://my.services.ai.azure.com/openai/v1"
+    assert result.online is True
+
+
+def test_connect_azure_project_endpoint(akomagni_home, tmp_path, monkeypatch):
+    runner.invoke(app, ["config", "init"])
+    status = SimpleNamespace(online=True, models=["deploy-a"], error=None)
+    monkeypatch.setattr(
+        "akomagni.inference.connect.check_health_from_config",
+        lambda _cfg: status,
+    )
+    result = connect_provider(
+        "azure",
+        base_url="https://my.services.ai.azure.com/api/projects/demo",
+        api_key="azure-key",
+        workspace=tmp_path,
+        sync_ide=False,
+    )
+    assert result.base_url.endswith("/api/projects/demo/openai/v1")
+    assert result.note is not None
+
+
 def test_connect_azure_requires_url(akomagni_home):
     runner.invoke(app, ["config", "init"])
     with pytest.raises(ConnectError, match="Foundry URL"):
@@ -202,6 +237,8 @@ def test_connect_cli_azure_with_url(akomagni_home, tmp_path, monkeypatch):
                 "connect",
                 "foundry",
                 "https://res.openai.azure.com/openai/v1/",
+                "--auth",
+                "api_key",
             ],
         )
     assert result.exit_code == 0

@@ -8,6 +8,15 @@ from typing import Any
 
 from akomagni.core.config import load_config
 from akomagni.inference.client import api_base_url
+from akomagni.inference.foundry import (
+    AZURE_API_KEY_ENV,
+    FoundryUrlError,
+    get_foundry_entra_token,
+    normalize_foundry_base_url,
+    resolve_azure_api_key,
+    resolve_azure_auth_mode,
+    resolve_azure_endpoint_url,
+)
 from akomagni.inference.rodium_router import (
     RODIUM_LEGACY_ALIASES,
     default_rodium_models_map,
@@ -47,6 +56,7 @@ class InferenceEndpoint:
     base_url: str
     api_key: str | None = None
     is_local: bool = False
+    auth_mode: str = "api_key"
 
 
 def _resolve_api_key(*, env_var: str | None, inline: str | None = None) -> str | None:
@@ -76,13 +86,49 @@ def resolve_inference_endpoint(config: dict[str, Any] | None = None) -> Inferenc
         return InferenceEndpoint(provider="rodium", base_url=base, api_key=key)
 
     if provider == "azure":
-        prov = providers.get("azure") or {}
-        base = str(prov.get("base_url") or "").rstrip("/")
-        key = _resolve_api_key(
-            env_var=str(prov.get("api_key_env") or "AZURE_OPENAI_API_KEY"),
-            inline=prov.get("api_key"),
+        prov = dict(providers.get("azure") or {})
+        auth_mode = resolve_azure_auth_mode(prov)
+        try:
+            base = resolve_azure_endpoint_url(prov)
+        except FoundryUrlError:
+            base = str(prov.get("base_url") or "").rstrip("/")
+            if base:
+                try:
+                    base = normalize_foundry_base_url(base)
+                except FoundryUrlError:
+                    pass
+        if not base:
+            base = ""
+
+        if auth_mode == "entra":
+            token: str | None = None
+            try:
+                token = get_foundry_entra_token()
+            except Exception:  # noqa: BLE001 — try one bootstrap pass then retry
+                token = None
+            if not token:
+                try:
+                    from akomagni.inference.foundry_bootstrap import ensure_foundry_entra
+
+                    setup = ensure_foundry_entra(login_if_needed=False)
+                    if setup.ok:
+                        token = get_foundry_entra_token()
+                except Exception:  # noqa: BLE001
+                    token = None
+            return InferenceEndpoint(
+                provider="azure",
+                base_url=base,
+                api_key=token,
+                auth_mode="entra",
+            )
+
+        key = resolve_azure_api_key(prov)
+        return InferenceEndpoint(
+            provider="azure",
+            base_url=base,
+            api_key=key,
+            auth_mode="api_key",
         )
-        return InferenceEndpoint(provider="azure", base_url=base, api_key=key)
 
     host = str(inf.get("host", "127.0.0.1"))
     port = int(inf.get("port", 8787))
@@ -141,5 +187,7 @@ def provider_status(config: dict[str, Any] | None = None) -> dict[str, Any]:
         "base_url": endpoint.base_url,
         "api_key_set": bool(endpoint.api_key),
         "is_local": endpoint.is_local,
+        "auth_mode": endpoint.auth_mode,
         "default_model": inf.get("default_model"),
+        "api_key_env": AZURE_API_KEY_ENV if endpoint.provider == "azure" else None,
     }

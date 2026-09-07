@@ -180,6 +180,8 @@ def try_chat_with_inference(
                     base_url=endpoint.base_url,
                     api_key=endpoint.api_key,
                     model=image_model,
+                    provider=getattr(endpoint, "provider", "local"),
+                    auth_mode=getattr(endpoint, "auth_mode", "api_key"),
                 )
             except InferenceClientError as exc:
                 errors.append(f"{image_model}: {exc}")
@@ -205,4 +207,6 @@ def try_chat_with_inference(
             rag_context=rag_context,
             skill_guidance=skill_guidance,
         ),
+        provider=getattr(endpoint, "provider", "local"),
+        auth_mode=getattr(endpoint, "auth_mode", "api_key"),
     )

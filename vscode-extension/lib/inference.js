@@ -1,16 +1,27 @@
 const https = require("https");
 const http = require("http");
 
-function requestJson(url, { method = "GET", body = null, apiKey = null, timeout = 60000 }) {
+function authHeaders(apiKey, provider) {
+  if (!apiKey) return {};
+  if (provider === "azure") {
+    // Foundry v1 accepts both; send both for gateway compatibility.
+    return {
+      Authorization: `Bearer ${apiKey}`,
+      "api-key": apiKey,
+    };
+  }
+  return { Authorization: `Bearer ${apiKey}` };
+}
+
+function requestJson(url, { method = "GET", body = null, apiKey = null, provider = "local", timeout = 60000 }) {
   return new Promise((resolve, reject) => {
     const lib = url.protocol === "https:" ? https : http;
     const payload = body ? JSON.stringify(body) : null;
-    const headers = { Accept: "application/json" };
+    const headers = { Accept: "application/json", ...authHeaders(apiKey, provider) };
     if (payload) {
       headers["Content-Type"] = "application/json";
       headers["Content-Length"] = Buffer.byteLength(payload);
     }
-    if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
 
     const req = lib.request(
       url,
@@ -41,7 +52,11 @@ function requestJson(url, { method = "GET", body = null, apiKey = null, timeout 
 async function checkHealth(endpoint) {
   try {
     const modelsUrl = new URL(`${endpoint.baseUrl}/models`);
-    const data = await requestJson(modelsUrl, { apiKey: endpoint.apiKey || null, timeout: 8000 });
+    const data = await requestJson(modelsUrl, {
+      apiKey: endpoint.apiKey || null,
+      provider: endpoint.provider || "local",
+      timeout: 8000,
+    });
     const ids = (data.data || []).map((m) => m.id).filter(Boolean);
     return { online: true, models: ids };
   } catch (err) {
@@ -66,10 +81,11 @@ async function chatCompletion(endpoint, messages, systemPrompt) {
   const data = await requestJson(url, {
     method: "POST",
     apiKey: endpoint.apiKey || null,
+    provider: endpoint.provider || "local",
     body: { model: endpoint.model, messages: msgs, stream: false },
     timeout: 120000,
   });
   return data.choices[0].message.content;
 }
 
-module.exports = { checkHealth, chatCompletion };
+module.exports = { checkHealth, chatCompletion, authHeaders };

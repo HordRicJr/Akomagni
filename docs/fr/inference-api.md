@@ -12,6 +12,38 @@ akomagni inference status
 akomagni inference chat "Explique Akomagni Flow en une phrase"
 ```
 
+## Providers cloud
+
+### Rodium AI
+
+```bash
+akomagni connect rodium
+akomagni inference status
+```
+
+### Microsoft Foundry
+
+Utilise la route Azure OpenAI **v1** (`…/openai/v1`). **Entra ID est le défaut** : Akomagni installe `azure-identity` et lance `az login` si besoin.
+
+```bash
+# Azure CLI requis sur le PATH pour la connexion bureau Entra
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/
+
+# Hôtes aussi valides :
+# https://YOUR-RESOURCE.services.ai.azure.com/openai/v1/
+# https://YOUR-RESOURCE.services.ai.azure.com/api/projects/PROJECT
+
+akomagni extras foundry
+akomagni inference status
+
+# Auth par clé API à la place d'Entra
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/ --auth api_key
+```
+
+Variables d'environnement (clé) : `AZURE_OPENAI_API_KEY` / `AZURE_INFERENCE_CREDENTIAL`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_AUTH=api_key|entra`.
+
+Référence : [endpoints Foundry](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/endpoints)
+
 ## Points d'accès
 
 | Endpoint | Description |

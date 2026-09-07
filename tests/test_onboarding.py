@@ -372,7 +372,10 @@ def test_connect_foundry_cli(akomagni_home, monkeypatch):
             "",
         ],
     ):
-        result = runner.invoke(app, ["connect", "foundry", "--no-sync"])
+        result = runner.invoke(
+            app,
+            ["connect", "foundry", "--no-sync", "--auth", "api_key"],
+        )
     assert result.exit_code == 0
     assert "Foundry" in result.stdout or "Connected" in result.stdout
 

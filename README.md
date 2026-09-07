@@ -46,6 +46,27 @@ On **Rodium**, that means economical multi-provider catalogue ids (Google, Anthr
 - **Cloud:** your own APIs via Rodium or Microsoft Foundry (`akomagni connect`)
 - **Hybrid:** local models + external APIs + agents + skills + tools
 
+### Microsoft Foundry
+
+Entra ID is the default (Akomagni installs `azure-identity` and runs `az login` when needed):
+
+```bash
+# Requires Azure CLI on PATH for desktop login
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/
+
+# Also valid:
+# https://YOUR-RESOURCE.services.ai.azure.com/openai/v1/
+# https://YOUR-RESOURCE.services.ai.azure.com/api/projects/PROJECT
+
+akomagni extras foundry            # same Entra bootstrap without switching provider
+akomagni inference status
+
+# Optional API-key auth instead of Entra:
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/ --auth api_key
+```
+
+Docs: [Foundry model endpoints](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/endpoints)
+
 You choose how and with which engines you work.
 
 ## Memory that stays with the project
@@ -140,11 +161,15 @@ akomagni skill list
 ```bash
 akomagni doctor                    # Hardware scan + profile + BMAD kernel
 akomagni connect                   # Local / Rodium / Foundry + optional HF token
+akomagni connect foundry <url>     # Foundry via Entra (auto azure-identity + az login)
+akomagni connect foundry <url> --auth api_key
+akomagni extras foundry            # Bootstrap Foundry Entra only
 akomagni skill list                # List shipped BMAD skills
 akomagni skill link                # Optional: register an extra custom skill folder
 akomagni run cli --project ./app   # Chat + Flow on a project
 akomagni config init               # Create ~/.akomagni/config.yaml (language: en)
 akomagni config language fr        # Optional: French CLI
+akomagni config provider azure --base-url https://RESOURCE.openai.azure.com/openai/v1/
 akomagni update                    # Pull latest, sync BMAD kernel, show what's new
 akomagni memory status             # Central + project memory
 akomagni flow route "your message" # Route to BMAD agent/skill

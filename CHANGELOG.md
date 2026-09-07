@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7] - 2026-09-07
+
+### Added
+
+- **Microsoft Foundry (Entra by default)**: `akomagni connect foundry <url>` installs `azure-identity` in the background, runs `az login` when needed, and uses `DefaultAzureCredential` for inference
+- **Foundry URL normalization**: supports `*.openai.azure.com/openai/v1`, `*.services.ai.azure.com/openai/v1`, and project-scoped `…/api/projects/<name>/openai/v1`
+- **Dual API-key headers** for Foundry key auth (`Authorization: Bearer` + `api-key`)
+- Env support: `AZURE_OPENAI_ENDPOINT`, `AZURE_INFERENCE_CREDENTIAL`, `AZURE_OPENAI_AUTH`
+- Extra pack: `akomagni extras foundry` (same Entra bootstrap)
+- Coverage fail-under set to **87%** (Foundry Entra optional Azure CLI paths)
+
+### Changed
+
+- Foundry connect defaults to Entra; use `--auth api_key` for key-based auth
+- `akomagni config provider azure` defaults to `--auth entra` and bootstraps Entra automatically
+
 ## [0.3.6] - 2026-09-06
 
 ### Fixed

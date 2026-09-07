@@ -29,9 +29,18 @@ def api_base_url(*, host: str = "127.0.0.1", port: int = 8787) -> str:
     return f"http://{host}:{port}/v1"
 
 
-def _auth_headers(api_key: str | None) -> dict[str, str]:
+def _auth_headers(
+    api_key: str | None,
+    *,
+    provider: str = "local",
+    auth_mode: str = "api_key",
+) -> dict[str, str]:
     if not api_key:
         return {}
+    if provider == "azure":
+        from akomagni.inference.foundry import foundry_auth_headers
+
+        return foundry_auth_headers(api_key, auth_mode=auth_mode)
     return {"Authorization": f"Bearer {api_key}"}
 
 
@@ -42,9 +51,14 @@ def _request_json(
     payload: dict[str, Any] | None = None,
     timeout: float = 30.0,
     api_key: str | None = None,
+    provider: str = "local",
+    auth_mode: str = "api_key",
 ) -> Any:
     data = None
-    headers = {"Accept": "application/json", **_auth_headers(api_key)}
+    headers = {
+        "Accept": "application/json",
+        **_auth_headers(api_key, provider=provider, auth_mode=auth_mode),
+    }
     if payload is not None:
         data = json.dumps(payload).encode("utf-8")
         headers["Content-Type"] = "application/json"
@@ -67,6 +81,7 @@ def check_health(
     base_url: str | None = None,
     api_key: str | None = None,
     provider: str = "local",
+    auth_mode: str = "api_key",
 ) -> InferenceStatus:
     """Probe an OpenAI-compatible /v1 API (local llama-server or cloud)."""
     base_v1 = (base_url or api_base_url(host=host, port=port)).rstrip("/")
@@ -77,14 +92,20 @@ def check_health(
 
     if provider == "local":
         try:
-            _request_json(f"{base}/health", timeout=3.0)
+            _request_json(f"{base}/health", timeout=3.0, provider="local")
             online = True
             health_url = f"{base}/health"
         except InferenceClientError:
             pass
 
     try:
-        data = _request_json(f"{base_v1}/models", timeout=8.0, api_key=api_key)
+        data = _request_json(
+            f"{base_v1}/models",
+            timeout=8.0,
+            api_key=api_key,
+            provider=provider,
+            auth_mode=auth_mode,
+        )
         online = True
         if health_url is None:
             health_url = f"{base_v1}/models"
@@ -111,7 +132,10 @@ def check_health(
     if provider == "rodium":
         offline_hint = "Rodium AI offline — check RODIUMAI_API_KEY and network"
     elif provider == "azure":
-        offline_hint = "Azure Foundry offline — check AZURE_OPENAI_API_KEY and base_url"
+        offline_hint = (
+            "Azure Foundry offline — check AZURE_OPENAI_API_KEY / AZURE_OPENAI_ENDPOINT "
+            "(or Entra auth) and base_url"
+        )
     return InferenceStatus(
         online=False,
         base_url=base_v1,
@@ -135,6 +159,7 @@ def check_health_from_config(config: dict | None = None) -> InferenceStatus:
         base_url=endpoint.base_url,
         api_key=endpoint.api_key,
         provider=endpoint.provider,
+        auth_mode=endpoint.auth_mode,
     )
 
 
@@ -149,6 +174,8 @@ def chat_completion(
     system_prompt: str | None = None,
     history: list[dict[str, str]] | None = None,
     timeout: float = 120.0,
+    provider: str = "local",
+    auth_mode: str = "api_key",
 ) -> str:
     """Send a chat completion request to /v1/chat/completions."""
     messages: list[dict[str, str]] = []
@@ -171,7 +198,15 @@ def chat_completion(
 
     root = (base_url or api_base_url(host=host, port=port)).rstrip("/")
     url = f"{root}/chat/completions"
-    data = _request_json(url, method="POST", payload=payload, timeout=timeout, api_key=api_key)
+    data = _request_json(
+        url,
+        method="POST",
+        payload=payload,
+        timeout=timeout,
+        api_key=api_key,
+        provider=provider,
+        auth_mode=auth_mode,
+    )
     try:
         return data["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as exc:
@@ -203,6 +238,8 @@ def image_generation(
     model: str = "google/gemini-3.1-flash-image",
     size: str = "1024x1024",
     timeout: float = 180.0,
+    provider: str = "local",
+    auth_mode: str = "api_key",
 ) -> ImageArtifact:
     """Call OpenAI-compatible ``/v1/images/generations`` (Rodium image guide)."""
     root = base_url.rstrip("/")
@@ -215,7 +252,15 @@ def image_generation(
     }
     if model.startswith("openai/"):
         payload["response_format"] = "url"
-    data = _request_json(url, method="POST", payload=payload, timeout=timeout, api_key=api_key)
+    data = _request_json(
+        url,
+        method="POST",
+        payload=payload,
+        timeout=timeout,
+        api_key=api_key,
+        provider=provider,
+        auth_mode=auth_mode,
+    )
     if not isinstance(data, dict):
         raise InferenceClientError(f"Unexpected image response: {data!r}")
     items = data.get("data") or []

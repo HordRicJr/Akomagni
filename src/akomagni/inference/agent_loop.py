@@ -270,6 +270,8 @@ def run_agent_tool_turn(
     base_url: str | None = None,
     api_key: str | None = None,
     model: str | None = None,
+    provider: str = "local",
+    auth_mode: str = "api_key",
     max_rounds: int = 8,
     auto_approve: bool = True,
     on_action: Callable[[str], None] | None = None,
@@ -310,6 +312,8 @@ def run_agent_tool_turn(
             model=model,
             system_prompt=system,
             history=working_history,
+            provider=provider,
+            auth_mode=auth_mode,
         )
         calls = parse_tool_calls(last_raw)
         visible = strip_tool_markup(last_raw)
