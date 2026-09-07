@@ -171,6 +171,32 @@ def test_sync_vscode_settings_missing_workspace(tmp_path):
     )
 
 
+def test_sync_vscode_settings_skips_unsafe_cwd(tmp_path):
+    system32 = tmp_path / "Windows" / "System32"
+    system32.mkdir(parents=True)
+    assert (
+        sync_vscode_settings(
+            system32, provider="azure", base_url="https://x/openai/v1", api_key=None
+        )
+        is None
+    )
+    assert not (system32 / ".vscode").exists()
+
+
+def test_sync_vscode_settings_permission_error(tmp_path, monkeypatch):
+    root = tmp_path / "locked"
+    root.mkdir()
+
+    def boom(*_a, **_k):
+        raise PermissionError("denied")
+
+    monkeypatch.setattr("pathlib.Path.mkdir", boom)
+    assert (
+        sync_vscode_settings(root, provider="azure", base_url="https://x/openai/v1", api_key=None)
+        is None
+    )
+
+
 def test_resolve_azure_endpoint_inline_key():
     cfg = apply_provider_preset(
         {"version": 1},

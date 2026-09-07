@@ -174,7 +174,7 @@ def test_get_foundry_entra_token_empty():
     from akomagni.inference.foundry import get_foundry_entra_token
 
     fake = MagicMock()
-    fake.DefaultAzureCredential.return_value.get_token.return_value = SimpleNamespace(token="")
+    fake.ChainedTokenCredential.return_value.get_token.return_value = SimpleNamespace(token="")
     with (
         patch.dict("sys.modules", {"azure.identity": fake}),
         pytest.raises(RuntimeError, match="empty"),

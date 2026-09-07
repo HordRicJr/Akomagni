@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.8] - 2026-09-07
+
+### Fixed
+
+- **`akomagni connect` from System32 / protected dirs**: VS Code settings sync no longer crashes with `PermissionError` (skips unsafe cwd; swallows write failures)
+- Foundry Entra token acquisition prefers `AzureCliCredential` (matches `az login` bootstrap) before other credential sources
+
 ## [0.3.7] - 2026-09-07
 
 ### Added
