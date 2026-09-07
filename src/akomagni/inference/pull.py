@@ -17,6 +17,24 @@ _HF_SPEC = re.compile(
     r"^(?P<repo>[^/]+/[^/:]+)(?::(?P<file>.+\.gguf))?$",
     re.IGNORECASE,
 )
+_HF_URL = re.compile(
+    r"^https?://(?:www\.)?(?:huggingface\.co|hf\.co)/"
+    r"(?P<repo>[^/]+/[^/]+)"
+    r"(?:/(?:blob|resolve|tree)/[^/]+/(?P<file>.+\.gguf))?/?$",
+    re.IGNORECASE,
+)
+
+
+def _entry_from_hf(repo_id: str, filename: str | None, *, token: str | None) -> ModelCatalogEntry:
+    file_name = filename or _pick_gguf_filename(repo_id, token=token)
+    slug = repo_id.replace("/", "__").lower()
+    return ModelCatalogEntry(
+        name=slug,
+        repo_id=repo_id,
+        filename=file_name,
+        profile="custom",
+        description=f"Custom Hugging Face GGUF from {repo_id}",
+    )
 
 
 class ModelPullError(RuntimeError):
@@ -77,26 +95,20 @@ def resolve_pull_entry(name: str, *, token: str | None = None) -> ModelCatalogEn
     if entry is not None:
         return entry
 
-    match = _HF_SPEC.match(name.strip())
+    raw = name.strip()
+    url_match = _HF_URL.match(raw)
+    if url_match:
+        return _entry_from_hf(url_match.group("repo"), url_match.group("file"), token=token)
+
+    match = _HF_SPEC.match(raw)
     if not match:
         raise ModelPullError(
             f"Unknown model '{name}'.\n"
-            "Use a catalog name (akomagni model catalog) or Hugging Face:\n"
-            "  akomagni model pull owner/repo:file.gguf"
+            "Use a catalog name, owner/repo:file.gguf, or a Hugging Face link:\n"
+            "  akomagni model pull https://huggingface.co/owner/repo/blob/main/file.gguf"
         )
 
-    repo_id = match.group("repo")
-    filename = match.group("file")
-    if not filename:
-        filename = _pick_gguf_filename(repo_id, token=token)
-    slug = repo_id.replace("/", "__").lower()
-    return ModelCatalogEntry(
-        name=slug,
-        repo_id=repo_id,
-        filename=filename,
-        profile="custom",
-        description=f"Custom Hugging Face GGUF from {repo_id}",
-    )
+    return _entry_from_hf(match.group("repo"), match.group("file"), token=token)
 
 
 def pull_model(

@@ -163,7 +163,13 @@ def test_run_session_setup_with_project(akomagni_home, tmp_path):
     assert (project / ".akomagni").is_dir()
 
 
-def test_resolve_pull_entry_hf_spec():
+def test_resolve_pull_entry_hf_url():
+    entry = resolve_pull_entry(
+        "https://huggingface.co/owner/repo/blob/main/model-Q4_K_M.gguf"
+    )
+    assert entry.repo_id == "owner/repo"
+    assert entry.filename == "model-Q4_K_M.gguf"
+
     entry = resolve_pull_entry("owner/repo:model-Q4_K_M.gguf")
     assert entry.repo_id == "owner/repo"
     assert entry.filename == "model-Q4_K_M.gguf"

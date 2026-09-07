@@ -1,23 +1,23 @@
-/* Akomagni — readable product site (high contrast, calm workstation) */
+/* Akomagni — warm paper, low-glare reading surface */
 @import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap");
 
 :root {
-  --ink: #0b1220;
-  --ink-soft: #243044;
-  --muted: #4b5b70;
-  --line: #d7dee8;
-  --line-strong: #b8c4d4;
-  --bg: #f3f6fa;
-  --bg-elevated: #ffffff;
-  --bg-soft: #e8eef6;
-  --surface: #ffffff;
-  --brand: #0f6e6a;
-  --brand-deep: #0a4f4c;
-  --brand-soft: #d8f0ee;
-  --brand-glow: rgba(15, 110, 106, 0.18);
-  --focus: #0f6e6a;
-  --code-bg: #121a26;
-  --code-fg: #e8eef6;
+  --ink: #2c2824;
+  --ink-soft: #4a453f;
+  --muted: #6d665e;
+  --line: #e4ddd3;
+  --line-strong: #d2c8bb;
+  --bg: #f6f3ee;
+  --bg-elevated: #fffcf8;
+  --bg-soft: #efe9e0;
+  --surface: #fffcf8;
+  --brand: #5c6b5a;
+  --brand-deep: #3f4a3e;
+  --brand-soft: #e6efe3;
+  --brand-glow: rgba(92, 107, 90, 0.08);
+  --focus: #5c6b5a;
+  --code-bg: #2f2c29;
+  --code-fg: #f3ece4;
   --radius: 10px;
   --radius-sm: 8px;
   --max: 1040px;
@@ -326,7 +326,7 @@ a:hover {
   gap: 0;
   border-bottom: 1px solid rgba(232, 238, 246, 0.12);
   padding: 0.4rem 0.55rem 0;
-  background: #0d1520;
+  background: var(--code-bg);
 }
 
 .hero-platform-tab {
@@ -395,7 +395,7 @@ a:hover {
   padding: 0.95rem 1.1rem 1.2rem;
   font-size: 0.95rem;
   color: rgba(232, 238, 246, 0.72);
-  background: #0d1520;
+  background: var(--code-bg);
   border-top: 1px solid rgba(232, 238, 246, 0.1);
 }
 
@@ -1198,6 +1198,83 @@ pre {
   .hero-brand {
     font-size: clamp(2.4rem, 12vw, 3.4rem);
   }
+}
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 2rem;
+}
+
+.model-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem 1.05rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.model-card h3 {
+  margin: 0.35rem 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.model-card p {
+  margin: 0 0 0.75rem;
+  color: var(--ink-soft);
+  font-size: 0.98rem;
+}
+
+.model-meta {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.model-tag {
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-radius: 999px;
+  padding: 0.12rem 0.55rem;
+}
+
+.model-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.9rem;
+  font-size: 0.95rem;
+}
+
+.model-links a {
+  color: var(--brand-deep);
+}
+
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.provider-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.05rem;
+}
+
+.provider-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+}
+
+.provider-card p,
+.provider-card code {
+  font-size: 0.95rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
