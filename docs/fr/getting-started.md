@@ -26,6 +26,8 @@ La CLI est en **anglais** par défaut.
 
 ```bash
 akomagni connect
+# Foundry (Entra par défaut — Azure CLI requis) :
+# akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/
 akomagni skill list
 akomagni run cli --project ./mon-app
 

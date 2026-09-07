@@ -12,6 +12,14 @@ import yaml
 from akomagni.core.config import load_config
 from akomagni.inference.client import check_health_from_config
 from akomagni.inference.endpoint import RODIUM_DEFAULT_BASE_URL
+from akomagni.inference.foundry import (
+    FOUNDRY_URL_HINT,
+    FOUNDRY_URL_HINT_SERVICES,
+    FoundryUrlError,
+    deployments_from_models,
+    normalize_foundry_base_url,
+    project_endpoint_note,
+)
 from akomagni.inference.providers import apply_provider_preset
 
 PROVIDER_ALIASES = {
@@ -22,7 +30,20 @@ PROVIDER_ALIASES = {
 }
 
 RODIUM_DEFAULT_URL = RODIUM_DEFAULT_BASE_URL
-FOUNDRY_URL_HINT = "https://YOUR-RESOURCE.openai.azure.com/openai/v1/"
+
+# Re-export for CLI/docs
+__all__ = [
+    "FOUNDRY_URL_HINT",
+    "FOUNDRY_URL_HINT_SERVICES",
+    "PROVIDER_ALIASES",
+    "RODIUM_DEFAULT_URL",
+    "ConnectError",
+    "ConnectResult",
+    "connect_provider",
+    "normalize_provider",
+    "save_config",
+    "sync_vscode_settings",
+]
 
 
 class ConnectError(RuntimeError):
@@ -37,6 +58,7 @@ class ConnectResult:
     online: bool
     models: list[str] | None = None
     error: str | None = None
+    note: str | None = None
 
 
 def normalize_provider(name: str) -> str:
@@ -53,6 +75,7 @@ def _merge_provider_credentials(
     *,
     base_url: str | None,
     api_key: str | None,
+    auth: str | None = None,
 ) -> dict[str, Any]:
     merged = apply_provider_preset(cfg, provider, azure_base_url=base_url)
     providers = dict(merged.get("providers") or {})
@@ -62,6 +85,8 @@ def _merge_provider_credentials(
         block["base_url"] = base_url.rstrip("/")
     if api_key:
         block["api_key"] = api_key
+    if auth:
+        block["auth"] = auth
 
     providers[provider] = block
     merged["providers"] = providers
@@ -119,6 +144,9 @@ def connect_provider(
     api_key: str | None = None,
     workspace: Path | None = None,
     sync_ide: bool = True,
+    auth: str | None = None,
+    on_progress: Any | None = None,
+    skip_entra_setup: bool = False,
 ) -> ConnectResult:
     """Connect *provider_name* and persist credentials to Akomagni config."""
     provider = normalize_provider(provider_name)
@@ -133,47 +161,98 @@ def connect_provider(
             online=False,
         )
 
+    # Foundry defaults to Entra unless an API key is explicitly provided.
+    raw_auth = (auth or "").strip().lower()
+    if provider == "azure":
+        if raw_auth in {"api_key", "key"}:
+            auth_mode = "api_key"
+        elif raw_auth in {"entra", "aad", "token", "bearer_token"}:
+            auth_mode = "entra"
+        elif api_key and str(api_key).strip():
+            auth_mode = "api_key"
+        else:
+            auth_mode = "entra"
+    else:
+        auth_mode = "api_key"
+
     if provider == "rodium":
         url = (base_url or RODIUM_DEFAULT_URL).strip().rstrip("/")
     else:
-        url = (base_url or "").strip().rstrip("/")
-        if not url:
-            raise ConnectError(f"Foundry URL required. Example: {FOUNDRY_URL_HINT}")
-        if not url.endswith("/v1"):
-            if url.endswith("/openai"):
-                url = f"{url}/v1"
-            elif "/openai/" not in url:
-                url = f"{url.rstrip('/')}/openai/v1"
+        try:
+            url = normalize_foundry_base_url(base_url or "")
+        except FoundryUrlError as exc:
+            raise ConnectError(str(exc)) from exc
 
-    if not api_key or not api_key.strip():
-        raise ConnectError("API key is required")
+    setup_notes: list[str] = []
+    if provider == "azure" and auth_mode == "entra" and not skip_entra_setup:
+        from akomagni.inference.foundry_bootstrap import ensure_foundry_entra
+
+        setup = ensure_foundry_entra(login_if_needed=True, on_progress=on_progress)
+        setup_notes.extend(setup.messages)
+        if not setup.ok:
+            raise ConnectError(
+                setup.error or "Foundry Entra setup failed. Pass an API key or fix Azure login."
+            )
+
+    if auth_mode == "api_key" and (not api_key or not api_key.strip()):
+        raise ConnectError("API key is required for key-based Foundry auth")
 
     cfg = _merge_provider_credentials(
         load_config(),
         provider,
         base_url=url,
-        api_key=api_key.strip(),
+        api_key=api_key.strip() if api_key and auth_mode == "api_key" else None,
+        auth=auth_mode if provider == "azure" else None,
     )
+    if provider == "azure" and auth_mode == "entra":
+        providers = dict(cfg.get("providers") or {})
+        block = dict(providers.get("azure") or {})
+        block["auth"] = "entra"
+        block.pop("api_key", None)
+        providers["azure"] = block
+        cfg["providers"] = providers
+
     save_config(cfg)
+
+    status = check_health_from_config(cfg)
+
+    # Seed deployments from live /models when Foundry reports them
+    if provider == "azure" and status.models:
+        mapped = deployments_from_models(status.models)
+        if mapped:
+            providers = dict(cfg.get("providers") or {})
+            block = dict(providers.get("azure") or {})
+            block["deployments"] = mapped
+            providers["azure"] = block
+            cfg["providers"] = providers
+            save_config(cfg)
 
     if sync_ide:
         prov_block = (cfg.get("providers") or {}).get(provider) or {}
         models = prov_block.get("models") or prov_block.get("deployments") or {}
         model = str(next(iter(models.values()))) if isinstance(models, dict) and models else None
+        if status.models:
+            model = status.models[0]
         sync_vscode_settings(
             workspace,
             provider=provider,
             base_url=url,
-            api_key=api_key.strip(),
+            api_key=api_key.strip() if api_key and auth_mode == "api_key" else None,
             model=model,
         )
 
-    status = check_health_from_config(cfg)
+    note = project_endpoint_note(url) if provider == "azure" else None
+    if setup_notes and note:
+        note = f"{note}\n" + "\n".join(setup_notes[-3:])
+    elif setup_notes:
+        note = "\n".join(setup_notes[-3:])
+
     return ConnectResult(
         provider=provider,
         base_url=url,
-        api_key_saved=True,
+        api_key_saved=bool(api_key and auth_mode == "api_key"),
         online=status.online,
         models=status.models,
         error=status.error,
+        note=note,
     )

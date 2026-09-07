@@ -46,6 +46,27 @@ Sur **Rodium**, cela passe par des identifiants multi-providers économiques (Go
 - **Cloud :** tes propres services via Rodium ou Microsoft Foundry (`akomagni connect`)
 - **Hybride :** modèles locaux + APIs externes + agents + skills + tools
 
+### Microsoft Foundry
+
+Entra ID est le mode par défaut (Akomagni installe `azure-identity` et lance `az login` si besoin) :
+
+```bash
+# Azure CLI requis sur le PATH pour la connexion bureau
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/
+
+# Aussi valides :
+# https://YOUR-RESOURCE.services.ai.azure.com/openai/v1/
+# https://YOUR-RESOURCE.services.ai.azure.com/api/projects/PROJECT
+
+akomagni extras foundry            # même bootstrap Entra sans changer de provider
+akomagni inference status
+
+# Auth par clé API (optionnel) :
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/ --auth api_key
+```
+
+Docs : [endpoints Foundry](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/endpoints)
+
 Tu gardes la liberté de choisir comment et avec quels moteurs travailler.
 
 ## Une mémoire qui accompagne les projets
@@ -142,10 +163,14 @@ akomagni skill link
 ```bash
 akomagni doctor                    # Scan machine + profil
 akomagni connect                   # Local / Rodium / Foundry + token HF optionnel
+akomagni connect foundry <url>     # Foundry via Entra (auto azure-identity + az login)
+akomagni connect foundry <url> --auth api_key
+akomagni extras foundry            # Bootstrap Foundry Entra uniquement
 akomagni skill link                # Enregistrer les skills BMAD
 akomagni run cli --project ./app   # Chat + Flow sur un projet
 akomagni config init               # Crée ~/.akomagni/config.yaml (language: en)
 akomagni config language fr        # Optionnel : CLI en français
+akomagni config provider azure --base-url https://RESOURCE.openai.azure.com/openai/v1/
 akomagni update                    # Dernière version + réinstall CLI
 akomagni memory status             # Mémoire centrale + projet
 akomagni flow route "ton message"  # Routage agent/skill BMAD

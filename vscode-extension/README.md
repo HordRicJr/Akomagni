@@ -14,8 +14,11 @@
 # Online (Rodium AI) — prompts for API key
 akomagni connect rodium
 
-# Azure AI Foundry
+# Azure AI Foundry — Entra by default (installs azure-identity + az login)
 akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/
+
+# Foundry with API key instead
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/ --auth api_key
 
 # Local (offline)
 akomagni config provider local

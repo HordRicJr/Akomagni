@@ -90,9 +90,19 @@ def build_env_example(provider: str = "local") -> str:
         lines.extend(
             [
                 "# Azure AI Foundry — https://ai.azure.com/",
-                "# Base URL: https://YOUR-RESOURCE.openai.azure.com/openai/v1/",
+                "# Docs: https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/endpoints",
+                "# Base URL (either form works):",
+                "#   https://YOUR-RESOURCE.openai.azure.com/openai/v1/",
+                "#   https://YOUR-RESOURCE.services.ai.azure.com/openai/v1/",
+                "# Project-scoped OpenAI route also works:",
+                "#   https://YOUR-RESOURCE.services.ai.azure.com/api/projects/PROJECT/openai/v1/",
                 "AZURE_OPENAI_API_KEY=your_azure_key_here",
                 "AZURE_OPENAI_ENDPOINT=https://YOUR-RESOURCE.openai.azure.com/openai/v1/",
+                "# Optional: AZURE_INFERENCE_CREDENTIAL=…  (alias for the API key)",
+                "# Default auth is Entra: akomagni connect foundry <url>",
+                "#   (auto-installs azure-identity + runs az login)",
+                "# Force key auth: akomagni connect foundry <url> --auth api_key",
+                "# Or: AZURE_OPENAI_AUTH=api_key",
                 "",
             ]
         )
@@ -141,15 +151,18 @@ def build_ide_guide(*, provider: str = "local") -> str:
             [
                 "### Azure AI Foundry (enterprise cloud)",
                 "",
-                "1. Create a Foundry project at https://ai.azure.com/",
-                "2. Deploy models and note deployment names + endpoint URL",
-                "3. Set `AZURE_OPENAI_API_KEY` and configure base URL:",
-                "   `akomagni config provider azure --base-url https://YOUR-RESOURCE.openai.azure.com/openai/v1/`",
-                "4. Install **Microsoft Foundry Toolkit** in VS Code:",
+                "1. Create a Foundry resource / project at https://ai.azure.com/",
+                "2. Deploy models and copy the **OpenAI v1** endpoint (not only the project portal URL)",
+                "3. Connect with Akomagni (Entra by default — installs azure-identity + az login):",
+                "   `akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/`",
+                "   or: `akomagni config provider azure --base-url …` (auth=entra)",
+                "   Key fallback: `akomagni connect foundry <url> --auth api_key`",
+                "4. Also valid: `https://YOUR-RESOURCE.services.ai.azure.com/openai/v1/`",
+                "5. Install **Microsoft Foundry Toolkit** in VS Code (optional playground):",
                 f"   Extension ID: `{FOUNDRY_TOOLKIT_EXTENSION}`",
-                "5. Sign in to Azure in the Toolkit sidebar → Model Playground for chat",
+                "6. Pack shortcut: `akomagni extras foundry`",
                 "",
-                "Docs: https://learn.microsoft.com/azure/foundry/how-to/develop/get-started-projects-visual-studio-code",
+                "Docs: https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/endpoints",
                 "",
             ]
         )

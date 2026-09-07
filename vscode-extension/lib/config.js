@@ -89,7 +89,28 @@ function resolveEndpoint() {
     apiKey = process.env.RODIUMAI_API_KEY || "";
   }
   if (!apiKey && provider === "azure") {
-    apiKey = process.env.AZURE_OPENAI_API_KEY || "";
+    apiKey =
+      process.env.AZURE_OPENAI_API_KEY ||
+      process.env.AZURE_INFERENCE_CREDENTIAL ||
+      "";
+  }
+  if (!baseUrl && provider === "azure") {
+    baseUrl = String(process.env.AZURE_OPENAI_ENDPOINT || "").replace(/\/$/, "");
+  }
+
+  // Normalize Foundry resource roots to …/openai/v1
+  if (provider === "azure" && baseUrl) {
+    const lower = baseUrl.toLowerCase();
+    if (!lower.endsWith("/openai/v1") && !lower.endsWith("/v1")) {
+      if (lower.endsWith("/openai")) baseUrl = `${baseUrl}/v1`;
+      else if (lower.includes("/api/projects/")) baseUrl = `${baseUrl}/openai/v1`;
+      else if (
+        lower.includes(".openai.azure.com") ||
+        lower.includes(".services.ai.azure.com")
+      ) {
+        baseUrl = `${baseUrl}/openai/v1`;
+      }
+    }
   }
 
   return {

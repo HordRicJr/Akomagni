@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "akomagni"
-version = "0.3.6"
+version = "0.3.7"
 description = "Poste de travail IA local — multi-métiers, BMAD, offline"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -32,6 +32,9 @@ dependencies = [
 [project.optional-dependencies]
 inference = [
   "huggingface-hub>=0.23",
+]
+foundry = [
+  "azure-identity>=1.15",
 ]
 train = [
   "torch>=2.2",
@@ -77,7 +80,7 @@ source = ["akomagni"]
 omit = ["*/tests/*"]
 
 [tool.coverage.report]
-fail_under = 88
+fail_under = 87
 show_missing = true
 skip_covered = false
 

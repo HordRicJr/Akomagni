@@ -99,6 +99,16 @@ def connect_cmd(
         help="Project folder for VS Code settings sync.",
     ),
     no_sync: bool = typer.Option(False, "--no-sync", help="Skip writing .vscode/settings.json."),
+    auth: str | None = typer.Option(
+        None,
+        "--auth",
+        help="Foundry auth: entra (default) or api_key.",
+    ),
+    api_key_opt: str | None = typer.Option(
+        None,
+        "--api-key",
+        help="API key (Rodium, or Foundry when --auth api_key).",
+    ),
 ) -> None:
     """Connect AI providers in one step (Rodium, Foundry, local, Hugging Face)."""
     from akomagni.core.onboarding import run_connect_wizard, save_hf_token
@@ -159,18 +169,43 @@ def connect_cmd(
             default=RODIUM_DEFAULT_URL,
         )
     elif normalized == "azure" and not base_url:
+        import os
+
+        from akomagni.inference.foundry import AZURE_ENDPOINT_ENV, FOUNDRY_URL_HINT_SERVICES
+
+        env_url = os.environ.get(AZURE_ENDPOINT_ENV, "").strip()
         base_url = typer.prompt(
             "Azure Foundry URL",
-            default=FOUNDRY_URL_HINT,
+            default=env_url or FOUNDRY_URL_HINT,
+        )
+        console.print(
+            f"[dim]Also accepted: {FOUNDRY_URL_HINT_SERVICES} or …/api/projects/<name>[/]"
         )
 
-    key_label = "Rodium API key (rd_sk_…)" if normalized == "rodium" else "Azure API key"
-    api_key = typer.prompt(key_label, hide_input=True)
-    if not api_key.strip():
-        console.print("[red]API key cannot be empty.[/]")
-        raise typer.Exit(code=1)
+    auth_mode = "api_key"
+    api_key: str | None = api_key_opt
+    if normalized == "azure":
+        choice = (auth or "entra").strip().lower()
+        if choice in {"api_key", "key"} or (api_key and api_key.strip()):
+            auth_mode = "api_key"
+        else:
+            auth_mode = "entra"
+            console.print(
+                "[dim]Foundry auth: Entra ID — installing azure-identity and ensuring az login…[/]"
+            )
+    if normalized == "rodium" or auth_mode == "api_key":
+        if not api_key or not api_key.strip():
+            key_label = "Rodium API key (rd_sk_…)" if normalized == "rodium" else "Azure API key"
+            api_key = typer.prompt(key_label, hide_input=True)
+        if not api_key or not str(api_key).strip():
+            console.print("[red]API key cannot be empty.[/]")
+            raise typer.Exit(code=1)
 
     root = Path(workspace) if workspace else Path.cwd()
+
+    def _progress(msg: str) -> None:
+        console.print(f"[dim]→ {msg}[/]")
+
     try:
         result = connect_provider(
             normalized,
@@ -178,6 +213,8 @@ def connect_cmd(
             api_key=api_key,
             workspace=root,
             sync_ide=not no_sync,
+            auth=auth_mode if normalized == "azure" else None,
+            on_progress=_progress if normalized == "azure" and auth_mode == "entra" else None,
         )
     except ConnectError as exc:
         console.print(f"[red]{exc}[/]")
@@ -192,6 +229,10 @@ def connect_cmd(
         console.print(f"[yellow]Saved credentials for {label}[/] but API check failed.")
         if result.error:
             console.print(f"[dim]{result.error}[/]")
+    if result.note:
+        console.print(f"[dim]{result.note}[/]")
+    if normalized == "azure" and auth_mode == "entra":
+        console.print("[green]CLI will use Entra ID[/] via DefaultAzureCredential")
 
     hf = typer.prompt("Hugging Face token (optional, Enter to skip)", default="")
     if hf.strip():
@@ -677,6 +718,8 @@ def chat(
                         base_url=None if endpoint.is_local else endpoint.base_url,
                         api_key=endpoint.api_key,
                         model=model_override or chat_plan.model_id,
+                        provider=endpoint.provider,
+                        auth_mode=endpoint.auth_mode,
                         on_announce=_announce,
                         on_action=_action,
                         on_result=_result,
@@ -1304,6 +1347,8 @@ def inference_chat(
             base_url=None if endpoint.is_local else endpoint.base_url,
             api_key=endpoint.api_key,
             model=model,
+            provider=endpoint.provider,
+            auth_mode=endpoint.auth_mode,
         )
     except InferenceClientError as exc:
         console.print(f"[red]Error:[/] {exc}")
@@ -1474,11 +1519,24 @@ def _install_extras_pack(pack: str) -> None:
     import subprocess
     import sys
 
-    allowed = {"inference", "agent", "train", "dev"}
+    allowed = {"inference", "agent", "train", "dev", "foundry"}
     name = pack.strip().lower()
     if name not in allowed:
         console.print(f"[red]Unknown pack:[/] {pack} (use: {', '.join(sorted(allowed))})")
         raise typer.Exit(code=1)
+    if name == "foundry":
+        console.print("[bold]Preparing Foundry Entra auth[/] (azure-identity + az login)…")
+        from akomagni.inference.foundry_bootstrap import ensure_foundry_entra
+
+        setup = ensure_foundry_entra(
+            login_if_needed=True,
+            on_progress=lambda msg: console.print(f"[dim]→ {msg}[/]"),
+        )
+        if not setup.ok:
+            console.print(f"[red]{setup.error or 'Foundry setup failed'}[/]")
+            raise typer.Exit(code=1)
+        console.print("[green]Foundry Entra ready[/] — use: akomagni connect foundry <url>")
+        return
     console.print(f"[bold]Installing akomagni[{name}][/] …")
     result = subprocess.run(  # nosec B603
         [sys.executable, "-m", "pip", "install", f"akomagni[{name}]"],
@@ -1495,32 +1553,69 @@ def config_provider(
     base_url: str | None = typer.Option(
         None,
         "--base-url",
-        help="Azure Foundry endpoint, e.g. https://RESOURCE.openai.azure.com/openai/v1/",
+        help=(
+            "Azure Foundry endpoint, e.g. https://RESOURCE.openai.azure.com/openai/v1/ "
+            "or https://RESOURCE.services.ai.azure.com/openai/v1/"
+        ),
+    ),
+    auth: str = typer.Option(
+        "entra",
+        "--auth",
+        help="Azure auth mode: entra (default, auto azure-identity + az login) or api_key.",
     ),
 ) -> None:
     """Switch inference provider (local llama-server, Rodium AI, or Azure Foundry)."""
+    import os
+
     import yaml
 
     from akomagni.core.config import CONFIG_PATH
+    from akomagni.inference.foundry import (
+        AZURE_ENDPOINT_ENV,
+        FOUNDRY_URL_HINT,
+        FOUNDRY_URL_HINT_SERVICES,
+        FoundryUrlError,
+        normalize_foundry_base_url,
+    )
     from akomagni.inference.providers import apply_provider_preset
 
     provider = name.strip().lower()
     if provider not in {"local", "rodium", "azure"}:
         console.print(f"[red]Unknown provider:[/] {name} (use: local, rodium, azure)")
         raise typer.Exit(code=1)
-    if provider == "azure" and not base_url:
-        console.print(
-            "[yellow]Azure requires --base-url[/] "
-            "(https://YOUR-RESOURCE.openai.azure.com/openai/v1/)"
-        )
-        raise typer.Exit(code=1)
+
+    azure_url = base_url
+    if provider == "azure":
+        azure_url = (base_url or os.environ.get(AZURE_ENDPOINT_ENV) or "").strip() or None
+        if not azure_url:
+            console.print(
+                "[yellow]Azure requires --base-url or AZURE_OPENAI_ENDPOINT[/]\n"
+                f"  {FOUNDRY_URL_HINT}\n"
+                f"  {FOUNDRY_URL_HINT_SERVICES}"
+            )
+            raise typer.Exit(code=1)
+        try:
+            azure_url = normalize_foundry_base_url(azure_url)
+        except FoundryUrlError as exc:
+            console.print(f"[red]{exc}[/]")
+            raise typer.Exit(code=1) from exc
 
     cfg = load_config()
     try:
-        merged = apply_provider_preset(cfg, provider, azure_base_url=base_url)
+        merged = apply_provider_preset(cfg, provider, azure_base_url=azure_url)
     except ValueError as exc:
         console.print(f"[red]{exc}[/]")
         raise typer.Exit(code=1) from exc
+
+    if provider == "azure":
+        providers = dict(merged.get("providers") or {})
+        block = dict(providers.get("azure") or {})
+        block["base_url"] = azure_url
+        mode = auth.strip().lower()
+        use_entra = mode not in {"api_key", "key"}
+        block["auth"] = "entra" if use_entra else "api_key"
+        providers["azure"] = block
+        merged["providers"] = providers
 
     CONFIG_PATH.write_text(
         yaml.dump(merged, allow_unicode=True, default_flow_style=False),
@@ -1530,7 +1625,27 @@ def config_provider(
     if provider == "rodium":
         console.print("Set RODIUMAI_API_KEY (rd_sk_…) then: akomagni inference status")
     elif provider == "azure":
-        console.print("Set AZURE_OPENAI_API_KEY then: akomagni inference status")
+        if (auth or "").strip().lower() not in {"api_key", "key"}:
+            console.print("[dim]Bootstrapping Entra (azure-identity + az login)…[/]")
+            from akomagni.inference.foundry_bootstrap import ensure_foundry_entra
+
+            setup = ensure_foundry_entra(
+                login_if_needed=True,
+                on_progress=lambda msg: console.print(f"[dim]→ {msg}[/]"),
+            )
+            if setup.ok:
+                console.print(
+                    "[green]Entra ready[/] — akomagni chat will use DefaultAzureCredential"
+                )
+            else:
+                console.print(f"[yellow]Entra setup incomplete:[/] {setup.error}")
+                console.print("Fallback: set AZURE_OPENAI_API_KEY or re-run with --auth api_key")
+        else:
+            console.print(
+                "Set AZURE_OPENAI_API_KEY (or AZURE_INFERENCE_CREDENTIAL) then: "
+                "akomagni inference status"
+            )
+        console.print(f"Endpoint: {azure_url}")
         console.print(
             "Install Microsoft Foundry Toolkit in VS Code: ms-windows-ai-studio.windows-ai-studio"
         )

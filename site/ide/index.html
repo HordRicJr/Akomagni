@@ -58,17 +58,23 @@
 
       <div class="tools-category">
         <h2>Connect in one command</h2>
-        <p class="cat-desc">Interactive setup — prompts for your API key. Syncs VS Code settings automatically.</p>
+        <p class="cat-desc">
+          Interactive setup. Foundry defaults to <strong>Entra ID</strong>
+          (installs <code>azure-identity</code> + <code>az login</code>). Syncs VS Code settings automatically.
+        </p>
         <div class="copy-block">
           <div class="copy-block-header">
             <span>akomagni connect</span>
             <button class="copy-btn" type="button" data-copy="cmd-connect">Copy</button>
           </div>
-          <pre id="cmd-connect"># Rodium AI (default URL)
+          <pre id="cmd-connect"># Rodium AI (prompts for API key)
 akomagni connect rodium
 
-# Azure Foundry
+# Azure Foundry — Entra by default (needs Azure CLI)
 akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/
+
+# Foundry with API key instead
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/ --auth api_key
 
 # Open VS Code chat UI
 akomagni ide open</pre>
@@ -111,22 +117,31 @@ akomagni run cli</pre>
       <div class="tools-category">
         <h2>Azure AI Foundry + VS Code</h2>
         <p class="cat-desc">
-          Install <strong>Microsoft Foundry Toolkit</strong> for chat in VS Code.
-          <a href="https://learn.microsoft.com/azure/foundry/how-to/develop/get-started-projects-visual-studio-code" target="_blank" rel="noopener">Learn docs</a>
+          Akomagni talks to Foundry over the OpenAI <strong>v1</strong> route
+          (<code>…/openai/v1</code>). Entra is default; optional Microsoft Foundry Toolkit for the playground.
+          <a href="https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/endpoints" target="_blank" rel="noopener">Endpoint docs</a>
         </p>
         <div class="copy-block">
           <div class="copy-block-header">
             <span>Azure Foundry workflow</span>
             <button class="copy-btn" type="button" data-copy="cmd-azure">Copy</button>
           </div>
-          <pre id="cmd-azure"># VS Code extension: ms-windows-ai-studio.windows-ai-studio
-$env:AZURE_OPENAI_API_KEY="..."
-akomagni config provider azure --base-url https://YOUR-RESOURCE.openai.azure.com/openai/v1/
+          <pre id="cmd-azure"># Entra (default) — installs azure-identity + az login
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/
+
+# Or services.ai host / project-scoped OpenAI route:
+# https://YOUR-RESOURCE.services.ai.azure.com/openai/v1/
+# https://YOUR-RESOURCE.services.ai.azure.com/api/projects/PROJECT
+
+akomagni extras foundry
 akomagni ide setup --provider azure
-akomagni inference status</pre>
+akomagni inference status
+
+# Key auth fallback
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/ --auth api_key
+# Optional Toolkit: ms-windows-ai-studio.windows-ai-studio</pre>
         </div>
       </div>
-
       <div class="tools-category">
         <h2>One-command setup</h2>
         <p class="cat-desc">Run inside your project root — writes MCP config, extensions.json, .env.example, and AKOMAGNI_IDE.md.</p>

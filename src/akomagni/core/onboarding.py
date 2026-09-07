@@ -287,8 +287,11 @@ def run_connect_wizard(*, prompt: PromptFn, include_hf: bool = True) -> dict[str
             pass
     else:
         url = prompt("Azure Foundry URL (…/openai/v1/)")
-        key = prompt("Azure API key")
-        connect_provider("azure", base_url=url, api_key=key, sync_ide=True)
+        key = prompt("Azure API key (Enter to use Entra / az login)")
+        if key.strip():
+            connect_provider("azure", base_url=url, api_key=key, auth="api_key", sync_ide=True)
+        else:
+            connect_provider("azure", base_url=url, auth="entra", sync_ide=True)
 
     if include_hf:
         hf = prompt("Hugging Face token (optional, Enter to skip)")
@@ -333,8 +336,11 @@ def run_session_setup(
                 connect_provider("rodium", api_key=key)
             else:
                 url = prompt("Azure Foundry URL (…/openai/v1/)")
-                key = prompt("Azure API key")
-                connect_provider("azure", base_url=url, api_key=key)
+                key = prompt("Azure API key (Enter to use Entra / az login)")
+                if key.strip():
+                    connect_provider("azure", base_url=url, api_key=key, auth="api_key")
+                else:
+                    connect_provider("azure", base_url=url, auth="entra")
             mark_provider_ready(chosen)
             connected = True
     elif chosen:
