@@ -40,7 +40,7 @@ jobs:
           test -f site/install/windows
 
       - name: Upload site artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
