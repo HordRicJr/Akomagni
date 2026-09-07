@@ -8,7 +8,7 @@
       name="description"
       content="Local Hugging Face GGUF or Rodium / Foundry cloud. Auto Router by task, or pin any catalogue model with Space / /model."
     />
-    <meta name="theme-color" content="#f3f6fa" />
+    <meta name="theme-color" content="#f6f3ee" />
     <link rel="icon" href="../assets/logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="../assets/logo.png" />
     <link rel="stylesheet" href="../assets/style.css" />
@@ -39,50 +39,139 @@
         <p class="breadcrumb"><a href="../">Home</a> / Models</p>
         <h1>Models</h1>
         <p class="lead">
-          Local GGUF offline, or multi-provider cloud via Rodium / Foundry. Auto Router picks by
-          task — or pin a strong model yourself.
+          Three inference paths that stay separate: local GGUF, Rodium catalogue, or Foundry
+          deployments. Hugging Face is for download (catalog name, <code>owner/repo</code>, or a
+          model link) — not a cloud chat backend.
         </p>
       </div>
     </section>
 
     <main class="page-content">
-      <div class="content-block">
-        <h2>Local (Hugging Face GGUF)</h2>
-        <ul class="feature-list">
-          <li><code>akomagni model pull phi-3.5-mini</code> or any <code>owner/repo:file.gguf</code></li>
-          <li><code>akomagni serve --model …</code> — OpenAI-compatible API on <code>127.0.0.1:8787</code></li>
-          <li><code>akomagni doctor</code> / <code>model recommend</code> for hardware-aware picks</li>
-          <li>Optional Hub token via <code>akomagni connect</code> for gated repos</li>
-        </ul>
+      <div class="provider-grid">
+        <article class="provider-card">
+          <h3>Local</h3>
+          <p>Offline llama-server. Pull a GGUF, then serve.</p>
+          <code>akomagni connect local</code>
+        </article>
+        <article class="provider-card">
+          <h3>Rodium</h3>
+          <p>One key, catalogue ids (<code>google/…</code>). Images stay on Rodium.</p>
+          <code>akomagni connect rodium</code>
+        </article>
+        <article class="provider-card">
+          <h3>Foundry</h3>
+          <p>Azure deployment names only. Key: <code>--auth api_key</code>.</p>
+          <code>akomagni connect foundry &lt;url&gt;</code>
+        </article>
+        <article class="provider-card">
+          <h3>Hugging Face</h3>
+          <p>Hub token for pulls. Not an inference provider.</p>
+          <code>akomagni connect hf</code>
+        </article>
       </div>
+
       <div class="content-block">
-        <h2>Rodium cloud (multi-provider)</h2>
-        <ul class="feature-list">
-          <li>
-            One API key → Google, Anthropic, OpenAI, DeepSeek, <code>rodiumai/smart</code>, and more
-          </li>
-          <li>
-            <strong>Auto</strong> routes by domain (code, design, image, chat) using live catalogue
-            pricing when available
-          </li>
-          <li>
-            <strong>Pin</strong> Claude Sonnet, Gemini Pro, GPT-5.4, DeepSeek Pro, image models…
-            during <code>connect</code> or in CLI with <strong>Space</strong> / <code>/model</code>
-          </li>
-          <li>
-            Images: quality-first (Gemini Pro/Flash Image, gpt-image). CLI asks where to save the PNG
-          </li>
-          <li>Legacy <code>rodium/basic|fast|pro</code> ids remap to current catalogue models</li>
-        </ul>
+        <h2>Catalog — pull by name</h2>
+        <p>Each card links to the Hub repo. Paste any other GGUF link with the command below.</p>
+      </div>
+      <div class="model-grid">
+        <article class="model-card">
+          <div class="model-meta"><span class="model-tag">light</span></div>
+          <h3>phi-3.5-mini</h3>
+          <p>Phi-3.5 Mini — fast on CPU/GPU.</p>
+          <div class="model-links">
+            <a href="https://huggingface.co/bartowski/Phi-3.5-mini-instruct-GGUF" target="_blank" rel="noopener">Hub</a>
+            <code>akomagni model pull phi-3.5-mini</code>
+          </div>
+        </article>
+        <article class="model-card">
+          <div class="model-meta"><span class="model-tag">light</span></div>
+          <h3>qwen2.5-1.5b</h3>
+          <p>Small chat model for modest machines.</p>
+          <div class="model-links">
+            <a href="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF" target="_blank" rel="noopener">Hub</a>
+            <code>akomagni model pull qwen2.5-1.5b</code>
+          </div>
+        </article>
+        <article class="model-card">
+          <div class="model-meta"><span class="model-tag">light</span></div>
+          <h3>qwen2.5-3b</h3>
+          <p>Qwen 2.5 3B instruct.</p>
+          <div class="model-links">
+            <a href="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF" target="_blank" rel="noopener">Hub</a>
+            <code>akomagni model pull qwen2.5-3b</code>
+          </div>
+        </article>
+        <article class="model-card">
+          <div class="model-meta"><span class="model-tag">light</span></div>
+          <h3>llama-3.2-3b</h3>
+          <p>Llama 3.2 3B instruct.</p>
+          <div class="model-links">
+            <a href="https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF" target="_blank" rel="noopener">Hub</a>
+            <code>akomagni model pull llama-3.2-3b</code>
+          </div>
+        </article>
+        <article class="model-card">
+          <div class="model-meta"><span class="model-tag">code</span></div>
+          <h3>qwen2.5-coder-7b</h3>
+          <p>Strong local coder.</p>
+          <div class="model-links">
+            <a href="https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF" target="_blank" rel="noopener">Hub</a>
+            <code>akomagni model pull qwen2.5-coder-7b</code>
+          </div>
+        </article>
+        <article class="model-card">
+          <div class="model-meta"><span class="model-tag">code</span></div>
+          <h3>deepseek-coder-v2-lite</h3>
+          <p>DeepSeek Coder V2 Lite.</p>
+          <div class="model-links">
+            <a href="https://huggingface.co/bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF" target="_blank" rel="noopener">Hub</a>
+            <code>akomagni model pull deepseek-coder-v2-lite</code>
+          </div>
+        </article>
+        <article class="model-card">
+          <div class="model-meta"><span class="model-tag">standard</span></div>
+          <h3>qwen2.5-7b</h3>
+          <p>General chat, Q4.</p>
+          <div class="model-links">
+            <a href="https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF" target="_blank" rel="noopener">Hub</a>
+            <code>akomagni model pull qwen2.5-7b</code>
+          </div>
+        </article>
+        <article class="model-card">
+          <div class="model-meta"><span class="model-tag">standard</span></div>
+          <h3>llama-3.1-8b</h3>
+          <p>Llama 3.1 8B instruct.</p>
+          <div class="model-links">
+            <a href="https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF" target="_blank" rel="noopener">Hub</a>
+            <code>akomagni model pull llama-3.1-8b</code>
+          </div>
+        </article>
+      </div>
+
+      <div class="content-block">
+        <h2>Any Hugging Face link</h2>
+        <p>
+          Larger models (Qwen3 Coder, etc.) stay optional — paste the Hub URL or
+          <code>owner/repo:file.gguf</code>. Gated repos need <code>akomagni connect hf</code> first.
+        </p>
       </div>
       <div class="code-panel">
-        <div class="code-panel-header">Quick start</div>
-        <pre>akomagni connect
-akomagni doctor
-akomagni model pull qwen2.5-coder-7b
-akomagni serve --model qwen2.5-coder-7b
-akomagni run cli --project ./my-app
-# In CLI: press Space or type /model to change the Rodium model</pre>
+        <div class="code-panel-header">Pull from a link</div>
+        <pre>akomagni connect hf
+akomagni model pull https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF
+akomagni model pull owner/repo:file.gguf
+akomagni model catalog
+akomagni serve --model qwen2.5-coder-7b</pre>
+      </div>
+
+      <div class="content-block">
+        <h2>Cloud commands</h2>
+        <ul class="feature-list">
+          <li><strong>Rodium</strong> — <code>akomagni connect rodium</code> then Space / <code>/model</code> in the CLI</li>
+          <li><strong>Foundry</strong> — <code>akomagni connect foundry https://RESOURCE.openai.azure.com/openai/v1/ --auth api_key</code></li>
+          <li>Images on Foundry need an image deployment (<code>gpt-image-1</code> / <code>dall-e-3</code>). Catalogue image models stay on Rodium.</li>
+        </ul>
       </div>
     </main>
 

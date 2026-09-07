@@ -176,7 +176,8 @@ akomagni memory status             # Central + project memory
 akomagni flow route "your message" # Route to BMAD agent/skill
 akomagni flow router-mode auto     # ML router when inference is online
 akomagni model pull qwen2.5-coder-7b
-akomagni model pull owner/repo:file.gguf   # Any Hugging Face GGUF
+akomagni model pull https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct-GGUF
+akomagni model pull owner/repo:file.gguf   # Any Hugging Face GGUF or Hub link
 akomagni serve --model phi-3.5-mini        # Local OpenAI-compatible API (:8787)
 akomagni mcp serve                 # MCP agent tools (Cursor / VS Code)
 akomagni train plan                # Preview LoRA dataset from memory

@@ -45,6 +45,34 @@ CATALOG: dict[str, ModelCatalogEntry] = {
         profile="standard",
         description="Llama 3.1 8B Instruct Q4_K_M",
     ),
+    "qwen2.5-1.5b": ModelCatalogEntry(
+        name="qwen2.5-1.5b",
+        repo_id="Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+        filename="qwen2.5-1.5b-instruct-q4_k_m.gguf",
+        profile="light",
+        description="Qwen 2.5 1.5B — petit, conversation rapide",
+    ),
+    "qwen2.5-3b": ModelCatalogEntry(
+        name="qwen2.5-3b",
+        repo_id="Qwen/Qwen2.5-3B-Instruct-GGUF",
+        filename="qwen2.5-3b-instruct-q4_k_m.gguf",
+        profile="light",
+        description="Qwen 2.5 3B Instruct Q4_K_M",
+    ),
+    "qwen2.5-7b": ModelCatalogEntry(
+        name="qwen2.5-7b",
+        repo_id="bartowski/Qwen2.5-7B-Instruct-GGUF",
+        filename="Qwen2.5-7B-Instruct-Q4_K_M.gguf",
+        profile="standard",
+        description="Qwen 2.5 7B Instruct — chat généraliste",
+    ),
+    "deepseek-coder-v2-lite": ModelCatalogEntry(
+        name="deepseek-coder-v2-lite",
+        repo_id="bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF",
+        filename="DeepSeek-Coder-V2-Lite-Instruct-Q4_K_M.gguf",
+        profile="standard",
+        description="DeepSeek Coder V2 Lite — code local",
+    ),
 }
 
 
@@ -60,6 +88,12 @@ def resolve_catalog_name(name: str) -> ModelCatalogEntry | None:
         "qwen-coder-7b": "qwen2.5-coder-7b",
         "llama-3.2-3b": "llama-3.2-3b",
         "llama-3.1-8b": "llama-3.1-8b",
+        "qwen2.5-1.5b": "qwen2.5-1.5b",
+        "qwen2.5-3b": "qwen2.5-3b",
+        "qwen2.5-7b": "qwen2.5-7b",
+        "qwen-7b": "qwen2.5-7b",
+        "deepseek-coder-v2-lite": "deepseek-coder-v2-lite",
+        "deepseek-coder": "deepseek-coder-v2-lite",
     }
     resolved = aliases.get(key)
     if resolved:
