@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.9] - 2026-09-07
+
+### Fixed
+
+- **Provider isolation**: Foundry image/chat never retries Rodium catalogue ids; errors point at Foundry docs (not Rodium)
+- Azure domain map includes ``image`` and maps live image deployments from ``/models``
+- Bare ``akomagni chat`` / ``run cli`` always runs session setup and treats no-project as greenfield BMAD (does not inherit global workflow state)
+
+### Added
+
+- ``provider_routing`` helpers + regression tests so local / Rodium / Foundry paths cannot cross-leak
+
 ## [0.3.8] - 2026-09-07
 
 ### Fixed

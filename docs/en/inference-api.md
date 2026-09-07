@@ -14,6 +14,15 @@ akomagni inference chat "Explain Akomagni Flow in one sentence"
 
 ## Cloud providers
 
+Inference backends are isolated — Akomagni never mixes Rodium catalogue ids with Foundry deployments or local GGUF:
+
+| Connect | What it does |
+|---------|----------------|
+| `akomagni connect local` | Offline llama-server (GGUF often pulled from Hugging Face) |
+| `akomagni connect rodium` | Rodium catalogue (`google/…`, `openai/…`, …) |
+| `akomagni connect foundry <url>` | Azure / Foundry **deployment names** only |
+| `akomagni connect hf` | Saves Hub token for `model pull` — **not** an inference provider |
+
 ### Rodium AI
 
 ```bash

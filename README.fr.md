@@ -42,8 +42,8 @@ Sur **Rodium**, cela passe par des identifiants multi-providers économiques (Go
 
 ## Local, cloud ou hybride
 
-- **Local :** modèles Hugging Face au format GGUF, y compris hors ligne
-- **Cloud :** tes propres services via Rodium ou Microsoft Foundry (`akomagni connect`)
+- **Local :** modèles Hugging Face au format GGUF, y compris hors ligne (`akomagni connect local` + `model pull` ; `connect hf` enregistre seulement le token Hub)
+- **Cloud :** tes propres services via Rodium ou Microsoft Foundry (`akomagni connect`) — chemins isolés (pas de catalogue Rodium sur Foundry)
 - **Hybride :** modèles locaux + APIs externes + agents + skills + tools
 
 ### Microsoft Foundry

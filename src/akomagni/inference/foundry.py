@@ -213,7 +213,7 @@ def resolve_azure_endpoint_url(provider_block: dict[str, Any] | None = None) -> 
 
 
 def deployments_from_models(models: list[str] | None) -> dict[str, str] | None:
-    """Pick sensible code/design/text deployment names from a /models listing."""
+    """Pick sensible code/design/text/image deployment names from a /models listing."""
     if not models:
         return None
     cleaned = [str(m).strip() for m in models if str(m).strip()]
@@ -226,6 +226,14 @@ def deployments_from_models(models: list[str] | None) -> dict[str, str] | None:
         "gpt-4",
         "gpt-35-turbo",
         "gpt-3.5",
+    )
+    preferred_image = (
+        "gpt-image-1",
+        "gpt-image",
+        "dall-e-3",
+        "dall-e-2",
+        "flux",
+        "stable-diffusion",
     )
 
     def _pick(needles: tuple[str, ...], *, allow_mini: bool) -> str:
@@ -247,7 +255,17 @@ def deployments_from_models(models: list[str] | None) -> dict[str, str] | None:
         (m for m in cleaned if any(x in m.lower() for x in ("mini", "nano", "small"))),
         pick,
     )
-    return {"code": pick, "design": pick, "text": text_pick}
+    image_hits = [
+        m
+        for m in cleaned
+        if any(n in m.lower() for n in preferred_image)
+        or "image" in m.lower()
+        or "dall" in m.lower()
+    ]
+    mapped: dict[str, str] = {"code": pick, "design": pick, "text": text_pick}
+    if image_hits:
+        mapped["image"] = image_hits[0]
+    return mapped
 
 
 def project_endpoint_note(url: str) -> str | None:

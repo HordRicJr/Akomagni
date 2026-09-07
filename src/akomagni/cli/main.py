@@ -423,7 +423,7 @@ def chat(
     from akomagni.inference.connect import ConnectError
 
     project_context = ""
-    if setup and (project or provider or needs_provider_onboarding(cfg)):
+    if setup:
         try:
             session = run_session_setup(
                 prompt=lambda msg: typer.prompt(msg),

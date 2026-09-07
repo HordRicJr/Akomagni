@@ -37,6 +37,9 @@ _EXPLICIT_SKILLS = frozenset(
 
 
 def _brainstorm_already_done(project_root: Path | None = None) -> bool:
+    # No project → do not inherit global ~/.akomagni workflow history.
+    if project_root is None:
+        return False
     state = load_state(project_root, discover=True)
     gates = state.get("gates") or {}
     if gates.get("brainstorm") == "complete":
@@ -46,12 +49,20 @@ def _brainstorm_already_done(project_root: Path | None = None) -> bool:
 
 
 def _brainstorm_in_progress(project_root: Path | None = None) -> bool:
+    if project_root is None:
+        return False
     state = load_state(project_root, discover=True)
     return (state.get("gates") or {}).get("brainstorm") == "in_progress"
 
 
 def _is_fresh_project(project_root: Path | None = None) -> bool:
-    """True when this project has not started a BMAD flow yet (first prompts)."""
+    """True when this project has not started a BMAD flow yet (first prompts).
+
+    Without an explicit project folder, do not inherit global ``DATA_DIR`` workflow
+    history — a bare ``akomagni chat`` / ``run cli`` must still open greenfield BMAD.
+    """
+    if project_root is None:
+        return True
     if _brainstorm_already_done(project_root):
         return False
     state = load_state(project_root, discover=True)
