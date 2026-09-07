@@ -56,7 +56,9 @@ def test_azure_identity_available_true_false():
         side_effect=ImportError("no"),
     ):
         assert azure_identity_available() is False
-    with patch("akomagni.inference.foundry_bootstrap.importlib.import_module", return_value=object()):
+    with patch(
+        "akomagni.inference.foundry_bootstrap.importlib.import_module", return_value=object()
+    ):
         assert azure_identity_available() is True
 
 
@@ -193,7 +195,9 @@ def test_ensure_foundry_entra_installs_identity_then_logs_in():
             "akomagni.inference.foundry_bootstrap.run_az_login",
             return_value=(True, "Azure CLI session ready"),
         ) as login,
-        patch("akomagni.inference.foundry_bootstrap.verify_entra_token", return_value=(True, "tok")),
+        patch(
+            "akomagni.inference.foundry_bootstrap.verify_entra_token", return_value=(True, "tok")
+        ),
     ):
         result = ensure_foundry_entra(login_if_needed=True)
     assert result.ok
@@ -230,7 +234,9 @@ def test_ensure_foundry_entra_login_skipped():
         patch("akomagni.inference.foundry_bootstrap.azure_identity_available", return_value=True),
         patch("akomagni.inference.foundry_bootstrap.find_az_cli", return_value="az"),
         patch("akomagni.inference.foundry_bootstrap.az_account_logged_in", return_value=False),
-        patch("akomagni.inference.foundry_bootstrap.verify_entra_token", return_value=(False, "no")),
+        patch(
+            "akomagni.inference.foundry_bootstrap.verify_entra_token", return_value=(False, "no")
+        ),
     ):
         result = ensure_foundry_entra(login_if_needed=False)
     assert result.token_ok is False
@@ -276,10 +282,13 @@ def test_connect_foundry_entra_failure_raises(akomagni_home, monkeypatch):
         error="Could not install azure-identity: boom",
         messages=["boom"],
     )
-    with patch(
-        "akomagni.inference.foundry_bootstrap.ensure_foundry_entra",
-        return_value=setup,
-    ), pytest.raises(ConnectError, match="azure-identity"):
+    with (
+        patch(
+            "akomagni.inference.foundry_bootstrap.ensure_foundry_entra",
+            return_value=setup,
+        ),
+        pytest.raises(ConnectError, match="azure-identity"),
+    ):
         connect_provider(
             "foundry",
             base_url="https://my.openai.azure.com",

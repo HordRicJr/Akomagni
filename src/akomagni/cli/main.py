@@ -179,8 +179,7 @@ def connect_cmd(
             default=env_url or FOUNDRY_URL_HINT,
         )
         console.print(
-            f"[dim]Also accepted: {FOUNDRY_URL_HINT_SERVICES} "
-            "or …/api/projects/<name>[/]"
+            f"[dim]Also accepted: {FOUNDRY_URL_HINT_SERVICES} or …/api/projects/<name>[/]"
         )
 
     auth_mode = "api_key"
@@ -192,8 +191,7 @@ def connect_cmd(
         else:
             auth_mode = "entra"
             console.print(
-                "[dim]Foundry auth: Entra ID — installing azure-identity "
-                "and ensuring az login…[/]"
+                "[dim]Foundry auth: Entra ID — installing azure-identity and ensuring az login…[/]"
             )
     if normalized == "rodium" or auth_mode == "api_key":
         if not api_key or not api_key.strip():
@@ -1636,7 +1634,9 @@ def config_provider(
                 on_progress=lambda msg: console.print(f"[dim]→ {msg}[/]"),
             )
             if setup.ok:
-                console.print("[green]Entra ready[/] — akomagni chat will use DefaultAzureCredential")
+                console.print(
+                    "[green]Entra ready[/] — akomagni chat will use DefaultAzureCredential"
+                )
             else:
                 console.print(f"[yellow]Entra setup incomplete:[/] {setup.error}")
                 console.print("Fallback: set AZURE_OPENAI_API_KEY or re-run with --auth api_key")

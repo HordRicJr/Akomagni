@@ -132,7 +132,10 @@ def run_az_login(
     """Launch ``az login`` (browser / device flow). Must stay attached to the TTY."""
     binary = az_bin or find_az_cli()
     if not binary:
-        return False, "Azure CLI (az) not found on PATH — install from https://aka.ms/installazurecliwindows"
+        return (
+            False,
+            "Azure CLI (az) not found on PATH — install from https://aka.ms/installazurecliwindows",
+        )
 
     if on_progress:
         on_progress("Launching az login (complete sign-in in the browser)…")

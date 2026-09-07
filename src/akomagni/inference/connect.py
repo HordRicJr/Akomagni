@@ -191,8 +191,7 @@ def connect_provider(
         setup_notes.extend(setup.messages)
         if not setup.ok:
             raise ConnectError(
-                setup.error
-                or "Foundry Entra setup failed. Pass an API key or fix Azure login."
+                setup.error or "Foundry Entra setup failed. Pass an API key or fix Azure login."
             )
 
     if auth_mode == "api_key" and (not api_key or not api_key.strip()):

@@ -14,7 +14,9 @@ from urllib.parse import urlparse
 
 FOUNDRY_URL_HINT = "https://YOUR-RESOURCE.openai.azure.com/openai/v1/"
 FOUNDRY_URL_HINT_SERVICES = "https://YOUR-RESOURCE.services.ai.azure.com/openai/v1/"
-FOUNDRY_DOCS_URL = "https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/endpoints"
+FOUNDRY_DOCS_URL = (
+    "https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/endpoints"
+)
 
 # Env vars documented by Microsoft / Akomagni
 AZURE_API_KEY_ENV = "AZURE_OPENAI_API_KEY"
@@ -89,7 +91,11 @@ def normalize_foundry_base_url(raw: str) -> str:
         if "/openai/" in lower_path:
             # e.g. …/api/projects/foo/openai → add /v1
             if not lower_path.endswith("/v1"):
-                normalized_path = f"{path.rstrip('/')}/v1" if lower_path.endswith("/openai") else f"{path}/openai/v1"
+                normalized_path = (
+                    f"{path.rstrip('/')}/v1"
+                    if lower_path.endswith("/openai")
+                    else f"{path}/openai/v1"
+                )
             else:
                 normalized_path = path
         else:
@@ -159,8 +165,7 @@ def get_foundry_entra_token(*, scope: str = ENTRA_SCOPE) -> str:
         from azure.identity import DefaultAzureCredential
     except ImportError as exc:  # pragma: no cover - optional dep
         raise RuntimeError(
-            "Entra authentication requires azure-identity. "
-            "Install with: pip install azure-identity"
+            "Entra authentication requires azure-identity. Install with: pip install azure-identity"
         ) from exc
 
     credential = DefaultAzureCredential()
@@ -219,7 +224,9 @@ def deployments_from_models(models: list[str] | None) -> dict[str, str] | None:
                 return exact
             hits = [m for m in cleaned if needle in m.lower()]
             if not allow_mini:
-                hits = [m for m in hits if "mini" not in m.lower() and "nano" not in m.lower()] or hits
+                hits = [
+                    m for m in hits if "mini" not in m.lower() and "nano" not in m.lower()
+                ] or hits
             if hits:
                 return hits[0]
         return cleaned[0]

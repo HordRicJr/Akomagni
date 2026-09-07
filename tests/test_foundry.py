@@ -98,17 +98,14 @@ def test_resolve_azure_auth_mode_env(monkeypatch):
 
 
 def test_project_endpoint_note():
-    note = project_endpoint_note(
-        "https://x.services.ai.azure.com/api/projects/p/openai/v1"
-    )
+    note = project_endpoint_note("https://x.services.ai.azure.com/api/projects/p/openai/v1")
     assert note is not None
     assert "project" in note.lower()
 
 
 def test_normalize_adds_https_and_rejects_empty():
     assert (
-        normalize_foundry_base_url("my.openai.azure.com")
-        == "https://my.openai.azure.com/openai/v1"
+        normalize_foundry_base_url("my.openai.azure.com") == "https://my.openai.azure.com/openai/v1"
     )
     with pytest.raises(FoundryUrlError, match="required"):
         normalize_foundry_base_url("  ")
@@ -152,9 +149,7 @@ def test_get_foundry_entra_token_missing_package():
 
 def test_normalize_project_with_openai_segment():
     assert (
-        normalize_foundry_base_url(
-            "https://my.services.ai.azure.com/api/projects/demo/openai"
-        )
+        normalize_foundry_base_url("https://my.services.ai.azure.com/api/projects/demo/openai")
         == "https://my.services.ai.azure.com/api/projects/demo/openai/v1"
     )
 
@@ -168,9 +163,7 @@ def test_normalize_rejects_bad_scheme_and_host():
 
 def test_normalize_collapses_double_openai_v1():
     assert (
-        normalize_foundry_base_url(
-            "https://my.openai.azure.com/openai/v1/openai/v1"
-        )
+        normalize_foundry_base_url("https://my.openai.azure.com/openai/v1/openai/v1")
         == "https://my.openai.azure.com/openai/v1"
     )
 
