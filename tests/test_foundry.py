@@ -143,9 +143,11 @@ def test_get_foundry_entra_token_missing_package():
                 raise ImportError("no azure")
             return real_import(name, *args, **kwargs)
 
-        with patch("builtins.__import__", side_effect=_fake_import):
-            with pytest.raises(RuntimeError, match="azure-identity"):
-                get_foundry_entra_token()
+        with (
+            patch("builtins.__import__", side_effect=_fake_import),
+            pytest.raises(RuntimeError, match="azure-identity"),
+        ):
+            get_foundry_entra_token()
 
 
 def test_normalize_project_with_openai_segment():
@@ -180,9 +182,11 @@ def test_get_foundry_entra_token_empty():
 
     fake = MagicMock()
     fake.DefaultAzureCredential.return_value.get_token.return_value = SimpleNamespace(token="")
-    with patch.dict("sys.modules", {"azure.identity": fake}):
-        with pytest.raises(RuntimeError, match="empty"):
-            get_foundry_entra_token()
+    with (
+        patch.dict("sys.modules", {"azure.identity": fake}),
+        pytest.raises(RuntimeError, match="empty"),
+    ):
+        get_foundry_entra_token()
 
 
 def test_project_endpoint_note_none_for_resource():

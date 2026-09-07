@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import subprocess
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from typer.testing import CliRunner
@@ -103,7 +103,7 @@ def test_install_azure_identity_background():
         return_value=(True, "azure-identity ready"),
     ):
         msgs: list[str] = []
-        ok, detail = install_azure_identity_background(on_progress=msgs.append, timeout=5)
+        ok, _detail = install_azure_identity_background(on_progress=msgs.append, timeout=5)
     assert ok is True
     assert msgs
 
@@ -279,14 +279,13 @@ def test_connect_foundry_entra_failure_raises(akomagni_home, monkeypatch):
     with patch(
         "akomagni.inference.foundry_bootstrap.ensure_foundry_entra",
         return_value=setup,
-    ):
-        with pytest.raises(ConnectError, match="azure-identity"):
-            connect_provider(
-                "foundry",
-                base_url="https://my.openai.azure.com",
-                auth="entra",
-                sync_ide=False,
-            )
+    ), pytest.raises(ConnectError, match="azure-identity"):
+        connect_provider(
+            "foundry",
+            base_url="https://my.openai.azure.com",
+            auth="entra",
+            sync_ide=False,
+        )
 
 
 def test_resolve_azure_endpoint_entra_path(monkeypatch):
@@ -445,7 +444,7 @@ def test_run_az_login_oserror():
             side_effect=OSError("az broken"),
         ),
     ):
-        ok, detail = run_az_login()
+        ok, _detail = run_az_login()
     assert ok is False
 
 

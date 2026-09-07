@@ -35,7 +35,7 @@ class FoundryUrlError(ValueError):
 
 def is_foundry_host(hostname: str | None) -> bool:
     host = (hostname or "").lower().rstrip(".")
-    return host.endswith(".openai.azure.com") or host.endswith(".services.ai.azure.com")
+    return host.endswith((".openai.azure.com", ".services.ai.azure.com"))
 
 
 def is_foundry_project_path(path: str) -> bool:

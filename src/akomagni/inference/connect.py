@@ -33,16 +33,16 @@ RODIUM_DEFAULT_URL = RODIUM_DEFAULT_BASE_URL
 
 # Re-export for CLI/docs
 __all__ = [
-    "PROVIDER_ALIASES",
-    "RODIUM_DEFAULT_URL",
     "FOUNDRY_URL_HINT",
     "FOUNDRY_URL_HINT_SERVICES",
+    "PROVIDER_ALIASES",
+    "RODIUM_DEFAULT_URL",
     "ConnectError",
     "ConnectResult",
-    "normalize_provider",
     "connect_provider",
-    "sync_vscode_settings",
+    "normalize_provider",
     "save_config",
+    "sync_vscode_settings",
 ]
 
 

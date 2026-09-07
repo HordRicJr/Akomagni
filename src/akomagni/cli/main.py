@@ -169,8 +169,9 @@ def connect_cmd(
             default=RODIUM_DEFAULT_URL,
         )
     elif normalized == "azure" and not base_url:
-        from akomagni.inference.foundry import AZURE_ENDPOINT_ENV, FOUNDRY_URL_HINT_SERVICES
         import os
+
+        from akomagni.inference.foundry import AZURE_ENDPOINT_ENV, FOUNDRY_URL_HINT_SERVICES
 
         env_url = os.environ.get(AZURE_ENDPOINT_ENV, "").strip()
         base_url = typer.prompt(
