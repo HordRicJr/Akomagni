@@ -42,8 +42,8 @@ On **Rodium**, that means economical multi-provider catalogue ids (Google, Anthr
 
 ## Local, cloud, or hybrid
 
-- **Local:** Hugging Face GGUF models, including offline work
-- **Cloud:** your own APIs via Rodium or Microsoft Foundry (`akomagni connect`)
+- **Local:** Hugging Face GGUF models, including offline work (`akomagni connect local` + `model pull`; `connect hf` only stores the Hub token)
+- **Cloud:** your own APIs via Rodium or Microsoft Foundry (`akomagni connect`) — paths stay isolated (no Rodium catalogue on Foundry)
 - **Hybrid:** local models + external APIs + agents + skills + tools
 
 ### Microsoft Foundry

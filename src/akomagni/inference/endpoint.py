@@ -30,6 +30,8 @@ AZURE_DEFAULT_MODELS = {
     "code": "gpt-4o",
     "design": "gpt-4o",
     "text": "gpt-4o-mini",
+    # Common Foundry / Azure OpenAI image deployments (must exist on the resource).
+    "image": "gpt-image-1",
 }
 
 
@@ -174,7 +176,12 @@ def cloud_model_for_domain(
     value = (models or {}).get(domain) or (models or {}).get("text") or prov.get("default_model")
     if value is None or str(value).strip().lower() in {"", "none", "null"}:
         return None
-    return str(value).strip()
+    cleaned = str(value).strip()
+    if provider == "azure":
+        from akomagni.inference.provider_routing import assert_model_fits_provider
+
+        return assert_model_fits_provider("azure", cleaned)
+    return cleaned
 
 
 def provider_status(config: dict[str, Any] | None = None) -> dict[str, Any]:
