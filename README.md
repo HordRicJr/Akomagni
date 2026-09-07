@@ -170,11 +170,11 @@ akomagni run cli --project ./app   # Chat + Flow on a project
 akomagni config init               # Create ~/.akomagni/config.yaml (language: en)
 akomagni config language fr        # Optional: French CLI
 akomagni config provider azure --base-url https://RESOURCE.openai.azure.com/openai/v1/
-akomagni update                    # Pull latest, sync BMAD kernel, show what's new
+# (defaults to --auth entra; use --auth api_key for key mode)
+akomagni update                    # Pull latest from main, sync BMAD kernel, show what's new
 akomagni memory status             # Central + project memory
 akomagni flow route "your message" # Route to BMAD agent/skill
 akomagni flow router-mode auto     # ML router when inference is online
-akomagni skill list                # List linked skills
 akomagni model pull qwen2.5-coder-7b
 akomagni model pull owner/repo:file.gguf   # Any Hugging Face GGUF
 akomagni serve --model phi-3.5-mini        # Local OpenAI-compatible API (:8787)

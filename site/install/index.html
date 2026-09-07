@@ -176,6 +176,32 @@ akomagni serve --model qwen2.5-coder-7b</pre>
         </div>
       </div>
 
+      <div class="tools-category" style="margin-top: 3rem">
+        <h2>Microsoft Foundry</h2>
+        <p class="cat-desc">
+          Entra ID by default — installs <code>azure-identity</code> and runs <code>az login</code>
+          when needed. Requires <a href="https://aka.ms/installazurecliwindows" target="_blank" rel="noopener">Azure CLI</a> on PATH.
+        </p>
+        <div class="copy-block">
+          <div class="copy-block-header">
+            <span>Foundry (Entra)</span>
+            <button class="copy-btn" type="button" data-copy="cmd-foundry">Copy</button>
+          </div>
+          <pre id="cmd-foundry"># Preferred: …/openai/v1/
+akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/
+
+# Also valid:
+# https://YOUR-RESOURCE.services.ai.azure.com/openai/v1/
+# https://YOUR-RESOURCE.services.ai.azure.com/api/projects/PROJECT
+
+akomagni extras foundry
+akomagni inference status
+
+# API key instead of Entra:
+# akomagni connect foundry https://YOUR-RESOURCE.openai.azure.com/openai/v1/ --auth api_key</pre>
+        </div>
+      </div>
+
       <div class="tools-category">
         <h2>Language</h2>
         <p class="cat-desc">CLI is English by default.</p>
@@ -211,6 +237,8 @@ akomagni serve --model qwen2.5-coder-7b</pre>
           <li><strong>No skills</strong> — run <code>akomagni update</code> (kernel ships with install); optional <code>akomagni skill link</code> for a custom folder</li>
           <li><strong>Image / poster</strong> — cloud uses URL-first image models; base64 is saved under <code>generated-images/</code></li>
           <li><strong>Rodium 403/404</strong> — update, reconnect; catalogue ids only (not <code>rodium/basic</code>)</li>
+          <li><strong>Foundry Entra</strong> — install Azure CLI, then <code>akomagni extras foundry</code> or <code>akomagni connect foundry &lt;url&gt;</code>; use <code>--auth api_key</code> if you prefer a key</li>
+          <li><strong>Foundry URL</strong> — use <code>…/openai/v1/</code> (or a project URL); bare resource host is normalized automatically</li>
         </ul>
       </div>
     </section>
