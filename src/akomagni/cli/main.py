@@ -164,10 +164,9 @@ def connect_cmd(
 
     base_url = url
     if normalized == "rodium" and not base_url:
-        base_url = typer.prompt(
-            "Rodium API URL",
-            default=RODIUM_DEFAULT_URL,
-        )
+        # Rodium only needs an API key (see docs/en/inference-api.md); the default
+        # base URL is used automatically unless an explicit URL argument is passed.
+        base_url = RODIUM_DEFAULT_URL
     elif normalized == "azure" and not base_url:
         import os
 

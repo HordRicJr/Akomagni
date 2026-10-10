@@ -84,7 +84,9 @@ def test_connect_cli_interactive(akomagni_home, tmp_path, monkeypatch):
         lambda _cfg: status,
     )
 
-    with patch("typer.prompt", side_effect=["https://api.rodiumai.io/v1", "rd_sk_interactive", ""]):
+    # Rodium only prompts for the API key (plus the optional HF token) — the base
+    # URL defaults automatically per docs/en/inference-api.md.
+    with patch("typer.prompt", side_effect=["rd_sk_interactive", ""]):
         result = runner.invoke(app, ["connect", "rodium"])
     assert result.exit_code == 0
     assert "Connected" in result.stdout
